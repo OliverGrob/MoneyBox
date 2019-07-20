@@ -79,7 +79,7 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     private fun initExpenseRecycleView(yearSelected: Int, monthSelected: Month) {
-        val expenseRecycleViewAdapter = ExpenseRecycleViewAdapter(this)
+        val expenseRecycleViewAdapter = ExpenseRecycleViewAdapter(this, this.expenseActivityViewModel)
         expensesRecyclerView.adapter = expenseRecycleViewAdapter
         expensesRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -93,7 +93,7 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     fun onAddNewExpense(view: View) {
-        val alertDialogView = layoutInflater.inflate(R.layout.layout_newexpense_alertdialog, null)
+        val alertDialogView = layoutInflater.inflate(R.layout.new_expense_alert_dialog, null)
         val newExpenseAmountEditText: EditText = alertDialogView.findViewById(R.id.newExpenseAmountEditText)
         val newExpenseDescriptionEditText: AutoCompleteTextView = alertDialogView.findViewById(R.id.newExpenseDescriptionEditText)
         val newExpenseDatePickerTextView: TextView = alertDialogView.findViewById(R.id.datePickerTextView)
@@ -180,7 +180,7 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     private fun populateRadioGroupWithCategories(radioGroup: RadioGroup) {
-        this.expenseActivityViewModel.getAllCategories().observe(this, Observer {categories ->
+        this.expenseActivityViewModel.getAllCategories().observe(this, Observer { categories ->
             categories.stream().forEach { category ->
                 val radioButton = RadioButton(this)
                 radioButton.id = category.id
@@ -193,7 +193,7 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     fun onAddNewCategory(view: View) {
-        val alertDialogView = layoutInflater.inflate(R.layout.layout_newcategory_alertdialog, null)
+        val alertDialogView = layoutInflater.inflate(R.layout.new_category_alert_dialog, null)
         val newCategoryEditText: EditText = alertDialogView.findViewById(R.id.newCategoryEditText)
 
         val newCategoryAlertDialog: AlertDialog = AlertDialog.Builder(this)

@@ -20,11 +20,11 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     private val expenseRepository: ExpenseRepository = ExpenseRepository(application)
     private val categoryRepository: CategoryRepository = CategoryRepository(application)
 
-    private val expenses: LiveData<List<CategoryWithExpenses>> = this.expenseRepository.getExpenses()
+    private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = this.expenseRepository.getExpenses()
     private val categories: LiveData<List<Category>> = this.categoryRepository.getCategories()
 
 
-    fun getAllCategoryWithExpenses(): LiveData<List<CategoryWithExpenses>> = this.expenses
+    fun getAllCategoryWithExpenses(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
 
     fun getAllCategories(): LiveData<List<Category>> = this.categories
 
@@ -40,14 +40,31 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
         this.categoryRepository.addNewCategory(Category(categoryName))
     }
 
-    fun getAllExpensesDescription(): List<String> = this.expenses.value!!
+    fun updateExpense(expenseId: Int, expenseValue: String, expenseDescription: String, expenseDate: String, categoryId: Int) {
+        this.expenseRepository.updateExpense(Expense(
+            expenseId,
+            expenseValue.toDouble(),
+            expenseDescription,
+            LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
+            categoryId))
+    }
+
+    fun deleteExpense(expense: Expense) {
+        this.expenseRepository.deleteExpense(expense)
+    }
+
+    fun deleteCategory(category: Category) {
+        this.categoryRepository.deleteCategory(category)
+    }
+
+    fun getAllExpensesDescription(): List<String> = this.categoriesWithExpenses.value!!
         .stream()
         .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
         .map(Expense::description)
         .collect(Collectors.toList())
 
     fun getYearsWithExpense(): List<Int> {
-        return this.expenses.value!!
+        return this.categoriesWithExpenses.value!!
             .stream()
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
             .map(Expense::additionDate)
@@ -58,7 +75,7 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun getMonthsInYearWithExpense(yearSelected: Int): List<Month> {
-        return this.expenses.value!!
+        return this.categoriesWithExpenses.value!!
             .stream()
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
             .filter { expense -> expense.additionDate.year == yearSelected }
@@ -70,7 +87,7 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun getExpensesForSelectedMonthInSelectedYear(yearSelected: Int, monthSelected: Month): List<CategoryWithExpenses> {
-        return this.expenses.value!!
+        return this.categoriesWithExpenses.value!!
             .stream()
             .map { categoryWithExpenses -> CategoryWithExpenses(
                 categoryWithExpenses.category,

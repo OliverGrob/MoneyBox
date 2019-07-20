@@ -28,12 +28,36 @@ class ExpenseRepository(application: Application) {
         InsertAsyncTask(this.expenseDao).execute(expense)
     }
 
+    fun updateExpense(expense: Expense) {
+        UpdateAsyncTask(this.expenseDao).execute(expense)
+    }
+
+    fun deleteExpense(expense: Expense) {
+        DeleteAsyncTask(this.expenseDao).execute(expense)
+    }
+
 
 
     private class InsertAsyncTask (private val asyncTaskDao: ExpenseDao) : AsyncTask<Expense, Void, Void>() {
 
         override fun doInBackground(vararg params: Expense): Void? {
             asyncTaskDao.insert(params[0])
+            return null
+        }
+    }
+
+    private class DeleteAsyncTask (private val asyncTaskDao: ExpenseDao) : AsyncTask<Expense, Void, Void>() {
+
+        override fun doInBackground(vararg params: Expense): Void? {
+            asyncTaskDao.delete(params[0])
+            return null
+        }
+    }
+
+    private class UpdateAsyncTask (private val asyncTaskDao: ExpenseDao) : AsyncTask<Expense, Void, Void>() {
+
+        override fun doInBackground(vararg params: Expense): Void? {
+            asyncTaskDao.update(params[0])
             return null
         }
     }

@@ -29,7 +29,7 @@
     <TextView
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.7"
+            app:layout_constraintWidth_percent="0.65"
             android:padding="5dp"
             android:textAlignment="viewStart"
             android:textSize="15sp"
@@ -38,5 +38,16 @@
             app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
             app:layout_constraintTop_toTopOf="@+id/expenseAmountTextView"
             app:layout_constraintBottom_toBottomOf="@+id/expenseAmountTextView"/>
+    <TextView
+            android:id="@+id/expenseOptionsTextView"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.05"
+            android:text="&#8942;"
+            android:textAlignment="center"
+            android:textAppearance="?android:textAppearanceLarge"
+            app:layout_constraintStart_toEndOf="@+id/expenseDescriptionTextView"
+            app:layout_constraintTop_toTopOf="@+id/expenseDescriptionTextView"
+            app:layout_constraintBottom_toBottomOf="@+id/expenseDescriptionTextView"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
