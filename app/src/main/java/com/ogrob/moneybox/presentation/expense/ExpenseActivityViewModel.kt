@@ -49,6 +49,12 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
             categoryId))
     }
 
+    fun updateCategory(categoryId: Int, categoryName: String) {
+        this.categoryRepository.updateCategory(Category(
+            categoryId,
+            categoryName))
+    }
+
     fun deleteExpense(expense: Expense) {
         this.expenseRepository.deleteExpense(expense)
     }
@@ -60,7 +66,9 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     fun getAllExpensesDescription(): List<String> = this.categoriesWithExpenses.value!!
         .stream()
         .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
+//        .map { expense -> "${expense.description} (${expense.amount})" }
         .map(Expense::description)
+        .distinct()
         .collect(Collectors.toList())
 
     fun getYearsWithExpense(): List<Int> {
@@ -103,14 +111,36 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
             .collect(Collectors.toList())
     }
 
-    fun getTotalMoneySpent(expensesSelected: List<CategoryWithExpenses>): Double {
-        return expensesSelected
+    fun getTotalMoneySpentFormatted(expensesSelected: List<CategoryWithExpenses>): String {
+        val totalMoneySpentWithoutFormatting = expensesSelected
             .stream()
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
             .map(Expense::amount)
             .reduce { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
-//            .map(Double::toInt)
             .orElse(0.0)
+
+        return this.formatMoneySpent(totalMoneySpentWithoutFormatting)
+    }
+
+    fun formatMoneySpent(currentTotal: Double): String {
+        return if (currentTotal == currentTotal.toInt().toDouble()) currentTotal.toInt().toString() else currentTotal.toString()
+    }
+
+    fun getExpenseByDescription(description: String): Expense {
+        return this.getAllCategoryWithExpenses().value!!
+            .stream()
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
+            .filter { expense -> expense.description == description }
+            .findAny()
+            .orElseThrow { IllegalArgumentException("No expense found for description: $description") }
+    }
+
+    fun deleteUnusedCategories(categoriesWithExpenses: List<CategoryWithExpenses>) {
+        categoriesWithExpenses
+            .stream()
+            .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isEmpty() }
+            .map(CategoryWithExpenses::category)
+            .forEach(this::deleteCategory)
     }
 
 }

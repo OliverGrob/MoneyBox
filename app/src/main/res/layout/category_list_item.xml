@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="wrap_content"
+                                                   android:id="@+id/categoryListItemConstraintLayout">
+
+    <TextView
+            android:text="14"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.75"
+            android:id="@+id/categoryNameTextView"
+            android:textSize="15sp"
+            android:padding="5dp"
+            android:paddingStart="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+    <TextView
+            android:text="Edit"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.15"
+            android:id="@+id/categoryEditTextView"
+            android:textSize="20sp"
+            android:padding="5dp"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textAppearance="?android:textAppearanceLarge"
+            app:layout_constraintTop_toTopOf="@+id/categoryNameTextView"
+            app:layout_constraintStart_toEndOf="@+id/categoryNameTextView"
+            app:layout_constraintBottom_toBottomOf="@+id/categoryNameTextView"/>
+    <!--<TextView-->
+            <!--android:text="✖"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_width="0dp"-->
+            <!--app:layout_constraintWidth_percent="0.1"-->
+            <!--android:id="@+id/categoryDeleteTextView"-->
+            <!--android:textSize="20sp"-->
+            <!--android:padding="5dp"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textAppearance="?android:textAppearanceLarge"-->
+            <!--app:layout_constraintTop_toTopOf="@+id/categoryEditTextView"-->
+            <!--app:layout_constraintStart_toEndOf="@+id/categoryEditTextView"-->
+            <!--app:layout_constraintBottom_toBottomOf="@+id/categoryEditTextView"/>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

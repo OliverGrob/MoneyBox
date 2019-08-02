@@ -1,6 +1,7 @@
 package com.ogrob.moneybox.persistence.model
 
 import androidx.room.*
+import androidx.room.ForeignKey.SET_DEFAULT
 import java.time.LocalDateTime
 
 @Entity(
@@ -8,7 +9,8 @@ import java.time.LocalDateTime
     foreignKeys = [ForeignKey(
         entity = Category::class,
         parentColumns = ["id"],
-        childColumns = ["category_id"])],
+        childColumns = ["category_id"],
+        onDelete = SET_DEFAULT)],
     indices = [Index(value = ["category_id"])])
 class Expense(
 
@@ -25,7 +27,7 @@ class Expense(
     val additionDate: LocalDateTime,
 
     @ColumnInfo(name = "category_id")
-    val categoryId: Int
+    val categoryId: Int = 1
 ) {
 
     @Ignore

@@ -1,9 +1,13 @@
 package com.ogrob.moneybox.presentation.expense
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -13,6 +17,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
+import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
+import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -26,17 +32,17 @@ class ExpensesActivity : AppCompatActivity() {
 
     private val yearSpinner by lazy { findViewById<Spinner>(R.id.yearSpinner) }
     private val monthSpinner by lazy { findViewById<Spinner>(R.id.monthSpinner) }
-    private val expensesRecyclerView by lazy { findViewById<RecyclerView>(R.id.expensesRecycleView) }
+    private val expensesRecyclerView by lazy { findViewById<RecyclerView>(R.id.expensesRecyclerView) }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_expenses)
 
-        this.initSpinnersAndExpensesRecycleView()
+        this.initSpinnersAndExpensesRecyclerView()
     }
 
-    private fun initSpinnersAndExpensesRecycleView() {
+    private fun initSpinnersAndExpensesRecyclerView() {
         this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
             val yearsWithExpense: List<Int> = this.expenseActivityViewModel.getYearsWithExpense()
 
@@ -58,39 +64,48 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     private fun initMonthSpinner(yearSelected: Int) {
-//        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
-            val monthsInYearWithExpense: List<Month> = this.expenseActivityViewModel.getMonthsInYearWithExpense(yearSelected)
+        val monthsInYearWithExpense: List<Month> = this.expenseActivityViewModel.getMonthsInYearWithExpense(yearSelected)
 
-            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, monthsInYearWithExpense)
-            adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
-            monthSpinner.adapter = adapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, monthsInYearWithExpense)
+        adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
+        monthSpinner.adapter = adapter
 
-            monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    initExpenseRecycleView(yearSelected, monthsInYearWithExpense[position])
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                }
+        monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                initExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position])
             }
 
-            monthSpinner.setSelection(monthsInYearWithExpense.lastIndex, true)
-//        })
+            override fun onNothingSelected(parent: AdapterView<*>) {
+            }
+        }
+
+        monthSpinner.setSelection(monthsInYearWithExpense.lastIndex, true)
     }
 
-    private fun initExpenseRecycleView(yearSelected: Int, monthSelected: Month) {
-        val expenseRecycleViewAdapter = ExpenseRecycleViewAdapter(this, this.expenseActivityViewModel)
-        expensesRecyclerView.adapter = expenseRecycleViewAdapter
+    private fun initExpenseRecyclerView(yearSelected: Int, monthSelected: Month) {
+        val expenseRecyclerViewAdapter = ExpenseRecyclerViewAdapter(this, this.expenseActivityViewModel)
+        expensesRecyclerView.adapter = expenseRecyclerViewAdapter
         expensesRecyclerView.layoutManager = LinearLayoutManager(this)
 
-//        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
-            val selectedExpenses = expenseActivityViewModel.getExpensesForSelectedMonthInSelectedYear(yearSelected, monthSelected)
-            expenseRecycleViewAdapter.setExpenses(selectedExpenses)
-            val currentTotal = expenseActivityViewModel.getTotalMoneySpent(selectedExpenses)
-            findViewById<TextView>(R.id.totalMoneySpentTextView).text =
-                if (currentTotal == currentTotal.toInt().toDouble()) currentTotal.toInt().toString() else currentTotal.toString()
-//        })
+        val selectedExpenses = expenseActivityViewModel.getExpensesForSelectedMonthInSelectedYear(yearSelected, monthSelected)
+        expenseRecyclerViewAdapter.setExpenses(selectedExpenses)
+        findViewById<TextView>(R.id.totalMoneySpentTextView).text = expenseActivityViewModel.getTotalMoneySpentFormatted(selectedExpenses)
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.expense_activity_options, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(menuItem: MenuItem) =
+        when (menuItem.itemId) {
+            R.id.manageCategories -> {
+                startActivity(Intent(this, CategoriesActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(menuItem)
+        }
 
     fun onAddNewExpense(view: View) {
         val alertDialogView = layoutInflater.inflate(R.layout.new_expense_alert_dialog, null)
@@ -103,13 +118,6 @@ class ExpensesActivity : AppCompatActivity() {
         val scrollView: ScrollView = alertDialogView.findViewById(R.id.categoryScrollView)
 
 
-        newExpenseDescriptionEditText.setAdapter(ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            this.expenseActivityViewModel.getAllExpensesDescription()))
-        newExpenseDescriptionEditText.threshold = 1
-
-
         val newExpenseAlertDialog: AlertDialog = AlertDialog.Builder(this)
             .setTitle("New Expense")
             .setView(alertDialogView)
@@ -118,7 +126,7 @@ class ExpensesActivity : AppCompatActivity() {
                         newExpenseAmountEditText.text.toString(),
                         newExpenseDescriptionEditText.text.toString(),
                         newExpenseDatePickerTextView.text.toString(),
-                        if (radioGroup.checkedRadioButtonId != -1) radioGroup.checkedRadioButtonId else 1)
+                        if (radioGroup.checkedRadioButtonId != -1) radioGroup.checkedRadioButtonId else NO_CATEGORY_ID)
             }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
             .create()
@@ -154,6 +162,18 @@ class ExpensesActivity : AppCompatActivity() {
                 scrollView.visibility = View.GONE
             }
         }
+
+        newExpenseDescriptionEditText.setAdapter(ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            this.expenseActivityViewModel.getAllExpensesDescription()))
+        newExpenseDescriptionEditText.threshold = 1
+        newExpenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
+            val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
+
+            newExpenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
+            radioGroup.check(selectedExpenseToCopyFrom.categoryId)
+        }
     }
 
     private fun onPickDate(view: View) {
@@ -182,10 +202,12 @@ class ExpensesActivity : AppCompatActivity() {
     private fun populateRadioGroupWithCategories(radioGroup: RadioGroup) {
         this.expenseActivityViewModel.getAllCategories().observe(this, Observer { categories ->
             categories.stream().forEach { category ->
+                val noCategory = category.id == NO_CATEGORY_ID
+
                 val radioButton = RadioButton(this)
                 radioButton.id = category.id
-                radioButton.text = category.name
-                radioButton.isChecked = false
+                radioButton.text = if (noCategory) NO_CATEGORY_DISPLAY_TEXT else category.name
+                radioButton.isChecked = noCategory
                 radioButton.textSize = 15f
                 radioGroup.addView(radioButton)
             }

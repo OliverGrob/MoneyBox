@@ -12,6 +12,9 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.utils.EMPTY_STRING
+import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
+import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -19,9 +22,9 @@ import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
 
-class ExpenseRecycleViewAdapter(private val context: Context,
-                                private val expenseActivityViewModel: ExpenseActivityViewModel)
-    : RecyclerView.Adapter<ExpenseRecycleViewAdapter.ExpenseViewHolder>() {
+class ExpenseRecyclerViewAdapter(private val context: Context,
+                                 private val expenseActivityViewModel: ExpenseActivityViewModel)
+    : RecyclerView.Adapter<ExpenseRecyclerViewAdapter.ExpenseViewHolder>() {
 
     private var categories: List<Category>? = null
     private var expenses: List<Expense>? = null
@@ -38,19 +41,19 @@ class ExpenseRecycleViewAdapter(private val context: Context,
 
     override fun onBindViewHolder(holder: ExpenseViewHolder, position: Int) {
         if (!this.expenses.isNullOrEmpty()) this.expenses!![position].also { expense ->
-            holder.expenseAdditionDate.text = expense.additionDate.dayOfMonth.toString()
-            holder.expenseAmount.text = if (expense.amount == expense.amount.toInt().toDouble()) expense.amount.toInt().toString() else expense.amount.toString()
-            holder.expenseDescription.text = expense.description + " " + this.findCategoryName(expense.categoryId)
+            holder.expenseAdditionDateTextView.text = expense.additionDate.dayOfMonth.toString()
+            holder.expenseAmountTextView.text = this.expenseActivityViewModel.formatMoneySpent(expense.amount)
+            holder.expenseDescriptionTextView.text = expense.description + " " + this.findCategoryName(expense.categoryId)
 
             // TODO - remove this, it is unused atm
-            holder.expenseDescription.setOnLongClickListener {
+            holder.expenseDescriptionTextView.setOnLongClickListener {
                 Toast.makeText(context, categories!!.stream().map(Category::name).collect(Collectors.joining(", ")), Toast.LENGTH_LONG).show()
                 return@setOnLongClickListener true
             }
 
-            holder.expenseOptions.setOnClickListener {
-                val popup = PopupMenu(this.context, holder.expenseOptions)
-                popup.inflate(R.menu.expense_options)
+            holder.expenseOptionsTextView.setOnClickListener {
+                val popup = PopupMenu(this.context, holder.expenseOptionsTextView)
+                popup.inflate(R.menu.expense_list_item_options)
 
                 popup.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
@@ -150,10 +153,9 @@ class ExpenseRecycleViewAdapter(private val context: Context,
         this.categories!!.stream().forEach { category ->
             val radioButton = RadioButton(this.context)
             radioButton.id = category.id
-            radioButton.text = category.name
-            radioButton.isChecked = false
+            radioButton.text = if (category.id == NO_CATEGORY_ID) NO_CATEGORY_DISPLAY_TEXT else category.name
+            radioButton.isChecked = categoryId == category.id
             radioButton.textSize = 15f
-            if (categoryId == category.id) radioButton.toggle()
             radioGroup.addView(radioButton)
         }
     }
@@ -173,7 +175,7 @@ class ExpenseRecycleViewAdapter(private val context: Context,
             .filter { category -> category.id == categoryId }
             .map(Category::name)
             .findAny()
-            .orElse("")
+            .orElse(EMPTY_STRING)
     }
 
     fun setExpenses(categoryWithExpenses: List<CategoryWithExpenses>) {
@@ -192,10 +194,10 @@ class ExpenseRecycleViewAdapter(private val context: Context,
 
     class ExpenseViewHolder (view: View) : RecyclerView.ViewHolder(view) {
 
-        var expenseAdditionDate: TextView = view.findViewById(R.id.expenseAdditionDateTextView)
-        var expenseAmount: TextView = view.findViewById(R.id.expenseAmountTextView)
-        var expenseDescription: TextView = view.findViewById(R.id.expenseDescriptionTextView)
-        var expenseOptions: TextView = view.findViewById(R.id.expenseOptionsTextView)
+        var expenseAdditionDateTextView: TextView = view.findViewById(R.id.expenseAdditionDateTextView)
+        var expenseAmountTextView: TextView = view.findViewById(R.id.expenseAmountTextView)
+        var expenseDescriptionTextView: TextView = view.findViewById(R.id.expenseDescriptionTextView)
+        var expenseOptionsTextView: TextView = view.findViewById(R.id.expenseOptionsTextView)
 
     }
 }

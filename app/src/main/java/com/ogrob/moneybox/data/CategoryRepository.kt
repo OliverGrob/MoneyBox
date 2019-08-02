@@ -1,11 +1,11 @@
 package com.ogrob.moneybox.data
 
 import android.app.Application
-import android.os.AsyncTask
 import androidx.lifecycle.LiveData
 import com.ogrob.moneybox.persistence.ExpenseRoomDatabase
 import com.ogrob.moneybox.persistence.dao.CategoryDao
 import com.ogrob.moneybox.persistence.model.Category
+import com.ogrob.moneybox.utils.BackgroundOperationAsyncTask
 
 class CategoryRepository(application: Application) {
 
@@ -24,28 +24,15 @@ class CategoryRepository(application: Application) {
     fun getCategories() = this.allCategories
 
     fun addNewCategory(category: Category) {
-        InsertAsyncTask(this.categoryDao).execute(category)
+        BackgroundOperationAsyncTask(categoryDao::insert).execute(category)
+    }
+
+    fun updateCategory(category: Category) {
+        BackgroundOperationAsyncTask(categoryDao::update).execute(category)
     }
 
     fun deleteCategory(category: Category) {
-        DeleteAsyncTask(this.categoryDao).execute(category)
+        BackgroundOperationAsyncTask(categoryDao::delete).execute(category)
     }
 
-
-
-    private class InsertAsyncTask (private val asyncTaskDao: CategoryDao) : AsyncTask<Category, Void, Void>() {
-
-        override fun doInBackground(vararg params: Category): Void? {
-            asyncTaskDao.insert(params[0])
-            return null
-        }
-    }
-
-    private class DeleteAsyncTask (private val asyncTaskDao: CategoryDao) : AsyncTask<Category, Void, Void>() {
-
-        override fun doInBackground(vararg params: Category): Void? {
-            asyncTaskDao.delete(params[0])
-            return null
-        }
-    }
 }
