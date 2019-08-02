@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                   android:layout_width="match_parent"
-                                                   android:layout_height="wrap_content"
-                                                   android:id="@+id/expenseListItemConstraintLayout">
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="40dp"
+        android:id="@+id/expenseListItemConstraintLayout"
+        tools:layout_editor_absoluteY="81dp">
 
     <TextView
             android:text="14"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0dp"
             app:layout_constraintWidth_percent="0.1"
             android:id="@+id/expenseAdditionDateTextView"
             android:textSize="15sp"
             android:padding="5dp"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
     <TextView
             android:text="300000"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0dp"
             app:layout_constraintWidth_percent="0.2"
             android:id="@+id/expenseAmountTextView"
@@ -30,14 +35,28 @@
             android:layout_height="wrap_content"
             android:layout_width="0dp"
             app:layout_constraintWidth_percent="0.65"
-            android:padding="5dp"
+            android:paddingHorizontal="5dp"
+            android:paddingVertical="1dp"
             android:textAlignment="viewStart"
             android:textSize="15sp"
             android:text="Example payment description"
             android:id="@+id/expenseDescriptionTextView"
             app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
             app:layout_constraintTop_toTopOf="@+id/expenseAmountTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/expenseAmountTextView"/>
+            app:layout_constraintBottom_toTopOf="@id/expenseCategoryTextView"/>
+    <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            app:layout_constraintWidth_percent="0.65"
+            android:paddingHorizontal="5dp"
+            android:paddingVertical="1dp"
+            android:textAlignment="viewStart"
+            android:textSize="12sp"
+            android:text="Example payment category"
+            android:id="@+id/expenseCategoryTextView"
+            app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
+            app:layout_constraintBottom_toBottomOf="@+id/expenseAmountTextView"
+            app:layout_constraintTop_toBottomOf="@+id/expenseDescriptionTextView"/>
     <TextView
             android:id="@+id/expenseOptionsTextView"
             android:layout_height="wrap_content"
@@ -48,6 +67,6 @@
             android:textAppearance="?android:textAppearanceLarge"
             app:layout_constraintStart_toEndOf="@+id/expenseDescriptionTextView"
             app:layout_constraintTop_toTopOf="@+id/expenseDescriptionTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/expenseDescriptionTextView"/>
+            app:layout_constraintBottom_toBottomOf="@+id/expenseCategoryTextView"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

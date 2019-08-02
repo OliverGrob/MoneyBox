@@ -2,6 +2,8 @@ package com.ogrob.moneybox.presentation.expense
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,13 +45,8 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
         if (!this.expenses.isNullOrEmpty()) this.expenses!![position].also { expense ->
             holder.expenseAdditionDateTextView.text = expense.additionDate.dayOfMonth.toString()
             holder.expenseAmountTextView.text = this.expenseActivityViewModel.formatMoneySpent(expense.amount)
-            holder.expenseDescriptionTextView.text = expense.description + " " + this.findCategoryName(expense.categoryId)
-
-            // TODO - remove this, it is unused atm
-            holder.expenseDescriptionTextView.setOnLongClickListener {
-                Toast.makeText(context, categories!!.stream().map(Category::name).collect(Collectors.joining(", ")), Toast.LENGTH_LONG).show()
-                return@setOnLongClickListener true
-            }
+            holder.expenseDescriptionTextView.text = expense.description
+            holder.expenseCategoryTextView.text = this.findCategoryName(expense.categoryId)
 
             holder.expenseOptionsTextView.setOnClickListener {
                 val popup = PopupMenu(this.context, holder.expenseOptionsTextView)
@@ -111,9 +108,26 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
             .create()
         newExpenseAlertDialog.show()
 
+        newExpenseAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
+
+        val newExpenseEditTextTextWatcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {
+                newExpenseAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
+                    newExpenseAmountEditText.text.isNotBlank() && newExpenseDescriptionEditText.text.isNotBlank()
+            }
+
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+            }
+
+        }
 
         populateRadioGroupWithCategories(radioGroup, expense.categoryId)
 
+        newExpenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
+        newExpenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
         newExpenseDatePickerTextView.setOnClickListener { onPickDate(it) }
         newExpenseCategoryCheckboxToggleTextView.setOnClickListener {
             if ((it as TextView).text == "Category ▶") {
@@ -123,6 +137,13 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
                 it.text = "Category ▶"
                 scrollView.visibility = View.GONE
             }
+        }
+
+        newExpenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
+            val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
+
+            newExpenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
+            radioGroup.check(selectedExpenseToCopyFrom.categoryId)
         }
     }
 
@@ -197,6 +218,7 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
         var expenseAdditionDateTextView: TextView = view.findViewById(R.id.expenseAdditionDateTextView)
         var expenseAmountTextView: TextView = view.findViewById(R.id.expenseAmountTextView)
         var expenseDescriptionTextView: TextView = view.findViewById(R.id.expenseDescriptionTextView)
+        var expenseCategoryTextView: TextView = view.findViewById(R.id.expenseCategoryTextView)
         var expenseOptionsTextView: TextView = view.findViewById(R.id.expenseOptionsTextView)
 
     }
