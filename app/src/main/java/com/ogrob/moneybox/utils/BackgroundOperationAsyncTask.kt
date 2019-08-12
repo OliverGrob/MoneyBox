@@ -6,7 +6,7 @@ import kotlin.reflect.KFunction1
 class BackgroundOperationAsyncTask<T>(private val operation: KFunction1<T, Unit>) : AsyncTask<T, Void, Void>() {
 
     override fun doInBackground(vararg params: T): Void? {
-        operation.invoke(params[0])
+        params.forEach{ operation.invoke(it) }
         return null
     }
 
