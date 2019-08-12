@@ -21,10 +21,10 @@ class CategoriesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_categories)
 
-        this.initCategoryRecyclerView()
+        this.populateCategoryRecyclerView()
     }
 
-    private fun initCategoryRecyclerView() {
+    private fun populateCategoryRecyclerView() {
         this.expenseActivityViewModel.getAllCategories().observe(this, Observer {
             val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter(this, this.expenseActivityViewModel)
             categoryRecyclerView.adapter = categoryRecyclerViewAdapter

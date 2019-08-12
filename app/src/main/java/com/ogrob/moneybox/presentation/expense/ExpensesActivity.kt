@@ -39,10 +39,10 @@ class ExpensesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_expenses)
 
-        this.initSpinnersAndExpensesRecyclerView()
+        this.populateSpinnersAndExpensesRecyclerView()
     }
 
-    private fun initSpinnersAndExpensesRecyclerView() {
+    private fun populateSpinnersAndExpensesRecyclerView() {
         this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
             val yearsWithExpense: List<Int> = this.expenseActivityViewModel.getYearsWithExpense()
 
@@ -52,7 +52,7 @@ class ExpensesActivity : AppCompatActivity() {
 
             yearSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    initMonthSpinner(yearsWithExpense[position])
+                    populateMonthSpinner(yearsWithExpense[position])
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {
@@ -63,7 +63,7 @@ class ExpensesActivity : AppCompatActivity() {
         })
     }
 
-    private fun initMonthSpinner(yearSelected: Int) {
+    private fun populateMonthSpinner(yearSelected: Int) {
         val monthsInYearWithExpense: List<Month> = this.expenseActivityViewModel.getMonthsInYearWithExpense(yearSelected)
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, monthsInYearWithExpense)
@@ -72,7 +72,7 @@ class ExpensesActivity : AppCompatActivity() {
 
         monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                initExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position])
+                populateExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position])
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -82,14 +82,14 @@ class ExpensesActivity : AppCompatActivity() {
         monthSpinner.setSelection(monthsInYearWithExpense.lastIndex, true)
     }
 
-    private fun initExpenseRecyclerView(yearSelected: Int, monthSelected: Month) {
+    private fun populateExpenseRecyclerView(yearSelected: Int, monthSelected: Month) {
         val expenseRecyclerViewAdapter = ExpenseRecyclerViewAdapter(this, this.expenseActivityViewModel)
         expensesRecyclerView.adapter = expenseRecyclerViewAdapter
         expensesRecyclerView.layoutManager = LinearLayoutManager(this)
 
         val selectedExpenses = expenseActivityViewModel.getExpensesForSelectedMonthInSelectedYear(yearSelected, monthSelected)
         expenseRecyclerViewAdapter.setExpenses(selectedExpenses)
-        findViewById<TextView>(R.id.totalMoneySpentTextView).text = expenseActivityViewModel.getTotalMoneySpentFormatted(selectedExpenses)
+        findViewById<TextView>(R.id.totalMoneySpentTextView).text = "Total: ${expenseActivityViewModel.getTotalMoneySpentFormatted(selectedExpenses)}"
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -118,15 +118,27 @@ class ExpensesActivity : AppCompatActivity() {
         val scrollView: ScrollView = alertDialogView.findViewById(R.id.categoryScrollView)
 
 
+        newExpenseDescriptionEditText.setAdapter(
+            ArrayAdapter(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                this.expenseActivityViewModel.getAllExpensesDescription())
+        )
+        newExpenseDescriptionEditText.threshold = 1
+
+
+        populateRadioGroupWithCategories(radioGroup)
+
+
         val newExpenseAlertDialog: AlertDialog = AlertDialog.Builder(this)
             .setTitle("New Expense")
             .setView(alertDialogView)
             .setPositiveButton("Add Expense") { _, _ ->
-                    expenseActivityViewModel.addNewExpense(
-                        newExpenseAmountEditText.text.toString(),
-                        newExpenseDescriptionEditText.text.toString(),
-                        newExpenseDatePickerTextView.text.toString(),
-                        if (radioGroup.checkedRadioButtonId != -1) radioGroup.checkedRadioButtonId else NO_CATEGORY_ID)
+                expenseActivityViewModel.addNewExpense(
+                    newExpenseAmountEditText.text.toString(),
+                    newExpenseDescriptionEditText.text.toString(),
+                    newExpenseDatePickerTextView.text.toString(),
+                    radioGroup.checkedRadioButtonId)
             }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
             .create()
@@ -148,8 +160,6 @@ class ExpensesActivity : AppCompatActivity() {
 
         }
 
-        populateRadioGroupWithCategories(radioGroup)
-
         newExpenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
         newExpenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
         newExpenseDatePickerTextView.setOnClickListener { onPickDate(it) }
@@ -163,11 +173,6 @@ class ExpensesActivity : AppCompatActivity() {
             }
         }
 
-        newExpenseDescriptionEditText.setAdapter(ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            this.expenseActivityViewModel.getAllExpensesDescription()))
-        newExpenseDescriptionEditText.threshold = 1
         newExpenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
             val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
 
@@ -201,16 +206,18 @@ class ExpensesActivity : AppCompatActivity() {
 
     private fun populateRadioGroupWithCategories(radioGroup: RadioGroup) {
         this.expenseActivityViewModel.getAllCategories().observe(this, Observer { categories ->
-            categories.stream().forEach { category ->
-                val noCategory = category.id == NO_CATEGORY_ID
+            categories
+                .stream()
+                .forEach { category ->
+                    val noCategory = category.id == NO_CATEGORY_ID
 
-                val radioButton = RadioButton(this)
-                radioButton.id = category.id
-                radioButton.text = if (noCategory) NO_CATEGORY_DISPLAY_TEXT else category.name
-                radioButton.isChecked = noCategory
-                radioButton.textSize = 15f
-                radioGroup.addView(radioButton)
-            }
+                    val radioButton = RadioButton(this)
+                    radioButton.id = category.id
+                    radioButton.text = if (noCategory) NO_CATEGORY_DISPLAY_TEXT else category.name
+                    radioButton.isChecked = noCategory
+                    radioButton.textSize = 15f
+                    radioGroup.addView(radioButton)
+                }
         })
     }
 

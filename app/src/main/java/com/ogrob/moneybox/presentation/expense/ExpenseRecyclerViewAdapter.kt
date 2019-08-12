@@ -93,6 +93,9 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
         newExpenseDescriptionEditText.threshold = 1
 
 
+        populateRadioGroupWithCategories(radioGroup, expense.categoryId)
+
+
         val newExpenseAlertDialog: AlertDialog = AlertDialog.Builder(this.context)
             .setTitle("Edit Expense")
             .setView(alertDialogView)
@@ -124,7 +127,6 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
 
         }
 
-        populateRadioGroupWithCategories(radioGroup, expense.categoryId)
 
         newExpenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
         newExpenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
