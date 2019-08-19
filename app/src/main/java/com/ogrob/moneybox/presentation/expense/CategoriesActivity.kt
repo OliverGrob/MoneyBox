@@ -25,7 +25,7 @@ class CategoriesActivity : AppCompatActivity() {
     }
 
     private fun populateCategoryRecyclerView() {
-        this.expenseActivityViewModel.getAllCategories().observe(this, Observer {
+        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
             val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter(this, this.expenseActivityViewModel)
             categoryRecyclerView.adapter = categoryRecyclerViewAdapter
             categoryRecyclerView.layoutManager = LinearLayoutManager(this)

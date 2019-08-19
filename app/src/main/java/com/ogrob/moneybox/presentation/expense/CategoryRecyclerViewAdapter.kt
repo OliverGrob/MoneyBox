@@ -10,14 +10,15 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.persistence.model.Category
+import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
+import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 
 class CategoryRecyclerViewAdapter(private val context: Context,
                                   private val expenseActivityViewModel: ExpenseActivityViewModel)
     : RecyclerView.Adapter<CategoryRecyclerViewAdapter.CategoryViewHolder>() {
 
-    private var categories: List<Category>? = null
+    private var categoriesWithExpenses: List<CategoryWithExpenses>? = null
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
@@ -26,15 +27,18 @@ class CategoryRecyclerViewAdapter(private val context: Context,
     }
 
     override fun getItemCount(): Int {
-        return if (this.categories.isNullOrEmpty()) 0 else this.categories!!.size - 1
+        return if (this.categoriesWithExpenses.isNullOrEmpty()) 0 else this.categoriesWithExpenses!!.size
     }
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        if (!this.categories.isNullOrEmpty()) this.categories!![position + 1].also { category ->
-            if (category.id == NO_CATEGORY_ID)
+        if (!this.categoriesWithExpenses.isNullOrEmpty()) this.categoriesWithExpenses!![position].also { categoryWithExpense ->
+            if (categoryWithExpense.category.id == NO_CATEGORY_ID) {
+                holder.categoryNameTextView.text = NO_CATEGORY_DISPLAY_TEXT + " (" + categoryWithExpense.expenses.size + ")"
+                holder.categoryEditTextView.visibility = View.GONE
                 return
+            }
 
-            holder.categoryNameTextView.text = category.name
+            holder.categoryNameTextView.text = categoryWithExpense.category.name + " (" + categoryWithExpense.expenses.size + ")"
 
             holder.categoryEditTextView.setOnClickListener {
                 val categoryNameEditText = EditText(context)
@@ -42,7 +46,7 @@ class CategoryRecyclerViewAdapter(private val context: Context,
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
                 )
-                categoryNameEditText.setText(category.name)
+                categoryNameEditText.setText(categoryWithExpense.category.name)
                 categoryNameEditText.layoutParams = layoutParams
 
 
@@ -51,7 +55,7 @@ class CategoryRecyclerViewAdapter(private val context: Context,
                     .setView(categoryNameEditText)
                     .setPositiveButton("Save") { _, _ ->
                         expenseActivityViewModel.updateCategory(
-                            category.id,
+                            categoryWithExpense.category.id,
                             categoryNameEditText.text.toString())
                     }
                     .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
@@ -71,8 +75,8 @@ class CategoryRecyclerViewAdapter(private val context: Context,
         }
     }
 
-    fun setCategories(categories: List<Category>) {
-        this.categories = categories
+    fun setCategories(categoriesWithExpenses: List<CategoryWithExpenses>) {
+        this.categoriesWithExpenses = categoriesWithExpenses
         this.notifyDataSetChanged()
     }
 
