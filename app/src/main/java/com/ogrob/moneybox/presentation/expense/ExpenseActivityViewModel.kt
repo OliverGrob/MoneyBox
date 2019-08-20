@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.format.DateTimeFormatter
-import java.util.stream.Collectors
 
 class ExpenseActivityViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -64,60 +63,48 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun getAllExpensesDescription(): List<String> = this.categoriesWithExpenses.value!!
-        .stream()
-        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
-//        .map { expense -> "${expense.description} (${expense.amount})" }
+        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
         .map(Expense::description)
         .distinct()
-        .collect(Collectors.toList())
 
     fun getYearsWithExpense(): List<Int> {
         return this.categoriesWithExpenses.value!!
-            .stream()
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
             .map(Expense::additionDate)
             .map(LocalDateTime::getYear)
             .distinct()
             .sorted()
-            .collect(Collectors.toList())
     }
 
     fun getMonthsInYearWithExpense(yearSelected: Int): List<Month> {
         return this.categoriesWithExpenses.value!!
-            .stream()
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
+            .asSequence()
             .filter { expense -> expense.additionDate.year == yearSelected }
             .map(Expense::additionDate)
             .map(LocalDateTime::getMonth)
             .distinct()
             .sorted()
-            .collect(Collectors.toList())
+            .toList()
     }
 
     fun getExpensesForSelectedMonthInSelectedYear(yearSelected: Int, monthSelected: Month): List<CategoryWithExpenses> {
         return this.categoriesWithExpenses.value!!
-            .stream()
             .map { categoryWithExpenses -> CategoryWithExpenses(
                 categoryWithExpenses.category,
                 this.filterExpensesForSelectedMonthInSelectedYear(categoryWithExpenses.expenses, yearSelected, monthSelected)) }
-            .collect(Collectors.toList())
     }
 
     private fun filterExpensesForSelectedMonthInSelectedYear(expenses: List<Expense>, yearSelected: Int, monthSelected: Month): List<Expense> {
         return expenses
-            .stream()
             .filter { expense -> expense.additionDate.year == yearSelected && expense.additionDate.month == monthSelected }
-//            .sorted { expense1, expense2 -> expense1.additionDate.compareTo(expense2.additionDate) }
-            .collect(Collectors.toList())
     }
 
     fun getTotalMoneySpentFormatted(expensesSelected: List<CategoryWithExpenses>): String {
         val totalMoneySpentWithoutFormatting = expensesSelected
-            .stream()
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
             .map(Expense::amount)
-            .reduce { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
-            .orElse(0.0)
+            .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
 
         return this.formatMoneySpent(totalMoneySpentWithoutFormatting)
     }
@@ -128,16 +115,12 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
 
     fun getExpenseByDescription(description: String): Expense {
         return this.getAllCategoryWithExpenses().value!!
-            .stream()
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.stream() }
-            .filter { expense -> expense.description == description }
-            .findAny()
-            .orElseThrow { IllegalArgumentException("No expense found for description: $description") }
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
+            .single { expense -> expense.description == description }
     }
 
     fun deleteUnusedCategories(categoriesWithExpenses: List<CategoryWithExpenses>) {
         categoriesWithExpenses
-            .stream()
             .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isEmpty() }
             .map(CategoryWithExpenses::category)
             .forEach(this::deleteCategory)

@@ -14,14 +14,12 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.stream.Collectors
 
 
 class ExpenseRecyclerViewAdapter(private val context: Context,
@@ -194,23 +192,19 @@ class ExpenseRecyclerViewAdapter(private val context: Context,
 
     private fun findCategoryName(categoryId: Int): String {
         return this.categories!!
-            .stream()
             .filter { category -> category.id == categoryId }
             .map(Category::name)
-            .findAny()
-            .orElse(EMPTY_STRING)
+            .single()
     }
 
     fun setExpenses(categoryWithExpenses: List<CategoryWithExpenses>) {
         this.categories = categoryWithExpenses
-            .stream()
             .map(CategoryWithExpenses::category)
-            .collect(Collectors.toList())
+
         this.expenses = categoryWithExpenses
-            .stream()
-            .flatMap { currentCategoryWithExpenses -> currentCategoryWithExpenses.expenses.stream() }
-            .sorted { expense1, expense2 -> expense1.additionDate.compareTo(expense2.additionDate) }
-            .collect(Collectors.toList())
+            .flatMap { currentCategoryWithExpenses -> currentCategoryWithExpenses.expenses }
+            .sortedWith(compareBy(Expense::additionDate))
+
         this.notifyDataSetChanged()
     }
 
