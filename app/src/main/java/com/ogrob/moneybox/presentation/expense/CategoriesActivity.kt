@@ -2,6 +2,7 @@ package com.ogrob.moneybox.presentation.expense
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -36,6 +37,7 @@ class CategoriesActivity : AppCompatActivity() {
     fun onDeleteUnusedCategories(view: View) {
         this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
             this.expenseActivityViewModel.deleteUnusedCategories(it)
+            Toast.makeText(this, "Unused categories have been deleted!", Toast.LENGTH_SHORT).show()
         })
     }
 }
