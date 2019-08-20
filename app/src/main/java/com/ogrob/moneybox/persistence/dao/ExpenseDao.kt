@@ -12,5 +12,5 @@ interface ExpenseDao: BaseDao<Expense> {
 
     @Transaction
     @Query("SELECT * FROM category")
-    fun getAllExpenses(): LiveData<List<CategoryWithExpenses>>
+    fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>>
 }

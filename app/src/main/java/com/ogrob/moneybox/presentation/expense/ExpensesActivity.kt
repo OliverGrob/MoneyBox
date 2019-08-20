@@ -1,6 +1,5 @@
 package com.ogrob.moneybox.presentation.expense
 
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -17,11 +16,10 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
-import com.ogrob.moneybox.utils.NO_CATEGORY_ID
+import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
+import com.ogrob.moneybox.presentation.category.CategoriesActivity
+import com.ogrob.moneybox.utils.EMPTY_STRING
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.Month
 import java.time.format.DateTimeFormatter
 
@@ -43,7 +41,7 @@ class ExpensesActivity : AppCompatActivity() {
     }
 
     private fun populateSpinnersAndExpensesRecyclerView() {
-        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
+        this.expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
             val yearsWithExpense: List<Int> = this.expenseActivityViewModel.getYearsWithExpense()
 
             val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, yearsWithExpense)
@@ -108,117 +106,13 @@ class ExpensesActivity : AppCompatActivity() {
         }
 
     fun onAddNewExpense(view: View) {
-        val alertDialogView = layoutInflater.inflate(R.layout.new_expense_alert_dialog, null)
-        val newExpenseAmountEditText: EditText = alertDialogView.findViewById(R.id.newExpenseAmountEditText)
-        val newExpenseDescriptionEditText: AutoCompleteTextView = alertDialogView.findViewById(R.id.newExpenseDescriptionEditText)
-        val newExpenseDatePickerTextView: TextView = alertDialogView.findViewById(R.id.datePickerTextView)
-        newExpenseDatePickerTextView.text = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString()
-        val newExpenseCategoryCheckboxToggleTextView: TextView = alertDialogView.findViewById(R.id.categoryCheckboxToggleTextView)
-        val radioGroup: RadioGroup = alertDialogView.findViewById(R.id.categoryRadioGroup)
-        val scrollView: ScrollView = alertDialogView.findViewById(R.id.categoryScrollView)
-
-
-        newExpenseDescriptionEditText.setAdapter(
-            ArrayAdapter(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                this.expenseActivityViewModel.getAllExpensesDescription())
-        )
-        newExpenseDescriptionEditText.threshold = 1
-
-
-        populateRadioGroupWithCategories(radioGroup)
-
-
-        val newExpenseAlertDialog: AlertDialog = AlertDialog.Builder(this)
-            .setTitle("New Expense")
-            .setView(alertDialogView)
-            .setPositiveButton("Add Expense") { _, _ ->
-                expenseActivityViewModel.addNewExpense(
-                    newExpenseAmountEditText.text.toString(),
-                    newExpenseDescriptionEditText.text.toString(),
-                    newExpenseDatePickerTextView.text.toString(),
-                    radioGroup.checkedRadioButtonId)
-            }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-            .create()
-        newExpenseAlertDialog.show()
-
-        newExpenseAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-
-        val newExpenseEditTextTextWatcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {
-                newExpenseAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
-                    newExpenseAmountEditText.text.isNotBlank() && newExpenseDescriptionEditText.text.isNotBlank()
-            }
-
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            }
-
-        }
-
-        newExpenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
-        newExpenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
-        newExpenseDatePickerTextView.setOnClickListener { onPickDate(it) }
-        newExpenseCategoryCheckboxToggleTextView.setOnClickListener {
-            if ((it as TextView).text == "Category ▶") {
-                it.text = "Category ▼"
-                scrollView.visibility = View.VISIBLE
-            } else {
-                it.text = "Category ▶"
-                scrollView.visibility = View.GONE
-            }
-        }
-
-        newExpenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
-            val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
-
-            newExpenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
-            radioGroup.check(selectedExpenseToCopyFrom.categoryId)
-        }
-    }
-
-    private fun onPickDate(view: View) {
-        val datePickerTextView: TextView = view as TextView
-
-
-        val datePickerListener: DatePickerDialog.OnDateSetListener =
-            DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                // because of compatibility with Calendar, months are from 0-11
-                val datePicked: LocalDate = LocalDate.of(year, month + 1, dayOfMonth)
-                datePickerTextView.text = LocalDateTime.of(datePicked, LocalTime.now()).format(DateTimeFormatter.ISO_LOCAL_DATE).toString()
-            }
-
-
-        val previousDatePicked = LocalDate.parse(datePickerTextView.text, DateTimeFormatter.ISO_LOCAL_DATE)
-
-        DatePickerDialog(
-            this,
-            datePickerListener,
-            previousDatePicked.year,
-            previousDatePicked.monthValue - 1,
-            previousDatePicked.dayOfMonth
-        ).show()
-    }
-
-    private fun populateRadioGroupWithCategories(radioGroup: RadioGroup) {
-        this.expenseActivityViewModel.getAllCategories().observe(this, Observer { categories ->
-            categories
-                .stream()
-                .forEach { category ->
-                    val noCategory = category.id == NO_CATEGORY_ID
-
-                    val radioButton = RadioButton(this)
-                    radioButton.id = category.id
-                    radioButton.text = if (noCategory) NO_CATEGORY_DISPLAY_TEXT else category.name
-                    radioButton.isChecked = noCategory
-                    radioButton.textSize = 15f
-                    radioGroup.addView(radioButton)
-                }
-        })
+        val intent = Intent(this, ExpenseAddAndEditActivity::class.java)
+        intent.putExtra("activityTitle", "New Expense")
+        intent.putExtra("expenseAmount", EMPTY_STRING)
+        intent.putExtra("expenseDescription", EMPTY_STRING)
+        intent.putExtra("expenseAdditionDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString())
+        intent.putExtra("positiveButtonText", "Add Expense")
+        startActivity(intent)
     }
 
     fun onAddNewCategory(view: View) {

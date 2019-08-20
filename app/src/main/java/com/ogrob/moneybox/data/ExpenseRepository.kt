@@ -12,17 +12,17 @@ class ExpenseRepository(application: Application) {
 
     private val expenseDao: ExpenseDao
 
-    private val allExpenses: LiveData<List<CategoryWithExpenses>>
+    private val allCategoryWithExpenses: LiveData<List<CategoryWithExpenses>>
 
 
     init {
         val expenseRoomDatabase = ExpenseRoomDatabase.getInstance(application)!!
         this.expenseDao = expenseRoomDatabase.expenseDao()
-        this.allExpenses = this.expenseDao.getAllExpenses()
+        this.allCategoryWithExpenses = this.expenseDao.getAllCategoriesWithExpenses()
     }
 
 
-    fun getExpenses() = this.allExpenses
+    fun getCategoriesWithExpenses() = this.allCategoryWithExpenses
 
     fun addNewExpense(expense: Expense) {
         BackgroundOperationAsyncTask(expenseDao::insert).execute(expense)

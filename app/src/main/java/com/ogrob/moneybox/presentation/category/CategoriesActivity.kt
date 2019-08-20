@@ -1,4 +1,4 @@
-package com.ogrob.moneybox.presentation.expense
+package com.ogrob.moneybox.presentation.category
 
 import android.os.Bundle
 import android.view.View
@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
+import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
 
 class CategoriesActivity : AppCompatActivity() {
 
@@ -26,8 +27,11 @@ class CategoriesActivity : AppCompatActivity() {
     }
 
     private fun populateCategoryRecyclerView() {
-        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
-            val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter(this, this.expenseActivityViewModel)
+        this.expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
+            val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter(
+                this,
+                this.expenseActivityViewModel
+            )
             categoryRecyclerView.adapter = categoryRecyclerViewAdapter
             categoryRecyclerView.layoutManager = LinearLayoutManager(this)
             categoryRecyclerViewAdapter.setCategories(it)
@@ -35,7 +39,7 @@ class CategoriesActivity : AppCompatActivity() {
     }
 
     fun onDeleteUnusedCategories(view: View) {
-        this.expenseActivityViewModel.getAllCategoryWithExpenses().observe(this, Observer {
+        this.expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
             this.expenseActivityViewModel.deleteUnusedCategories(it)
             Toast.makeText(this, "Unused categories have been deleted!", Toast.LENGTH_SHORT).show()
         })

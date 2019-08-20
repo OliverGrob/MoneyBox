@@ -1,4 +1,4 @@
-package com.ogrob.moneybox.presentation.expense
+package com.ogrob.moneybox.presentation
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -19,11 +19,11 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     private val expenseRepository: ExpenseRepository = ExpenseRepository(application)
     private val categoryRepository: CategoryRepository = CategoryRepository(application)
 
-    private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = this.expenseRepository.getExpenses()
+    private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = this.expenseRepository.getCategoriesWithExpenses()
     private val categories: LiveData<List<Category>> = this.categoryRepository.getCategories()
 
 
-    fun getAllCategoryWithExpenses(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
+    fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
 
     fun getAllCategories(): LiveData<List<Category>> = this.categories
 
@@ -62,7 +62,7 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
         this.categoryRepository.deleteCategory(category)
     }
 
-    fun getAllExpensesDescription(): List<String> = this.categoriesWithExpenses.value!!
+    fun getAllExpensesDescription(categoriesWithExpenses: List<CategoryWithExpenses>): List<String> = categoriesWithExpenses
         .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
         .map(Expense::description)
         .distinct()
@@ -114,7 +114,7 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun getExpenseByDescription(description: String): Expense {
-        return this.getAllCategoryWithExpenses().value!!
+        return this.getAllCategoriesWithExpenses().value!!
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
             .single { expense -> expense.description == description }
     }
