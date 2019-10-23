@@ -9,9 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.databinding.ActivityExpensesBinding
-import com.ogrob.moneybox.presentation.category.CategoriesActivity
+import com.ogrob.moneybox.presentation.category.CategoryActivity
 
-class ExpensesActivity : AppCompatActivity() {
+class ExpenseActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityExpensesBinding
 
@@ -31,7 +31,7 @@ class ExpensesActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(menuItem: MenuItem) =
         when (menuItem.itemId) {
             R.id.manageCategories -> {
-                startActivity(Intent(this, CategoriesActivity::class.java))
+                startActivity(Intent(this, CategoryActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(menuItem)

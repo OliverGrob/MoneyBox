@@ -12,7 +12,7 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 import com.ogrob.moneybox.databinding.ActivityCategoriesBinding
 
-class CategoriesActivity : AppCompatActivity() {
+class CategoryActivity : AppCompatActivity() {
 
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }

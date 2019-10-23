@@ -25,7 +25,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
 
-class ExpensesFragment : Fragment() {
+class ExpenseFragment : Fragment() {
 
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
