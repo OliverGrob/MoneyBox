@@ -24,7 +24,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
 
-
 class ExpensesActivity : AppCompatActivity() {
 
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {

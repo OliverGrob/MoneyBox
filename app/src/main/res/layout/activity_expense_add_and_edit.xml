@@ -1,119 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".presentation.expense.ExpenseAddAndEditActivity">
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <EditText
-            android:id="@+id/expenseAmountEditText"
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textSize="15sp"
-            android:textColor="@color/colorPrimaryDark"
-            android:hint="Expense Amount"
-            android:layout_marginTop="10dp"
-            android:layout_marginHorizontal="20dp"
-            android:scrollbars="vertical"
-            android:inputType="numberDecimal"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_height="match_parent"
+            tools:context=".presentation.expense.ExpenseAddAndEditActivity">
 
-    <AutoCompleteTextView
-            android:id="@+id/expenseDescriptionEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textSize="15sp"
-            android:textColor="@color/colorPrimaryDark"
-            android:hint="Expense Description"
-            android:layout_marginTop="10dp"
-            android:layout_marginHorizontal="20dp"
-            android:scrollbars="vertical"
-            android:inputType="textAutoCorrect"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/expenseAmountEditText"/>
+        <EditText
+                android:id="@+id/expense_amount_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="10dp"
+                android:hint="Expense Amount"
+                android:inputType="numberDecimal"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-            android:id="@+id/datePickerTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textSize="15sp"
-            android:textColor="@color/colorPrimaryDark"
-            android:hint="Date of Expense"
-            android:layout_marginTop="10dp"
-            android:layout_marginHorizontal="20dp"
-            app:layout_constraintEnd_toEndOf="@+id/expenseDescriptionEditText"
-            app:layout_constraintTop_toBottomOf="@+id/expenseDescriptionEditText"
-            app:layout_constraintStart_toStartOf="@+id/expenseDescriptionEditText"/>
+        <AutoCompleteTextView
+                android:id="@+id/expense_description_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="10dp"
+                android:hint="Expense Description"
+                android:inputType="textAutoCorrect"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/expense_amount_edit_text" />
 
-    <TextView
-            android:id="@+id/categoryCheckboxToggleTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textSize="15sp"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="Category ▶"
-            android:layout_marginTop="24dp"
-            android:layout_marginHorizontal="20dp"
-            app:layout_constraintEnd_toEndOf="@+id/datePickerTextView"
-            app:layout_constraintTop_toBottomOf="@+id/datePickerTextView"
-            app:layout_constraintStart_toStartOf="@+id/datePickerTextView"/>
+        <TextView
+                android:id="@+id/expense_date_picker_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="10dp"
+                android:hint="Date of Expense"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/expense_description_edit_text"
+                app:layout_constraintStart_toStartOf="@+id/expense_description_edit_text"
+                app:layout_constraintTop_toBottomOf="@+id/expense_description_edit_text" />
 
-    <ScrollView android:id="@+id/categoryScrollView"
+        <TextView
+                android:id="@+id/expense_category_checkbox_toggle_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="24dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="Category ▶"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/expense_date_picker_text_view"
+                app:layout_constraintStart_toStartOf="@+id/expense_date_picker_text_view"
+                app:layout_constraintTop_toBottomOf="@+id/expense_date_picker_text_view" />
+
+        <ScrollView
+                android:id="@+id/category_scroll_view"
                 android:layout_width="fill_parent"
                 android:layout_height="170dp"
+                android:layout_marginHorizontal="20dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:textSize="15sp"
-                android:layout_marginHorizontal="20dp"
-                app:layout_constraintEnd_toEndOf="@+id/categoryCheckboxToggleTextView"
-                app:layout_constraintTop_toBottomOf="@+id/categoryCheckboxToggleTextView"
-                app:layout_constraintStart_toStartOf="@+id/categoryCheckboxToggleTextView"
-                android:visibility="gone">
-        <RadioGroup
-                android:id="@+id/categoryRadioGroup"
-                android:layout_width="match_parent"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/expense_category_checkbox_toggle_text_view"
+                app:layout_constraintStart_toStartOf="@+id/expense_category_checkbox_toggle_text_view"
+                app:layout_constraintTop_toBottomOf="@+id/expense_category_checkbox_toggle_text_view">
+
+            <RadioGroup
+                    android:id="@+id/category_radio_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Category 1"
+                    android:padding="8dp"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="15sp"
+                    app:layout_constraintEnd_toEndOf="@+id/expense_category_checkbox_toggle_text_view"
+                    app:layout_constraintStart_toStartOf="@+id/expense_category_checkbox_toggle_text_view"
+                    app:layout_constraintTop_toBottomOf="@+id/expense_category_checkbox_toggle_text_view">
+            </RadioGroup>
+        </ScrollView>
+
+        <Button
+                android:id="@+id/expense_add_edit_positive_button"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:textSize="15sp"
-                android:textColor="@color/colorPrimaryDark"
-                android:hint="Category 1"
-                app:layout_constraintEnd_toEndOf="@+id/categoryCheckboxToggleTextView"
-                app:layout_constraintTop_toBottomOf="@+id/categoryCheckboxToggleTextView"
-                app:layout_constraintStart_toStartOf="@+id/categoryCheckboxToggleTextView">
-        </RadioGroup>
-    </ScrollView>
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:onClick="onPositive"
+                android:text="Positive"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button android:text="Positive"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/expenseAddEditPositiveButton"
-            android:onClick="onPositive"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+        <Button
+                android:id="@+id/expense_add_edit_cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:onClick="onCancel"
+                android:text="Cancel"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/expense_add_edit_positive_button" />
 
-    <Button android:text="Cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/expenseAddEditCancelButton"
-            android:onClick="onCancel"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
-            app:layout_constraintEnd_toStartOf="@+id/expenseAddEditPositiveButton"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

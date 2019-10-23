@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.RadioButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
+import com.ogrob.moneybox.databinding.ActivityExpenseAddAndEditBinding
 import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
@@ -24,13 +28,7 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
 
 
-    private val expenseAmountEditText by lazy { findViewById<EditText>(R.id.expenseAmountEditText) }
-    private val expenseDescriptionEditText by lazy { findViewById<AutoCompleteTextView>(R.id.expenseDescriptionEditText) }
-    private val expenseDatePickerTextView by lazy { findViewById<TextView>(R.id.datePickerTextView) }
-    private val expenseCategoryCheckboxToggleTextView by lazy { findViewById<TextView>(R.id.categoryCheckboxToggleTextView) }
-    private val categoryRadioGroup by lazy { findViewById<RadioGroup>(R.id.categoryRadioGroup) }
-    private val categoryScrollView by lazy { findViewById<ScrollView>(R.id.categoryScrollView) }
-    private val positiveButton by lazy { findViewById<Button>(R.id.expenseAddEditPositiveButton) }
+    private lateinit var binding: ActivityExpenseAddAndEditBinding
 
     private val expenseId by lazy { intent.getIntExtra("expenseId", -1) }
     private val categoryId by lazy { intent.getIntExtra("categoryId", 1) }
@@ -38,7 +36,8 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_expense_add_and_edit)
+
+        this.binding = DataBindingUtil.setContentView(this, R.layout.activity_expense_add_and_edit)
 
         title = intent.getStringExtra("activityTitle")
 
@@ -49,23 +48,23 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
     }
 
     private fun initTextViewsAndButtons() {
-        this.expenseAmountEditText.setText(intent.getStringExtra("expenseAmount"))
-        this.expenseDescriptionEditText.setText(intent.getStringExtra("expenseDescription"))
-        this.expenseDatePickerTextView.text = intent.getStringExtra("expenseAdditionDate")
-        this.expenseCategoryCheckboxToggleTextView.text = "Category ▶"
-        this.positiveButton.isEnabled = this.expenseId != -1
-        this.positiveButton.text = intent.getStringExtra("positiveButtonText")
+        this.binding.expenseAmountEditText.setText(intent.getStringExtra("expenseAmount"))
+        this.binding.expenseDescriptionEditText.setText(intent.getStringExtra("expenseDescription"))
+        this.binding.expenseDatePickerTextView.text = intent.getStringExtra("expenseAdditionDate")
+        this.binding.expenseCategoryCheckboxToggleTextView.text = "Category ▶"
+        this.binding.expenseAddEditPositiveButton.isEnabled = this.expenseId != -1
+        this.binding.expenseAddEditPositiveButton.text = intent.getStringExtra("positiveButtonText")
     }
 
     private fun configureDescriptionAutoComplete() {
         this.expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
-            this.expenseDescriptionEditText.setAdapter(
+            this.binding.expenseDescriptionEditText.setAdapter(
                 ArrayAdapter(
                     this,
                     android.R.layout.simple_dropdown_item_1line,
                     this.expenseActivityViewModel.getAllExpensesDescription(it))
             )
-            this.expenseDescriptionEditText.threshold = 1
+            this.binding.expenseDescriptionEditText.threshold = 1
         })
     }
 
@@ -78,7 +77,7 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
                     radioButton.text = if (category.id == NO_CATEGORY_ID) NO_CATEGORY_DISPLAY_TEXT else category.name
                     radioButton.isChecked = category.id == this.categoryId
                     radioButton.textSize = 15f
-                    this.categoryRadioGroup.addView(radioButton)
+                    this.binding.categoryRadioGroup.addView(radioButton)
                 }
         })
     }
@@ -86,7 +85,8 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
     private fun applyTextWatcherAndOnClickListeners() {
         val newExpenseEditTextTextWatcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
-                positiveButton.isEnabled = expenseAmountEditText.text.isNotBlank() && expenseDescriptionEditText.text.isNotBlank()
+                binding.expenseAddEditPositiveButton.isEnabled =
+                    binding.expenseAmountEditText.text.isNotBlank() && binding.expenseDescriptionEditText.text.isNotBlank()
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) { }
@@ -96,24 +96,24 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
         }
 
 
-        this.expenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
-        this.expenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
-        this.expenseDatePickerTextView.setOnClickListener { onPickDate() }
-        this.expenseCategoryCheckboxToggleTextView.setOnClickListener {
+        this.binding.expenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
+        this.binding.expenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
+        this.binding.expenseDatePickerTextView.setOnClickListener { onPickDate() }
+        this.binding.expenseCategoryCheckboxToggleTextView.setOnClickListener {
             if ((it as TextView).text == "Category ▶") {
                 it.text = "Category ▼"
-                this.categoryScrollView.visibility = View.VISIBLE
+                this.binding.categoryScrollView.visibility = View.VISIBLE
             } else {
                 it.text = "Category ▶"
-                this.categoryScrollView.visibility = View.GONE
+                this.binding.categoryScrollView.visibility = View.GONE
             }
         }
 
-        this.expenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
+        this.binding.expenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
             val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
 
-            this.expenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
-            this.categoryRadioGroup.check(selectedExpenseToCopyFrom.categoryId)
+            this.binding.expenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
+            this.binding.categoryRadioGroup.check(selectedExpenseToCopyFrom.categoryId)
         }
     }
 
@@ -122,11 +122,11 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
             DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                 // because of compatibility with Calendar, months are from 0-11
                 val datePicked: LocalDate = LocalDate.of(year, month + 1, dayOfMonth)
-                this.expenseDatePickerTextView.text = LocalDateTime.of(datePicked, LocalTime.now()).format(DateTimeFormatter.ISO_LOCAL_DATE).toString()
+                this.binding.expenseDatePickerTextView.text = LocalDateTime.of(datePicked, LocalTime.now()).format(DateTimeFormatter.ISO_LOCAL_DATE).toString()
             }
 
 
-        val previousDatePicked = LocalDate.parse(this.expenseDatePickerTextView.text, DateTimeFormatter.ISO_LOCAL_DATE)
+        val previousDatePicked = LocalDate.parse(this.binding.expenseDatePickerTextView.text, DateTimeFormatter.ISO_LOCAL_DATE)
 
         DatePickerDialog(
             this,
@@ -140,18 +140,18 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
     fun onPositive(view: View) {
         if (this.expenseId == -1)
             this.expenseActivityViewModel.addNewExpense(
-                this.expenseAmountEditText.text.toString(),
-                this.expenseDescriptionEditText.text.toString(),
-                this.expenseDatePickerTextView.text.toString(),
-                this.categoryRadioGroup.checkedRadioButtonId)
+                this.binding.expenseAmountEditText.text.toString(),
+                this.binding.expenseDescriptionEditText.text.toString(),
+                this.binding.expenseDatePickerTextView.text.toString(),
+                this.binding.categoryRadioGroup.checkedRadioButtonId)
 
         else
             this.expenseActivityViewModel.updateExpense(
                 this.expenseId,
-                this.expenseAmountEditText.text.toString(),
-                this.expenseDescriptionEditText.text.toString(),
-                this.expenseDatePickerTextView.text.toString(),
-                this.categoryRadioGroup.checkedRadioButtonId)
+                this.binding.expenseAmountEditText.text.toString(),
+                this.binding.expenseDescriptionEditText.text.toString(),
+                this.binding.expenseDatePickerTextView.text.toString(),
+                this.binding.categoryRadioGroup.checkedRadioButtonId)
 
         finish()
     }
