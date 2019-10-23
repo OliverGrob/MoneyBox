@@ -27,7 +27,6 @@ class ExpenseAddAndEditActivity : AppCompatActivity() {
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
 
-
     private lateinit var binding: ActivityExpenseAddAndEditBinding
 
     private val expenseId by lazy { intent.getIntExtra("expenseId", -1) }

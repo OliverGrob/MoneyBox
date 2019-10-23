@@ -4,24 +4,26 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
+import com.ogrob.moneybox.databinding.ActivityCategoriesBinding
 
 class CategoriesActivity : AppCompatActivity() {
 
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
 
-    private val categoryRecyclerView by lazy { findViewById<RecyclerView>(R.id.categoryRecyclerView) }
+    private lateinit var binding: ActivityCategoriesBinding
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_categories)
+
+        this.binding = DataBindingUtil.setContentView(this, R.layout.activity_categories)
 
         this.populateCategoryRecyclerView()
     }
@@ -32,8 +34,8 @@ class CategoriesActivity : AppCompatActivity() {
                 this,
                 this.expenseActivityViewModel
             )
-            categoryRecyclerView.adapter = categoryRecyclerViewAdapter
-            categoryRecyclerView.layoutManager = LinearLayoutManager(this)
+            this.binding.categoryRecyclerView.adapter = categoryRecyclerViewAdapter
+            this.binding.categoryRecyclerView.layoutManager = LinearLayoutManager(this)
             categoryRecyclerViewAdapter.setCategories(it)
         })
     }
