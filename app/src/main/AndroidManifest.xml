@@ -11,7 +11,7 @@
             android:theme="@style/AppTheme">
         <activity android:name=".presentation.expense.ExpenseAddAndEditActivity">
         </activity>
-        <activity android:name=".presentation.expense.CategoriesActivity">
+        <activity android:name=".presentation.category.CategoriesActivity">
         </activity>
         <activity android:name=".presentation.expense.ExpensesActivity">
             <intent-filter>
