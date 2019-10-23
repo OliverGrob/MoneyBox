@@ -14,7 +14,7 @@ class LocalDateTimeConverter {
 
     @TypeConverter
     fun dateToTimestamp(date: LocalDateTime?): Long? {
-        return date?.atZone(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+        return date?.let { date.atZone(ZoneOffset.UTC).toInstant().toEpochMilli() }
     }
 
 }
