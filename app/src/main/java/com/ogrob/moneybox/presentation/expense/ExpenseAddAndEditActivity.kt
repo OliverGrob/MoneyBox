@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
+import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate

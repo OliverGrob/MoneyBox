@@ -1,10 +1,10 @@
-package com.ogrob.moneybox.presentation
+package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.ogrob.moneybox.data.CategoryRepository
-import com.ogrob.moneybox.data.ExpenseRepository
+import com.ogrob.moneybox.data.repository.CategoryRepository
+import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
@@ -16,8 +16,10 @@ import java.time.format.DateTimeFormatter
 
 class ExpenseActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val expenseRepository: ExpenseRepository = ExpenseRepository(application)
-    private val categoryRepository: CategoryRepository = CategoryRepository(application)
+    private val expenseRepository: ExpenseRepository =
+        ExpenseRepository(application)
+    private val categoryRepository: CategoryRepository =
+        CategoryRepository(application)
 
     private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = this.expenseRepository.getCategoriesWithExpenses()
     private val categories: LiveData<List<Category>> = this.categoryRepository.getCategories()

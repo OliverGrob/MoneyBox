@@ -15,9 +15,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ogrob.moneybox.R
+import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 import com.ogrob.moneybox.databinding.ActivityExpensesBinding
 import com.ogrob.moneybox.databinding.NewCategoryAlertDialogBinding
-import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
 import com.ogrob.moneybox.presentation.category.CategoriesActivity
 import com.ogrob.moneybox.utils.EMPTY_STRING
 import java.time.LocalDate

@@ -10,15 +10,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
+import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
 import java.time.format.DateTimeFormatter
 
 
 class ExpenseRecyclerViewAdapter(private val context: Context,
-                                 private val expenseActivityViewModel: ExpenseActivityViewModel)
+                                 private val expenseActivityViewModel: ExpenseActivityViewModel
+)
     : RecyclerView.Adapter<ExpenseRecyclerViewAdapter.ExpenseViewHolder>() {
 
     private var categories: List<Category>? = null

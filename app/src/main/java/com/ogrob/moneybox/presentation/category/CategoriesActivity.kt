@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.presentation.ExpenseActivityViewModel
+import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 
 class CategoriesActivity : AppCompatActivity() {
 

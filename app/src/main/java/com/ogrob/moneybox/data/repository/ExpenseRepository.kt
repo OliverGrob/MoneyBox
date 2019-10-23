@@ -1,4 +1,4 @@
-package com.ogrob.moneybox.data
+package com.ogrob.moneybox.data.repository
 
 import android.app.Application
 import androidx.lifecycle.LiveData
