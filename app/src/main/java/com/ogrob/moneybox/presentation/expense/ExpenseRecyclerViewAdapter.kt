@@ -18,8 +18,7 @@ import java.time.format.DateTimeFormatter
 
 
 class ExpenseRecyclerViewAdapter(private val context: Context,
-                                 private val expenseActivityViewModel: ExpenseActivityViewModel
-)
+                                 private val expenseActivityViewModel: ExpenseActivityViewModel)
     : RecyclerView.Adapter<ExpenseRecyclerViewAdapter.ExpenseViewHolder>() {
 
     private var categories: List<Category>? = null

@@ -16,8 +16,7 @@ import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 
 class CategoryRecyclerViewAdapter(private val context: Context,
-                                  private val expenseActivityViewModel: ExpenseActivityViewModel
-)
+                                  private val expenseActivityViewModel: ExpenseActivityViewModel)
     : RecyclerView.Adapter<CategoryRecyclerViewAdapter.CategoryViewHolder>() {
 
     private var categoriesWithExpenses: List<CategoryWithExpenses>? = null
