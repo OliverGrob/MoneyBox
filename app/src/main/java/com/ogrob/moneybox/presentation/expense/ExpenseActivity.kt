@@ -8,18 +8,18 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.databinding.ActivityExpensesBinding
+import com.ogrob.moneybox.databinding.ActivityExpenseBinding
 import com.ogrob.moneybox.presentation.category.CategoryActivity
 
 class ExpenseActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityExpensesBinding
+    private lateinit var binding: ActivityExpenseBinding
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_expenses)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_expense)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

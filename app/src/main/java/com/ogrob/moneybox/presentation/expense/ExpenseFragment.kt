@@ -18,7 +18,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
-import com.ogrob.moneybox.databinding.FragmentExpensesBinding
+import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.databinding.NewCategoryAlertDialogBinding
 import com.ogrob.moneybox.utils.EMPTY_STRING
 import java.time.LocalDate
@@ -30,13 +30,13 @@ class ExpenseFragment : Fragment() {
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
         ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
 
-    private lateinit var binding: FragmentExpensesBinding
+    private lateinit var binding: FragmentExpenseBinding
 
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_expenses, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_expense, container, false)
 
         binding.addExpenseButton.setOnClickListener { onAddNewExpense(it) }
         binding.addCategoryButton.setOnClickListener { onAddNewCategory(it) }
