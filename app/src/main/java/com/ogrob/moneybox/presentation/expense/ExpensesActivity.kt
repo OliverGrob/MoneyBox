@@ -107,11 +107,11 @@ class ExpensesActivity : AppCompatActivity() {
 
     fun onAddNewExpense(view: View) {
         val intent = Intent(this, ExpenseAddAndEditActivity::class.java).apply {
-            intent.putExtra("activityTitle", "New Expense")
-            intent.putExtra("expenseAmount", EMPTY_STRING)
-            intent.putExtra("expenseDescription", EMPTY_STRING)
-            intent.putExtra("expenseAdditionDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString())
-            intent.putExtra("positiveButtonText", "Add Expense")
+            putExtra("activityTitle", "New Expense")
+            putExtra("expenseAmount", EMPTY_STRING)
+            putExtra("expenseDescription", EMPTY_STRING)
+            putExtra("expenseAdditionDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString())
+            putExtra("positiveButtonText", "Add Expense")
         }
         startActivity(intent)
     }
