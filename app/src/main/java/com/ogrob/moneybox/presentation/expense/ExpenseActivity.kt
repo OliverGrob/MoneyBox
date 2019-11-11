@@ -19,7 +19,7 @@ class ExpenseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_expense)
+        this.binding = DataBindingUtil.setContentView(this, R.layout.activity_expense)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

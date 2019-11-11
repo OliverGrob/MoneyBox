@@ -1,117 +1,111 @@
 package com.ogrob.moneybox.presentation.expense
 
-import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.navigation.findNavController
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
+import com.ogrob.moneybox.databinding.ExpenseListItemBinding
 import com.ogrob.moneybox.persistence.model.Category
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
 import java.time.format.DateTimeFormatter
 
-
-class ExpenseRecyclerViewAdapter(private val context: Context,
-                                 private val expenseActivityViewModel: ExpenseActivityViewModel
-)
-    : RecyclerView.Adapter<ExpenseRecyclerViewAdapter.ExpenseViewHolder>() {
-
-    private var categories: List<Category>? = null
-    private var expenses: List<Expense>? = null
+class ExpenseRecyclerViewAdapter(private val expenseActivityViewModel: ExpenseActivityViewModel,
+                                 private val categories: List<Category>)
+    : ListAdapter<Expense, ExpenseRecyclerViewAdapter.ExpenseViewHolder>(ExpenseDiffCallback()) {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExpenseViewHolder {
-        val view: View = LayoutInflater.from(parent.context).inflate(R.layout.expense_list_item, parent, false)
-        return ExpenseViewHolder(view)
-    }
-
-    override fun getItemCount(): Int {
-        return if (this.expenses.isNullOrEmpty()) 0 else this.expenses!!.size
+        return ExpenseViewHolder.from(parent)
     }
 
     override fun onBindViewHolder(holder: ExpenseViewHolder, position: Int) {
-        if (!this.expenses.isNullOrEmpty()) this.expenses!![position].also { expense ->
-            holder.expenseAdditionDateTextView.text = expense.additionDate.dayOfMonth.toString()
-            holder.expenseAmountTextView.text = this.expenseActivityViewModel.formatMoneySpent(expense.amount)
-            holder.expenseDescriptionTextView.text = expense.description
-            holder.expenseCategoryTextView.text = this.findCategoryName(expense.categoryId)
+        val expense = getItem(position)
+        holder.bind(expenseActivityViewModel, expense, categories)
+    }
 
-            holder.expenseOptionsTextView.setOnClickListener {
-                val popup = PopupMenu(this.context, holder.expenseOptionsTextView)
-                popup.inflate(R.menu.expense_list_item_options)
 
-                popup.setOnMenuItemClickListener { menuItem ->
-                    when (menuItem.itemId) {
-                        R.id.editExpense -> {
-                            createExpenseEditAlertDialog(expense)
-                            true
-                        }
-                        R.id.deleteExpense -> {
-                            createExpenseDeleteAlertDialog(expense)
-                            true
-                        }
-                        else -> false
+    class ExpenseViewHolder private constructor(val binding: ExpenseListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(expenseActivityViewModel: ExpenseActivityViewModel,
+                 expense: Expense,
+                 categories: List<Category>) {
+            this.binding.expense = expense
+            this.binding.category = categories.single { category -> category.id == expense.categoryId }
+            this.binding.executePendingBindings()
+
+            this.binding.expenseOptionsTextView.setOnClickListener { createPopupMenu(it, expense, expenseActivityViewModel) }
+        }
+
+        private fun createPopupMenu(it: View,
+                                    expense: Expense,
+                                    expenseActivityViewModel: ExpenseActivityViewModel) {
+            val popup = PopupMenu(this.itemView.context, this.binding.expenseOptionsTextView)
+            popup.inflate(R.menu.expense_list_item_options)
+
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.editExpense -> {
+                        createExpenseEditAlertDialog(it, expense)
+                        true
                     }
+                    R.id.deleteExpense -> {
+                        createExpenseDeleteAlertDialog(expenseActivityViewModel, expense)
+                        true
+                    }
+                    else -> false
                 }
+            }
 
-                popup.show()
+            popup.show()
+        }
+
+        private fun createExpenseEditAlertDialog(view: View, expense: Expense) {
+            view.findNavController().navigate(ExpenseFragmentDirections.actionExpenseFragmentToExpenseAddAndEditFragment(
+                expense.amount.toString(),
+                expense.description,
+                expense.additionDate.format(DateTimeFormatter.ISO_LOCAL_DATE).toString(),
+                expense.id,
+                expense.categoryId,
+                "Save"
+            ))
+        }
+
+        private fun createExpenseDeleteAlertDialog(expenseActivityViewModel: ExpenseActivityViewModel, expense: Expense) {
+            AlertDialog.Builder(this.itemView.context)
+                .setTitle("Are you sure you want to delete this expense?")
+                .setPositiveButton("Delete") { _, _ -> expenseActivityViewModel.deleteExpense(expense) }
+                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+                .create()
+                .show()
+        }
+
+
+        companion object {
+            fun from(parent: ViewGroup): ExpenseViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ExpenseListItemBinding.inflate(layoutInflater, parent, false)
+                return ExpenseViewHolder(binding)
             }
         }
     }
+}
 
-    private fun createExpenseEditAlertDialog(expense: Expense) {
-        val intent = Intent(this.context, ExpenseAddAndEditActivity::class.java)
-        intent.putExtra("activityTitle", "Edit Expense")
-        intent.putExtra("expenseAmount", expense.amount.toString())
-        intent.putExtra("expenseDescription", expense.description)
-        intent.putExtra("expenseAdditionDate", expense.additionDate.format(DateTimeFormatter.ISO_LOCAL_DATE).toString())
-        intent.putExtra("expenseId", expense.id)
-        intent.putExtra("categoryId", expense.categoryId)
-        intent.putExtra("positiveButtonText", "Save")
-        this.context.startActivity(intent)
+
+class ExpenseDiffCallback : DiffUtil.ItemCallback<Expense>() {
+
+    override fun areItemsTheSame(oldItem: Expense, newItem: Expense): Boolean {
+        return oldItem.id == newItem.id
     }
 
-    private fun createExpenseDeleteAlertDialog(expense: Expense) {
-        AlertDialog.Builder(this.context)
-            .setTitle("Are you sure you want to delete this expense?")
-            .setPositiveButton("Delete") { _, _ -> expenseActivityViewModel.deleteExpense(expense) }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-            .create()
-            .show()
+    override fun areContentsTheSame(oldItem: Expense, newItem: Expense): Boolean {
+        return oldItem == newItem
     }
 
-    private fun findCategoryName(categoryId: Int): String {
-        return this.categories!!
-            .filter { category -> category.id == categoryId }
-            .map(Category::name)
-            .single()
-    }
-
-    fun setExpenses(categoryWithExpenses: List<CategoryWithExpenses>) {
-        this.categories = categoryWithExpenses
-            .map(CategoryWithExpenses::category)
-
-        this.expenses = categoryWithExpenses
-            .flatMap { currentCategoryWithExpenses -> currentCategoryWithExpenses.expenses }
-            .sortedWith(compareBy(Expense::additionDate))
-
-        this.notifyDataSetChanged()
-    }
-
-
-    class ExpenseViewHolder (view: View) : RecyclerView.ViewHolder(view) {
-
-        var expenseAdditionDateTextView: TextView = view.findViewById(R.id.expenseAdditionDateTextView)
-        var expenseAmountTextView: TextView = view.findViewById(R.id.expenseAmountTextView)
-        var expenseDescriptionTextView: TextView = view.findViewById(R.id.expenseDescriptionTextView)
-        var expenseCategoryTextView: TextView = view.findViewById(R.id.expenseCategoryTextView)
-        var expenseOptionsTextView: TextView = view.findViewById(R.id.expenseOptionsTextView)
-
-    }
 }

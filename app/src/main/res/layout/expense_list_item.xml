@@ -1,72 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="40dp"
-        android:id="@+id/expenseListItemConstraintLayout"
-        tools:layout_editor_absoluteY="81dp">
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-            android:text="14"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.1"
-            android:id="@+id/expenseAdditionDateTextView"
-            android:textSize="15sp"
-            android:padding="5dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-    <TextView
-            android:text="300000"
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.2"
-            android:id="@+id/expenseAmountTextView"
-            android:textSize="15sp"
-            android:padding="5dp"
-            app:layout_constraintTop_toTopOf="@+id/expenseAdditionDateTextView"
-            app:layout_constraintStart_toEndOf="@+id/expenseAdditionDateTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/expenseAdditionDateTextView"/>
-    <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.65"
-            android:paddingHorizontal="5dp"
-            android:paddingVertical="1dp"
-            android:textAlignment="viewStart"
-            android:textSize="15sp"
-            android:text="Example payment description"
-            android:id="@+id/expenseDescriptionTextView"
-            app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
-            app:layout_constraintTop_toTopOf="@+id/expenseAmountTextView"
-            app:layout_constraintBottom_toTopOf="@id/expenseCategoryTextView"/>
-    <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.65"
-            android:paddingHorizontal="5dp"
-            android:paddingVertical="1dp"
-            android:textAlignment="viewStart"
-            android:textSize="12sp"
-            android:text="Example payment category"
-            android:id="@+id/expenseCategoryTextView"
-            app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/expenseAmountTextView"
-            app:layout_constraintTop_toBottomOf="@+id/expenseDescriptionTextView"/>
-    <TextView
-            android:id="@+id/expenseOptionsTextView"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            app:layout_constraintWidth_percent="0.05"
-            android:text="&#8942;"
-            android:textAlignment="center"
-            android:textAppearance="?android:textAppearanceLarge"
-            app:layout_constraintStart_toEndOf="@+id/expenseDescriptionTextView"
-            app:layout_constraintTop_toTopOf="@+id/expenseDescriptionTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/expenseCategoryTextView"/>
+    <data>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <variable
+                name="expense"
+                type="com.ogrob.moneybox.persistence.model.Expense" />
+
+        <variable
+                name="category"
+                type="com.ogrob.moneybox.persistence.model.Category" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/expenseListItemConstraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="40dp"
+            tools:layout_editor_absoluteY="81dp">
+
+        <TextView
+                android:id="@+id/expenseAdditionDateTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:padding="5dp"
+                android:textSize="15sp"
+                app:additionDateString="@{expense}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.1"
+                tools:text="14" />
+
+        <TextView
+                android:id="@+id/expenseAmountTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:padding="5dp"
+                android:textSize="15sp"
+                app:expenseAmountFormatted="@{expense}"
+                app:layout_constraintBottom_toBottomOf="@+id/expenseAdditionDateTextView"
+                app:layout_constraintStart_toEndOf="@+id/expenseAdditionDateTextView"
+                app:layout_constraintTop_toTopOf="@+id/expenseAdditionDateTextView"
+                app:layout_constraintWidth_percent="0.2"
+                tools:text="300000" />
+
+        <TextView
+                android:id="@+id/expenseDescriptionTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:text="@{expense.description}"
+                android:textAlignment="viewStart"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toTopOf="@id/expenseCategoryTextView"
+                app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
+                app:layout_constraintTop_toTopOf="@+id/expenseAmountTextView"
+                app:layout_constraintWidth_percent="0.65"
+                tools:text="Example expense description" />
+
+        <TextView
+                android:id="@+id/expenseCategoryTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:textAlignment="viewStart"
+                android:textSize="12sp"
+                android:text="@{category.name}"
+                app:layout_constraintBottom_toBottomOf="@+id/expenseAmountTextView"
+                app:layout_constraintStart_toEndOf="@+id/expenseAmountTextView"
+                app:layout_constraintTop_toBottomOf="@+id/expenseDescriptionTextView"
+                app:layout_constraintWidth_percent="0.65"
+                tools:text="Example payment category" />
+
+        <TextView
+                android:id="@+id/expenseOptionsTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="&#8942;"
+                android:textAlignment="center"
+                android:textAppearance="?android:textAppearanceLarge"
+                app:layout_constraintBottom_toBottomOf="@+id/expenseCategoryTextView"
+                app:layout_constraintStart_toEndOf="@+id/expenseDescriptionTextView"
+                app:layout_constraintTop_toTopOf="@+id/expenseDescriptionTextView"
+                app:layout_constraintWidth_percent="0.05" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

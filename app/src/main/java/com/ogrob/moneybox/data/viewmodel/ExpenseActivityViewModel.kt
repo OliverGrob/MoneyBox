@@ -8,6 +8,7 @@ import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -29,28 +30,34 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
 
     fun getAllCategories(): LiveData<List<Category>> = this.categories
 
-    fun addNewExpense(expenseValue: String, expenseDescription: String, expenseDate: String, categoryId: Int) {
+    fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
         this.expenseRepository.addNewExpense(Expense(
-            expenseValue.toDouble(),
+            expenseAmount.toDouble(),
             expenseDescription,
             LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
             categoryId))
     }
 
     fun addNewCategory(categoryName: String) {
-        this.categoryRepository.addNewCategory(Category(categoryName))
+        if (!getAllCategoryNames().contains(categoryName))
+            this.categoryRepository.addNewCategory(Category(categoryName))
     }
 
-    fun updateExpense(expenseId: Int, expenseValue: String, expenseDescription: String, expenseDate: String, categoryId: Int) {
+    private fun getAllCategoryNames(): List<String> {
+        return this.categories.value!!
+            .map(Category::name)
+    }
+
+    fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
         this.expenseRepository.updateExpense(Expense(
             expenseId,
-            expenseValue.toDouble(),
+            expenseAmount.toDouble(),
             expenseDescription,
             LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
             categoryId))
     }
 
-    fun updateCategory(categoryId: Int, categoryName: String) {
+    fun updateCategory(categoryId: Long, categoryName: String) {
         this.categoryRepository.updateCategory(Category(
             categoryId,
             categoryName))
@@ -90,11 +97,12 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
             .toList()
     }
 
-    fun getExpensesForSelectedMonthInSelectedYear(yearSelected: Int, monthSelected: Month): List<CategoryWithExpenses> {
+    fun getExpensesForSelectedMonthInSelectedYear(yearSelected: Int, monthSelected: Month): List<Expense> {
         return this.categoriesWithExpenses.value!!
             .map { categoryWithExpenses -> CategoryWithExpenses(
                 categoryWithExpenses.category,
                 this.filterExpensesForSelectedMonthInSelectedYear(categoryWithExpenses.expenses, yearSelected, monthSelected)) }
+            .flatMap(CategoryWithExpenses::expenses)
     }
 
     private fun filterExpensesForSelectedMonthInSelectedYear(expenses: List<Expense>, yearSelected: Int, monthSelected: Month): List<Expense> {
@@ -102,13 +110,36 @@ class ExpenseActivityViewModel(application: Application) : AndroidViewModel(appl
             .filter { expense -> expense.additionDate.year == yearSelected && expense.additionDate.month == monthSelected }
     }
 
-    fun getTotalMoneySpentFormatted(expensesSelected: List<CategoryWithExpenses>): String {
+    fun addOrEditExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
+        if (expenseId == NEW_EXPENSE_PLACEHOLDER_ID)
+            this.addNewExpense(
+                expenseAmount,
+                expenseDescription,
+                expenseDate,
+                categoryId)
+
+        else
+            this.updateExpense(
+                expenseId,
+                expenseAmount,
+                expenseDescription,
+                expenseDate,
+                categoryId)
+    }
+
+    fun getTotalMoneySpentFormatted(expensesSelected: List<Expense>): String {
         val totalMoneySpentWithoutFormatting = expensesSelected
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
             .map(Expense::amount)
             .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
 
         return this.formatMoneySpent(totalMoneySpentWithoutFormatting)
+    }
+
+    fun findCategoryName(categoryId: Long): String {
+        return categories.value!!
+            .filter { category -> category.id == categoryId }
+            .map(Category::name)
+            .single()
     }
 
     fun formatMoneySpent(currentTotal: Double): String {

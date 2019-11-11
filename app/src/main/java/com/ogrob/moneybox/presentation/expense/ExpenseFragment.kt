@@ -1,6 +1,5 @@
 package com.ogrob.moneybox.presentation.expense
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,12 +14,17 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.databinding.NewCategoryAlertDialogBinding
+import com.ogrob.moneybox.persistence.model.Category
+import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.utils.EMPTY_STRING
+import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
+import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
@@ -28,7 +32,8 @@ import java.time.format.DateTimeFormatter
 class ExpenseFragment : Fragment() {
 
     private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
-        ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java) }
+        ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java)
+    }
 
     private lateinit var binding: FragmentExpenseBinding
 
@@ -46,10 +51,10 @@ class ExpenseFragment : Fragment() {
         return binding.root
     }
 
-
     private fun populateSpinnersAndExpensesRecyclerView() {
-        expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
+        expenseActivityViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
             val yearsWithExpense: List<Int> = expenseActivityViewModel.getYearsWithExpense()
+            val categories: List<Category> = it.map(CategoryWithExpenses::category)
 
             val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, yearsWithExpense)
             adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
@@ -57,7 +62,7 @@ class ExpenseFragment : Fragment() {
 
             binding.yearSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    populateMonthSpinner(yearsWithExpense[position])
+                    populateMonthSpinner(yearsWithExpense[position], categories)
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {
@@ -68,7 +73,8 @@ class ExpenseFragment : Fragment() {
         })
     }
 
-    private fun populateMonthSpinner(yearSelected: Int) {
+    private fun populateMonthSpinner(yearSelected: Int,
+                                     categories: List<Category>) {
         val monthsInYearWithExpense: List<Month> = expenseActivityViewModel.getMonthsInYearWithExpense(yearSelected)
 
         val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, monthsInYearWithExpense)
@@ -77,7 +83,7 @@ class ExpenseFragment : Fragment() {
 
         binding.monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                populateExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position])
+                populateExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position], categories)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -87,25 +93,27 @@ class ExpenseFragment : Fragment() {
         binding.monthSpinner.setSelection(monthsInYearWithExpense.lastIndex, true)
     }
 
-    private fun populateExpenseRecyclerView(yearSelected: Int, monthSelected: Month) {
-        val expenseRecyclerViewAdapter = ExpenseRecyclerViewAdapter(context!!, expenseActivityViewModel)
+    private fun populateExpenseRecyclerView(yearSelected: Int,
+                                            monthSelected: Month,
+                                            categories: List<Category>) {
+        val expenseRecyclerViewAdapter = ExpenseRecyclerViewAdapter(expenseActivityViewModel, categories)
         binding.expensesRecyclerView.adapter = expenseRecyclerViewAdapter
         binding.expensesRecyclerView.layoutManager = LinearLayoutManager(context)
 
         val selectedExpenses = expenseActivityViewModel.getExpensesForSelectedMonthInSelectedYear(yearSelected, monthSelected)
-        expenseRecyclerViewAdapter.setExpenses(selectedExpenses)
+        expenseRecyclerViewAdapter.submitList(selectedExpenses)
         binding.totalMoneySpentTextView.text = "Total: ${expenseActivityViewModel.getTotalMoneySpentFormatted(selectedExpenses)}"
     }
 
     private fun onAddNewExpense(view: View) {
-        val intent = Intent(context, ExpenseAddAndEditActivity::class.java).apply {
-            putExtra("activityTitle", "New Expense")
-            putExtra("expenseAmount", EMPTY_STRING)
-            putExtra("expenseDescription", EMPTY_STRING)
-            putExtra("expenseAdditionDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString())
-            putExtra("positiveButtonText", "Add Expense")
-        }
-        startActivity(intent)
+        view.findNavController().navigate(ExpenseFragmentDirections.actionExpenseFragmentToExpenseAddAndEditFragment(
+            EMPTY_STRING,
+            EMPTY_STRING,
+            LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString(),
+            NEW_EXPENSE_PLACEHOLDER_ID,
+            NO_CATEGORY_ID,
+            "Add Expense"
+        ))
     }
 
     private fun onAddNewCategory(view: View) {

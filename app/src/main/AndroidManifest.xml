@@ -9,8 +9,6 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".presentation.expense.ExpenseAddAndEditActivity">
-        </activity>
         <activity android:name=".presentation.category.CategoryActivity">
         </activity>
         <activity android:name=".presentation.expense.ExpenseActivity">
