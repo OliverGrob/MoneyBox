@@ -27,13 +27,18 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
 
 
     companion object {
+        @Volatile
         private var INSTANCE: ExpenseRoomDatabase? = null
 
         fun getInstance(context: Context): ExpenseRoomDatabase? {
-            if (INSTANCE == null) {
-                synchronized(ExpenseRoomDatabase::class) {
+            synchronized(this) {
+                if (INSTANCE == null) {
                     INSTANCE = Room
-                        .databaseBuilder(context.applicationContext, ExpenseRoomDatabase::class.java, "moneyBoxDB")
+                        .databaseBuilder(
+                            context.applicationContext,
+                            ExpenseRoomDatabase::class.java,
+                            "moneyBoxDB"
+                        )
                         .addCallback(object : Callback() {
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
@@ -42,8 +47,8 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
                         })
                         .build()
                 }
+                return INSTANCE
             }
-            return INSTANCE
         }
 
         fun destroyInstance() {
