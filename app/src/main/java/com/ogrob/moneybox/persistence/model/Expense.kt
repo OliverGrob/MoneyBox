@@ -12,10 +12,10 @@ import java.time.LocalDateTime
         childColumns = ["category_id"],
         onDelete = SET_DEFAULT)],
     indices = [Index(value = ["category_id"])])
-class Expense(
+data class Expense(
 
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long,
 
     @ColumnInfo(name = "amount")
     val amount: Double,
@@ -27,10 +27,10 @@ class Expense(
     val additionDate: LocalDateTime,
 
     @ColumnInfo(name = "category_id")
-    val categoryId: Int = 1
+    val categoryId: Long = 1
 ) {
 
     @Ignore
-    constructor(amount: Double, description: String, additionDate: LocalDateTime, categoryId: Int):
+    constructor(amount: Double, description: String, additionDate: LocalDateTime, categoryId: Long):
             this(0, amount, description, additionDate, categoryId)
 }
