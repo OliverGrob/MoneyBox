@@ -12,8 +12,8 @@ import com.ogrob.moneybox.persistence.dao.CategoryDao
 import com.ogrob.moneybox.persistence.dao.ExpenseDao
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
+import com.ogrob.moneybox.utils.NO_CATEGORY_NAME
 import java.time.LocalDateTime
 import java.util.*
 
@@ -67,7 +67,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
 
 
         override fun doInBackground(vararg params: Void): Void? {
-            categoryDao.insert(Category(NO_CATEGORY_ID, EMPTY_STRING))
+            categoryDao.insert(Category(NO_CATEGORY_ID, NO_CATEGORY_NAME))
             categoryDao.insert(Category(2, "Food"))
             categoryDao.insert(Category(3, "Clothing"))
             categoryDao.insert(Category(4, "Hobby"))
