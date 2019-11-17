@@ -10,13 +10,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
+import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.ExpenseListItemBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.Expense
 import java.time.format.DateTimeFormatter
 
-class ExpenseRecyclerViewAdapter(private val expenseActivityViewModel: ExpenseActivityViewModel,
+class ExpenseRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel,
                                  private val categories: List<Category>)
     : ListAdapter<Expense, ExpenseRecyclerViewAdapter.ExpenseViewHolder>(ExpenseDiffCallback()) {
 
@@ -27,36 +27,36 @@ class ExpenseRecyclerViewAdapter(private val expenseActivityViewModel: ExpenseAc
 
     override fun onBindViewHolder(holder: ExpenseViewHolder, position: Int) {
         val expense = getItem(position)
-        holder.bind(expenseActivityViewModel, expense, categories)
+        holder.bind(expenseViewModel, expense, categories)
     }
 
 
     class ExpenseViewHolder private constructor(val binding: ExpenseListItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(expenseActivityViewModel: ExpenseActivityViewModel,
+        fun bind(expenseViewModel: ExpenseViewModel,
                  expense: Expense,
                  categories: List<Category>) {
-            this.binding.expense = expense
-            this.binding.category = categories.single { category -> category.id == expense.categoryId }
-            this.binding.executePendingBindings()
+            binding.expense = expense
+            binding.category = categories.single { category -> category.id == expense.categoryId }
+            binding.executePendingBindings()
 
-            this.binding.expenseOptionsTextView.setOnClickListener { createPopupMenu(it, expense, expenseActivityViewModel) }
+            binding.expenseOptionsTextView.setOnClickListener { createPopupMenu(it, expense, expenseViewModel) }
         }
 
         private fun createPopupMenu(it: View,
                                     expense: Expense,
-                                    expenseActivityViewModel: ExpenseActivityViewModel) {
-            val popup = PopupMenu(this.itemView.context, this.binding.expenseOptionsTextView)
+                                    expenseViewModel: ExpenseViewModel) {
+            val popup = PopupMenu(itemView.context, binding.expenseOptionsTextView)
             popup.inflate(R.menu.expense_list_item_options)
 
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.editExpense -> {
-                        createExpenseEditAlertDialog(it, expense)
+                        navigateToExpenseEditFragment(it, expense)
                         true
                     }
                     R.id.deleteExpense -> {
-                        createExpenseDeleteAlertDialog(expenseActivityViewModel, expense)
+                        createExpenseDeleteAlertDialog(expenseViewModel, expense)
                         true
                     }
                     else -> false
@@ -66,7 +66,7 @@ class ExpenseRecyclerViewAdapter(private val expenseActivityViewModel: ExpenseAc
             popup.show()
         }
 
-        private fun createExpenseEditAlertDialog(view: View, expense: Expense) {
+        private fun navigateToExpenseEditFragment(view: View, expense: Expense) {
             view.findNavController().navigate(ExpenseFragmentDirections.actionExpenseFragmentToExpenseAddAndEditFragment(
                 expense.amount.toString(),
                 expense.description,
@@ -77,10 +77,10 @@ class ExpenseRecyclerViewAdapter(private val expenseActivityViewModel: ExpenseAc
             ))
         }
 
-        private fun createExpenseDeleteAlertDialog(expenseActivityViewModel: ExpenseActivityViewModel, expense: Expense) {
-            AlertDialog.Builder(this.itemView.context)
+        private fun createExpenseDeleteAlertDialog(expenseViewModel: ExpenseViewModel, expense: Expense) {
+            AlertDialog.Builder(itemView.context)
                 .setTitle("Are you sure you want to delete this expense?")
-                .setPositiveButton("Delete") { _, _ -> expenseActivityViewModel.deleteExpense(expense) }
+                .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteExpense(expense) }
                 .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
                 .create()
                 .show()

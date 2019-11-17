@@ -10,6 +10,7 @@ import androidx.databinding.DataBindingUtil
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.databinding.ActivityExpenseBinding
 import com.ogrob.moneybox.presentation.category.CategoryActivity
+import com.ogrob.moneybox.presentation.statistics.StatisticsActivity
 
 class ExpenseActivity : AppCompatActivity() {
 
@@ -30,8 +31,12 @@ class ExpenseActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(menuItem: MenuItem) =
         when (menuItem.itemId) {
-            R.id.manageCategories -> {
+            R.id.categories -> {
                 startActivity(Intent(this, CategoryActivity::class.java))
+                true
+            }
+            R.id.statistics -> {
+                startActivity(Intent(this, StatisticsActivity::class.java))
                 true
             }
             else -> super.onOptionsItemSelected(menuItem)

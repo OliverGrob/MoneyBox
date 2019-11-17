@@ -16,11 +16,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.viewmodel.ExpenseActivityViewModel
+import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseAddAndEditBinding
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
-import com.ogrob.moneybox.utils.NO_CATEGORY_DISPLAY_TEXT
-import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -28,8 +26,8 @@ import java.time.format.DateTimeFormatter
 
 class ExpenseAddAndEditFragment : Fragment() {
 
-    private val expenseActivityViewModel: ExpenseActivityViewModel by lazy {
-        ViewModelProviders.of(this).get(ExpenseActivityViewModel::class.java)
+    private val expenseViewModel: ExpenseViewModel by lazy {
+        ViewModelProviders.of(this).get(ExpenseViewModel::class.java)
     }
 
     private lateinit var binding: FragmentExpenseAddAndEditBinding
@@ -68,24 +66,24 @@ class ExpenseAddAndEditFragment : Fragment() {
     }
 
     private fun configureDescriptionAutoComplete() {
-        this.expenseActivityViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
+        this.expenseViewModel.getAllCategoriesWithExpenses().observe(this, Observer {
             this.binding.expenseDescriptionEditText.setAdapter(
                 ArrayAdapter(
-                    context,
+                    binding.root.context,
                     android.R.layout.simple_dropdown_item_1line,
-                    this.expenseActivityViewModel.getAllExpensesDescription(it))
+                    this.expenseViewModel.getAllExpensesDescription(it))
             )
             this.binding.expenseDescriptionEditText.threshold = 1
         })
     }
 
     private fun populateCategoryRadioGroup() {
-        this.expenseActivityViewModel.getAllCategories().observe(this, Observer { categories ->
+        this.expenseViewModel.getAllCategories().observe(this, Observer { categories ->
             categories
                 .forEach { category ->
                     val radioButton = RadioButton(context)
                     radioButton.id = category.id.toInt()
-                    radioButton.text = if (category.id == NO_CATEGORY_ID) NO_CATEGORY_DISPLAY_TEXT else category.name
+                    radioButton.text = category.name
                     radioButton.isChecked = category.id == this.args.categoryId
                     radioButton.textSize = 15f
                     this.binding.categoryRadioGroup.addView(radioButton)
@@ -106,7 +104,6 @@ class ExpenseAddAndEditFragment : Fragment() {
 
         }
 
-
         this.binding.expenseAmountEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
         this.binding.expenseDescriptionEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
     }
@@ -124,7 +121,7 @@ class ExpenseAddAndEditFragment : Fragment() {
         }
 
         this.binding.expenseDescriptionEditText.setOnItemClickListener { parent, _, position, _ ->
-            val selectedExpenseToCopyFrom = this.expenseActivityViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
+            val selectedExpenseToCopyFrom = this.expenseViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
 
             this.binding.expenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
             this.binding.categoryRadioGroup.check(selectedExpenseToCopyFrom.categoryId.toInt())
@@ -144,7 +141,7 @@ class ExpenseAddAndEditFragment : Fragment() {
         val previousDatePicked = LocalDate.parse(this.binding.expenseDatePickerTextView.text, DateTimeFormatter.ISO_LOCAL_DATE)
 
         DatePickerDialog(
-            context,
+            binding.root.context,
             datePickerListener,
             previousDatePicked.year,
             previousDatePicked.monthValue - 1,
@@ -153,7 +150,7 @@ class ExpenseAddAndEditFragment : Fragment() {
     }
 
     private fun addNewOrEditedExpense(view: View) {
-        this.expenseActivityViewModel.addOrEditExpense(
+        this.expenseViewModel.addOrEditExpense(
                 this.args.expenseId,
                 this.binding.expenseAmountEditText.text.toString(),
                 this.binding.expenseDescriptionEditText.text.toString(),
