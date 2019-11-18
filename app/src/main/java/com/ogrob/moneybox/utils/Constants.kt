@@ -8,5 +8,11 @@ const val NO_CATEGORY_NAME = "No Category"
 
 const val EMPTY_STRING = ""
 
-const val SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_KEY = "max_amount_per_month"
-const val SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_DEFAULT_VALUE = 1000f
+
+const val SHARED_PREFERENCES_NAME = "moneybox_preferences"
+
+const val SHARED_PREFERENCES_SELECTED_YEAR_KEY = "selected_year"
+const val SHARED_PREFERENCES_SELECTED_MONTH_KEY = "selected_month"
+const val SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY = "max_amount_per_month"
+
+const val SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE = 0f

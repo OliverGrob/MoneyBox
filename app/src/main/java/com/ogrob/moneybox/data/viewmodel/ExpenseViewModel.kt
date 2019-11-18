@@ -1,6 +1,7 @@
 package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.ogrob.moneybox.data.repository.CategoryRepository
@@ -8,8 +9,10 @@ import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
+import com.ogrob.moneybox.utils.SHARED_PREFERENCES_NAME
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -162,6 +165,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isEmpty() }
             .map(CategoryWithExpenses::category)
             .forEach(this::deleteCategory)
+    }
+
+    fun retrievePreferenceFromSharedPreferences(context: Context, key: String): String {
+        return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+            .getString(key, EMPTY_STRING)!!
+    }
+
+    fun updatePreferenceInSharedPreferences(context: Context, key: String, value: String) {
+        context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(key, value)
+            .apply()
     }
 
 }

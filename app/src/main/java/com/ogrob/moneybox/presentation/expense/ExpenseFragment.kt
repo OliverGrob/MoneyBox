@@ -17,9 +17,7 @@ import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
-import com.ogrob.moneybox.utils.EMPTY_STRING
-import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
-import com.ogrob.moneybox.utils.NO_CATEGORY_ID
+import com.ogrob.moneybox.utils.*
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
@@ -57,13 +55,20 @@ class ExpenseFragment : Fragment() {
             binding.yearSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                     populateMonthSpinner(yearsWithExpense[position], categories)
+                    expenseViewModel.updatePreferenceInSharedPreferences(
+                        binding.root.context,
+                        SHARED_PREFERENCES_SELECTED_YEAR_KEY,
+                        yearsWithExpense[position].toString())
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>) {
                 }
             }
 
-            binding.yearSpinner.setSelection(yearsWithExpense.lastIndex, true)
+            val selectedYear = expenseViewModel.retrievePreferenceFromSharedPreferences(binding.root.context, SHARED_PREFERENCES_SELECTED_YEAR_KEY)
+            binding.yearSpinner.setSelection(
+                if (selectedYear.isBlank()) yearsWithExpense.lastIndex else yearsWithExpense.indexOf(selectedYear.toInt()),
+                true)
         })
     }
 
@@ -78,13 +83,20 @@ class ExpenseFragment : Fragment() {
         binding.monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 populateExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position], categories)
+                expenseViewModel.updatePreferenceInSharedPreferences(
+                    binding.root.context,
+                    SHARED_PREFERENCES_SELECTED_MONTH_KEY,
+                    monthsInYearWithExpense[position].toString())
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
             }
         }
 
-        binding.monthSpinner.setSelection(monthsInYearWithExpense.lastIndex, true)
+        val selectedMonth = expenseViewModel.retrievePreferenceFromSharedPreferences(binding.root.context, SHARED_PREFERENCES_SELECTED_MONTH_KEY)
+        binding.monthSpinner.setSelection(
+            if (selectedMonth.isBlank()) monthsInYearWithExpense.lastIndex else monthsInYearWithExpense.indexOf(Month.valueOf(selectedMonth)),
+            true)
     }
 
     private fun populateExpenseRecyclerView(yearSelected: Int,

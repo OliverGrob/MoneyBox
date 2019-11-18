@@ -10,8 +10,9 @@ import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.utils.SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_DEFAULT_VALUE
-import com.ogrob.moneybox.utils.SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_KEY
+import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
+import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY
+import com.ogrob.moneybox.utils.SHARED_PREFERENCES_NAME
 
 class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -63,10 +64,10 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun getTextColorBasedOnSetMaxExpense(totalMoneySpentInMonth: Double): Int {
-        val maxAmountPerMonth = _application.getSharedPreferences("moneybox_preferences", Context.MODE_PRIVATE)
+        val maxAmountPerMonth = _application.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
             .getFloat(
-                SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_KEY,
-                SHARED_PREFERENCES_MAX_AMOUNT_PER_MONTH_DEFAULT_VALUE)
+                SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
+                SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE)
 
         return if (maxAmountPerMonth < totalMoneySpentInMonth) Color.RED else Color.rgb(0, 160, 0)
     }

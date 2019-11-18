@@ -51,7 +51,7 @@ class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsV
                                                      expensesSortedByMonth: Map.Entry<Month, List<Expense>>) {
             val textView = TextView(itemView.context)
             val totalMoneySpentInMonth = statisticsViewModel.getTotalMoneySpent(expensesSortedByMonth.value)
-            textView.text = "${expensesSortedByMonth.key.name} - ${statisticsViewModel.formatMoneySpent(totalMoneySpentInMonth)}"
+            textView.text = "${expensesSortedByMonth.key.name.toLowerCase().capitalize()} - ${statisticsViewModel.formatMoneySpent(totalMoneySpentInMonth)}"
             textView.setTextColor(statisticsViewModel.getTextColorBasedOnSetMaxExpense(totalMoneySpentInMonth))
 
             textView.layoutParams = RelativeLayout.LayoutParams(
