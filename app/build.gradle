@@ -61,4 +61,7 @@ dependencies {
     // Navigation components
     implementation "androidx.navigation:navigation-fragment-ktx:$navigationVersion"
     implementation "androidx.navigation:navigation-ui-ktx:$navigationVersion"
+
+    // Bottom navigation bar
+    implementation 'com.android.support:design:28.0.0'
 }
