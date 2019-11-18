@@ -6,7 +6,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".presentation.expense.ExpenseActivity">
+            tools:context=".presentation.MainActivity">
 
         <EditText
                 android:id="@+id/expense_amount_edit_text"
@@ -103,7 +103,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="16dp"
                 android:onClick="onPositive"
                 android:text="Positive"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -114,11 +114,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp"
                 android:onClick="onCancel"
                 android:text="Cancel"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/expense_add_edit_positive_button" />
+                app:layout_constraintBottom_toBottomOf="@+id/expense_add_edit_positive_button"
+                app:layout_constraintEnd_toStartOf="@+id/expense_add_edit_positive_button"
+                app:layout_constraintTop_toTopOf="@+id/expense_add_edit_positive_button" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

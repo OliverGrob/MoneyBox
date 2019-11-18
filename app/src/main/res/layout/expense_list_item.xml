@@ -21,26 +21,26 @@
             android:minHeight="40dp"
             tools:layout_editor_absoluteY="81dp">
 
-            <TextView
-                    android:id="@+id/expense_addition_date_text_view"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:padding="5dp"
-                    android:textSize="15sp"
-                    app:additionDateString="@{expense}"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintWidth_percent="0.1"
-                    tools:text="14" />
+        <TextView
+                android:id="@+id/expense_addition_date_text_view"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:padding="5dp"
+                android:textSize="15sp"
+                app:additionDateString="@{expense}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.1"
+                tools:text="14" />
 
-            <TextView
-                    android:id="@+id/expense_amount_text_view"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:padding="5dp"
-                    android:textSize="15sp"
-                    app:expenseAmountFormatted="@{expense}"
+        <TextView
+                android:id="@+id/expense_amount_text_view"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:padding="5dp"
+                android:textSize="15sp"
+                app:expenseAmountFormatted="@{expense}"
                 app:layout_constraintBottom_toBottomOf="@+id/expense_addition_date_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_addition_date_text_view"
                 app:layout_constraintTop_toTopOf="@+id/expense_addition_date_text_view"
@@ -68,9 +68,9 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="5dp"
                 android:paddingVertical="1dp"
+                android:text="@{category.name}"
                 android:textAlignment="viewStart"
                 android:textSize="12sp"
-                android:text="@{category.name}"
                 app:layout_constraintBottom_toBottomOf="@+id/expense_amount_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_amount_text_view"
                 app:layout_constraintTop_toBottomOf="@+id/expense_description_text_view"
