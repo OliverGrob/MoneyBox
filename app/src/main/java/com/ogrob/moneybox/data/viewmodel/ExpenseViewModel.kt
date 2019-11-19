@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
@@ -42,13 +43,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryId))
     }
 
-    fun addNewCategory(categoryName: String) {
-//        if (isNewCategory(categoryName))
-            this.categoryRepository.addNewCategory(Category(categoryName))
+    fun addNewCategory(categoryName: String): Boolean {
+        return Transformations.map(this.categories) { categories ->
+            if (isNewCategory(categories, categoryName)) {
+                this.categoryRepository.addNewCategory(Category(categoryName))
+                true
+            } else
+                false
+        }.value!!
     }
 
-    private fun isNewCategory(categoryName: String): Boolean {
-        return this.categories.value!!
+    private fun isNewCategory(categories: List<Category>, categoryName: String): Boolean {
+        return categories
             .filter { category -> category.name == categoryName }
             .any()
     }
