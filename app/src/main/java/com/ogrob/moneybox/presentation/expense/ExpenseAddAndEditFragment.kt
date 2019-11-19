@@ -19,6 +19,7 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseAddAndEditBinding
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
+import com.ogrob.moneybox.utils.hideKeyboard
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -40,8 +41,13 @@ class ExpenseAddAndEditFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_expense_add_and_edit, container, false)
 
-        binding.expenseAddEditPositiveButton.setOnClickListener { addNewOrEditedExpense(it) }
+        binding.root.setOnClickListener { it.hideKeyboard() }
+        binding.expenseAddEditPositiveButton.setOnClickListener {
+            it.hideKeyboard()
+            addNewOrEditedExpense(it)
+        }
         binding.expenseAddEditCancelButton.setOnClickListener {
+            it.hideKeyboard()
             it.findNavController().navigate(ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseFragment())
         }
 

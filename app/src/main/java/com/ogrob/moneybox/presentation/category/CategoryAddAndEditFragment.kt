@@ -14,6 +14,7 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentCategoryAddAndEditBinding
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
+import com.ogrob.moneybox.utils.hideKeyboard
 
 class CategoryAddAndEditFragment : Fragment() {
 
@@ -31,8 +32,13 @@ class CategoryAddAndEditFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_category_add_and_edit, container, false)
 
-        binding.categoryAddEditPositiveButton.setOnClickListener { addNewOrEditedCategory(it) }
+        binding.root.setOnClickListener { it.hideKeyboard() }
+        binding.categoryAddEditPositiveButton.setOnClickListener {
+            it.hideKeyboard()
+            addNewOrEditedCategory(it)
+        }
         binding.categoryAddEditCancelButton.setOnClickListener {
+            it.hideKeyboard()
             it.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
         }
 

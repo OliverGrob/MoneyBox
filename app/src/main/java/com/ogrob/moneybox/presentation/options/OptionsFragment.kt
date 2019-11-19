@@ -13,6 +13,7 @@ import com.ogrob.moneybox.data.viewmodel.OptionsViewModel
 import com.ogrob.moneybox.databinding.FragmentOptionsBinding
 import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
+import com.ogrob.moneybox.utils.hideKeyboard
 
 class OptionsFragment : Fragment() {
 
@@ -28,7 +29,11 @@ class OptionsFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_options, container, false)
 
-        binding.saveOptionsButton.setOnClickListener { onSaveOptions(it) }
+        binding.root.setOnClickListener { it.hideKeyboard() }
+        binding.saveOptionsButton.setOnClickListener {
+            it.hideKeyboard()
+            onSaveOptions(it)
+        }
 
         val amountGoal = optionsViewModel.retrieveAmountGoalFromSharedPreferences(binding.root.context)
 
