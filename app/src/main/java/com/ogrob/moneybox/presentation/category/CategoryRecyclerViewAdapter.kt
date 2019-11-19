@@ -3,19 +3,16 @@ package com.ogrob.moneybox.presentation.category
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.CategoryListItemBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 
-class CategoryRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel)
+class CategoryRecyclerViewAdapter
     : ListAdapter<CategoryWithExpenses, CategoryRecyclerViewAdapter.CategoryViewHolder>(CategoryDiffCallback()) {
 
 
@@ -25,14 +22,13 @@ class CategoryRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         val categoryWithExpenses = getItem(position)
-        holder.bind(expenseViewModel, categoryWithExpenses)
+        holder.bind(categoryWithExpenses)
     }
 
 
     class CategoryViewHolder private constructor(val binding: CategoryListItemBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(expenseViewModel: ExpenseViewModel,
-                 categoryWithExpenses: CategoryWithExpenses) {
+        fun bind(categoryWithExpenses: CategoryWithExpenses) {
             binding.categoryNameTextView.text = categoryWithExpenses.category.name + " (" + categoryWithExpenses.expenses.size + ")"
 
             if (categoryWithExpenses.category.id == NO_CATEGORY_ID) {
@@ -41,13 +37,7 @@ class CategoryRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel
             }
 
             binding.categoryEditTextView.setOnClickListener {
-                val categoryNameEditText = createCategoryNameEditText(categoryWithExpenses.category)
-
-                createCategoryEditAlertDialog(
-                    categoryNameEditText,
-                    expenseViewModel,
-                    categoryWithExpenses.category
-                )
+                navigateToCategoryEditFragment(it, categoryWithExpenses.category)
             }
 
                 // Deleting single category is not working currently, foreign key set default is not setting the id properly
@@ -61,33 +51,12 @@ class CategoryRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel
 //            }
         }
 
-        private fun createCategoryNameEditText(category: Category): EditText {
-            val categoryNameEditText = EditText(itemView.context)
-            val layoutParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT
-            )
-            categoryNameEditText.setText(category.name)
-            categoryNameEditText.layoutParams = layoutParams
-
-            return categoryNameEditText
-        }
-
-        private fun createCategoryEditAlertDialog(categoryNameEditText: EditText,
-                                                  expenseViewModel: ExpenseViewModel,
-                                                  category: Category) {
-            AlertDialog.Builder(itemView.context)
-                .setTitle("Edit category")
-                .setView(categoryNameEditText)
-                .setPositiveButton("Save") { _, _ ->
-                    expenseViewModel.updateCategory(
-                        category.id,
-                        categoryNameEditText.text.toString()
-                    )
-                }
-                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-                .create()
-                .show()
+        private fun navigateToCategoryEditFragment(view: View, category: Category) {
+            view.findNavController().navigate(CategoryFragmentDirections.actionCategoryFragmentToCategoryAddAndEditFragment(
+                category.id,
+                category.name,
+                "Save"
+            ))
         }
 
 

@@ -41,7 +41,7 @@ class CategoryFragment : Fragment() {
 
     private fun populateCategoryRecyclerView() {
         expenseViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
-            val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter(expenseViewModel)
+            val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter()
             binding.categoryRecyclerView.adapter = categoryRecyclerViewAdapter
             binding.categoryRecyclerView.layoutManager = LinearLayoutManager(context)
             categoryRecyclerViewAdapter.submitList(it)
