@@ -6,13 +6,16 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentCategoryAddAndEditBinding
+import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.hideKeyboard
 
@@ -42,25 +45,36 @@ class CategoryAddAndEditFragment : Fragment() {
             it.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
         }
 
-        this.args = CategoryAddAndEditFragmentArgs.fromBundle(arguments!!)
+        args = CategoryAddAndEditFragmentArgs.fromBundle(arguments!!)
 
-        initTextViewsAndButtons()
-        applyTextWatcher()
+        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer {
+            initTextViewsAndButtons()
+            applyTextWatcher(it)
+        })
 
         return binding.root
     }
 
     private fun initTextViewsAndButtons() {
-        this.binding.categoryEditText.setText(args.categoryName)
-        this.binding.categoryAddEditPositiveButton.isEnabled = args.categoryId != NEW_CATEGORY_PLACEHOLDER_ID
-        this.binding.categoryAddEditPositiveButton.text = args.positiveButtonText
+        binding.categoryEditText.setText(args.categoryName)
+        binding.categoryAddEditPositiveButton.isEnabled = args.categoryId != NEW_CATEGORY_PLACEHOLDER_ID
+        binding.categoryAddEditPositiveButton.text = args.positiveButtonText
     }
 
-    private fun applyTextWatcher() {
+    private fun applyTextWatcher(allCategories: List<Category>) {
+        val allCategoryNames = allCategories
+            .map(Category::name)
+            .map(String::toLowerCase)
+
         val newExpenseEditTextTextWatcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
+                val categoryAlreadyAdded = allCategoryNames.contains(s.toString().toLowerCase(resources.configuration.locales[0]))
+
                 binding.categoryAddEditPositiveButton.isEnabled =
-                    binding.categoryEditText.text.isNotBlank()
+                    binding.categoryEditText.text.isNotBlank() && !categoryAlreadyAdded
+
+                if (categoryAlreadyAdded)
+                    Toast.makeText(binding.root.context, "There is already a category named \"$s\"", Toast.LENGTH_LONG).show()
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
@@ -75,9 +89,9 @@ class CategoryAddAndEditFragment : Fragment() {
     }
 
     private fun addNewOrEditedCategory(view: View) {
-        this.expenseViewModel.addOrEditCategory(
-            this.args.categoryId,
-            this.binding.categoryEditText.text.toString())
+        expenseViewModel.addOrEditCategory(
+            args.categoryId,
+            binding.categoryEditText.text.toString())
 
         view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
     }

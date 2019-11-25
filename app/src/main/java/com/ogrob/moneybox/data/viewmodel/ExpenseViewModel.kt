@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
@@ -43,20 +42,8 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryId))
     }
 
-    fun addNewCategory(categoryName: String): Boolean {
-        return Transformations.map(this.categories) { categories ->
-            if (isNewCategory(categories, categoryName)) {
-                this.categoryRepository.addNewCategory(Category(categoryName))
-                true
-            } else
-                false
-        }.value!!
-    }
-
-    private fun isNewCategory(categories: List<Category>, categoryName: String): Boolean {
-        return categories
-            .filter { category -> category.name == categoryName }
-            .any()
+    fun addNewCategory(categoryName: String) {
+        this.categoryRepository.addNewCategory(Category(categoryName))
     }
 
     fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
@@ -110,10 +97,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     fun getExpensesForSelectedMonthInSelectedYear(yearSelected: Int, monthSelected: Month): List<Expense> {
         return this.categoriesWithExpenses.value!!
-            .map { categoryWithExpenses -> CategoryWithExpenses(
-                categoryWithExpenses.category,
-                this.filterExpensesForSelectedMonthInSelectedYear(categoryWithExpenses.expenses, yearSelected, monthSelected)) }
-            .flatMap(CategoryWithExpenses::expenses)
+            .flatMap { categoryWithExpenses ->
+                filterExpensesForSelectedMonthInSelectedYear(categoryWithExpenses.expenses, yearSelected, monthSelected) }
+            .sortedBy(Expense::additionDate)
     }
 
     private fun filterExpensesForSelectedMonthInSelectedYear(expenses: List<Expense>, yearSelected: Int, monthSelected: Month): List<Expense> {
