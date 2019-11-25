@@ -13,86 +13,105 @@ import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_NAME
+import java.time.Month
+import kotlin.math.roundToInt
 
 class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _application = application
-    private val _categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = ExpenseRepository(application).getCategoriesWithExpenses()
+    private val expenseRepository: ExpenseRepository = ExpenseRepository(application)
 
-    lateinit var categoriesWithExpenses: List<CategoryWithExpenses>
-    lateinit var allCategories: List<Category>
-    private lateinit var selectedCategories: MutableList<Category>
+    private val _application = application
+    private val _categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> =
+        expenseRepository.getCategoriesWithExpenses()
+
+    private lateinit var categoriesWithExpenses: List<CategoryWithExpenses>
+    private lateinit var allCategories: List<Category>
+    lateinit var selectedCategoriesWithExpenses: MutableList<CategoryWithExpenses>
 
 
     fun setCategoriesWithExpensesAndSelectedCategories(categoriesWithExpenses: List<CategoryWithExpenses>) {
         this.categoriesWithExpenses = categoriesWithExpenses
         this.allCategories = categoriesWithExpenses
             .map(CategoryWithExpenses::category)
-        this.selectedCategories = this.allCategories
+        this.selectedCategoriesWithExpenses = this.categoriesWithExpenses
             .toMutableList()
     }
 
-    fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>> = this._categoriesWithExpenses
+    fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>> =
+        this._categoriesWithExpenses
+
+    fun getSelectedExpensesForStatistics(selectedYear: Int, selectedMonth: Month): List<Expense> = selectedCategoriesWithExpenses
+        .flatMap(CategoryWithExpenses::expenses)
+        .filter { expense -> expense.additionDate.year == selectedYear && expense.additionDate.month == selectedMonth }
 
     fun calculateTotalAverage(): Int {
-        val allExpenses = categoriesWithExpenses
+        val allExpenses = selectedCategoriesWithExpenses
             .flatMap(CategoryWithExpenses::expenses)
 
-        return allExpenses
-            .map(Expense::amount)
-            .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
-            .div(allExpenses.size)
+        return calculateTotalAmount(allExpenses)
+            .div(selectedCategoriesWithExpenses.size)
             .toInt()
     }
 
-    fun sortExpensesByYearAndMonth(categoriesWithExpenses: List<CategoryWithExpenses>): List<SortedExpensesByYearAndMonth> {
-        return categoriesWithExpenses
+    fun calculateTotalAmount(expenses: List<Expense>): Double = expenses
+        .map(Expense::amount)
+        .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
+
+    fun sortExpensesByYearAndMonth(categoriesWithExpenses: List<CategoryWithExpenses>): List<SortedExpensesByYearAndMonth> =
+        categoriesWithExpenses
             .flatMap(CategoryWithExpenses::expenses)
             .groupBy { expense -> expense.additionDate.year }
-            .map { currentExpensesSortedByYear -> SortedExpensesByYearAndMonth(currentExpensesSortedByYear.key, currentExpensesSortedByYear.value) }
+            .map { currentExpensesSortedByYear ->
+                SortedExpensesByYearAndMonth(
+                    currentExpensesSortedByYear.key,
+                    currentExpensesSortedByYear.value
+                )
+            }
             .sortedBy(SortedExpensesByYearAndMonth::year)
-    }
 
-    fun getTotalMoneySpent(expensesSelected: List<Expense>): Double {
-        return expensesSelected
-            .map(Expense::amount)
-            .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
-    }
+    fun getTotalMoneySpent(expensesSelected: List<Expense>): Double = expensesSelected
+        .map(Expense::amount)
+        .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
 
-    fun formatMoneySpent(currentTotal: Double): String {
-        return if (currentTotal == currentTotal.toInt().toDouble()) currentTotal.toInt().toString() else currentTotal.toString()
-    }
+    fun formatMoneySpent(currentTotal: Double): String =
+        if (currentTotal == currentTotal.toInt().toDouble()) currentTotal.toInt().toString() else currentTotal.toString()
 
     fun getTextColorBasedOnSetMaxExpense(totalMoneySpentInMonth: Double): Int {
-        val maxAmountPerMonth = _application.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
-            .getFloat(
-                SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
-                SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE)
+        val maxAmountPerMonth =
+            _application.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
+                .getFloat(
+                    SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
+                    SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
+                )
 
         return if (maxAmountPerMonth < totalMoneySpentInMonth) Color.RED else Color.rgb(0, 160, 0)
     }
 
-    fun getAllCategoryNames(): Array<String> {
-        return allCategories
-            .map(Category::name)
-            .toTypedArray()
-    }
+    fun getAllCategoryNames(): Array<String> = allCategories
+        .map { category -> "${category.name} (${categoriesWithExpenses
+            .first { categoryWithExpenses -> categoryWithExpenses.category == category }
+            .expenses
+            .size})" }
+        .toTypedArray()
 
     fun updateSelectedCategories(which: Int, checked: Boolean) {
         if (checked) {
-            selectedCategories.add(allCategories[which])
+            selectedCategoriesWithExpenses.add(categoriesWithExpenses[which])
         } else {
-            selectedCategories.remove(allCategories[which])
+            selectedCategoriesWithExpenses.remove(categoriesWithExpenses[which])
         }
     }
 
-    fun filterForSelectedCategories(): List<CategoryWithExpenses> {
-        return categoriesWithExpenses
-            .filter { categoryWithExpenses -> selectedCategories.contains(categoryWithExpenses.category) }
-    }
+    fun isCategoryChecked(index: Int): Boolean =
+        selectedCategoriesWithExpenses.contains(categoriesWithExpenses[index])
 
-    fun isCategoryChecked(index: Int): Boolean {
-        return selectedCategories.contains(allCategories[index])
-    }
+    fun calculatePercentageOfTotalAmount(
+        expense: Expense,
+        totalAmountFromSelectedExpenses: Double
+    ): Double = expense.amount
+        .div(totalAmountFromSelectedExpenses)
+        .times(10000.0)
+        .roundToInt()
+        .div(100.0)
 
 }

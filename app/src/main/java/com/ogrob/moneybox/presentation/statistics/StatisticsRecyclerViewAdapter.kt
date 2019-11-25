@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.ogrob.moneybox.data.helper.SortedExpensesByYearAndMonth
 import com.ogrob.moneybox.data.viewmodel.StatisticsViewModel
@@ -44,10 +45,13 @@ class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsV
         fun bind(statisticsViewModel: StatisticsViewModel, sortedExpensesByYearAndMonth: SortedExpensesByYearAndMonth) {
             binding.statisticsYearTextView.text = "${sortedExpensesByYearAndMonth.year} - ${statisticsViewModel.formatMoneySpent(sortedExpensesByYearAndMonth.totalMoneySpentInYear)}"
 
-            sortedExpensesByYearAndMonth.expensesSortedByMonth.forEach { createAmountSpentInMonthTextView(statisticsViewModel, it) }
+            sortedExpensesByYearAndMonth.expensesSortedByMonth.forEach {
+                createAmountSpentInMonthTextView(statisticsViewModel, sortedExpensesByYearAndMonth.year, it)
+            }
         }
 
         private fun createAmountSpentInMonthTextView(statisticsViewModel: StatisticsViewModel,
+                                                     selectedYear: Int,
                                                      expensesSortedByMonth: Map.Entry<Month, List<Expense>>) {
             val textView = TextView(itemView.context)
             val totalMoneySpentInMonth = statisticsViewModel.getTotalMoneySpent(expensesSortedByMonth.value)
@@ -66,6 +70,13 @@ class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsV
                 }
 
             textView.textSize = 18F
+
+            textView.setOnClickListener {
+                it.findNavController().navigate(StatisticsFragmentDirections.actionStatisticsFragmentToStatisticsDetailFragment(
+                    selectedYear,
+                    expensesSortedByMonth.key.toString()
+                ))
+            }
 
             binding.statisticsMonthLinearLayout.addView(textView)
         }

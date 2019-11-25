@@ -3,25 +3,28 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/main_navigation"
-        app:startDestination="@id/expense_fragment">
+        app:startDestination="@id/expenseFragment">
 
     <fragment
-            android:id="@+id/expense_fragment"
+            android:id="@+id/expenseFragment"
             android:name="com.ogrob.moneybox.presentation.expense.ExpenseFragment"
             android:label="ExpenseFragment"
             tools:layout="@layout/fragment_expense">
         <action
                 android:id="@+id/action_expenseFragment_to_expenseAddAndEditFragment"
-                app:destination="@id/expense_add_and_edit_fragment" />
+                app:destination="@id/expenseAddAndEditFragment" />
+        <action
+                android:id="@+id/action_expenseFragment_to_statisticsFragment"
+                app:destination="@id/statisticsFragment" />
     </fragment>
     <fragment
-            android:id="@+id/expense_add_and_edit_fragment"
+            android:id="@+id/expenseAddAndEditFragment"
             android:name="com.ogrob.moneybox.presentation.expense.ExpenseAddAndEditFragment"
             android:label="ExpenseAddAndEditFragment"
             tools:layout="@layout/fragment_expense_add_and_edit">
         <action
                 android:id="@+id/action_expenseAddAndEditFragment_to_expenseFragment"
-                app:destination="@id/expense_fragment" />
+                app:destination="@id/expenseFragment" />
         <argument
                 android:name="expenseAmount"
                 app:argType="string" />
@@ -42,22 +45,22 @@
                 app:argType="string" />
     </fragment>
     <fragment
-            android:id="@+id/category_fragment"
+            android:id="@+id/categoryFragment"
             android:name="com.ogrob.moneybox.presentation.category.CategoryFragment"
             android:label="CategoryFragment"
             tools:layout="@layout/fragment_category">
         <action
-                android:id="@+id/action_category_fragment_to_categoryAddAndEditFragment"
-                app:destination="@id/category_add_and_edit_fragment" />
+                android:id="@+id/action_categoryFragment_to_categoryAddAndEditFragment"
+                app:destination="@id/categoryAddAndEditFragment" />
     </fragment>
     <fragment
-            android:id="@+id/category_add_and_edit_fragment"
+            android:id="@+id/categoryAddAndEditFragment"
             android:name="com.ogrob.moneybox.presentation.category.CategoryAddAndEditFragment"
             android:label="CategoryAddAndEditFragment"
             tools:layout="@layout/fragment_category_add_and_edit">
         <action
-                android:id="@+id/action_categoryAddAndEditFragment_to_category_fragment"
-                app:destination="@id/category_fragment" />
+                android:id="@+id/action_categoryAddAndEditFragment_to_categoryFragment"
+                app:destination="@id/categoryFragment" />
         <argument
                 android:name="categoryId"
                 app:argType="long" />
@@ -69,12 +72,31 @@
                 app:argType="string" />
     </fragment>
     <fragment
-            android:id="@+id/statistics_fragment"
+            android:id="@+id/statisticsFragment"
             android:name="com.ogrob.moneybox.presentation.statistics.StatisticsFragment"
             android:label="StatisticsFragment"
-            tools:layout="@layout/fragment_statistics" />
+            tools:layout="@layout/fragment_statistics">
+        <action
+                android:id="@+id/action_statisticsFragment_to_statisticsDetailFragment"
+                app:destination="@id/statisticsDetailFragment" />
+    </fragment>
     <fragment
-            android:id="@+id/options_fragment"
+            android:id="@+id/statisticsDetailFragment"
+            android:name="com.ogrob.moneybox.presentation.statistics.StatisticsDetailFragment"
+            android:label="StatisticsDetailFragment"
+            tools:layout="@layout/fragment_statistics_detail">
+        <action
+                android:id="@+id/action_statisticsDetailFragment_to_statisticsFragment"
+                app:destination="@id/statisticsFragment" />
+        <argument
+                android:name="selectedYear"
+                app:argType="integer" />
+        <argument
+                android:name="selectedMonth"
+                app:argType="string" />
+    </fragment>
+    <fragment
+            android:id="@+id/optionsFragment"
             android:name="com.ogrob.moneybox.presentation.options.OptionsFragment"
             android:label="OptionsFragment"
             tools:layout="@layout/fragment_options" />

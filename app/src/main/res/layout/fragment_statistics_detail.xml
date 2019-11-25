@@ -31,33 +31,32 @@
                 app:layout_constraintTop_toBottomOf="@+id/category_filter_button"
                 app:layout_constraintWidth_percent="0.45" />
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/statistics_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.7"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expense_amount_filter_button"
-                app:layout_constraintVertical_bias="0.0" />
-
         <TextView
-                android:id="@+id/average_total_per_month_text_view"
+                android:id="@+id/year_and_month_detail_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:text="Total average: 85660/month"
+                android:text="2019 November - 89000"
                 android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="@+id/expense_amount_filter_button"
+                app:layout_constraintTop_toBottomOf="@+id/expense_amount_filter_button" />
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/statistics_detail_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/statistics_recycler_view"
-                app:layout_constraintTop_toBottomOf="@+id/statistics_recycler_view" />
+                app:layout_constraintEnd_toEndOf="@+id/year_and_month_detail_text_view"
+                app:layout_constraintHeight_percent="0.7"
+                app:layout_constraintStart_toStartOf="@+id/year_and_month_detail_text_view"
+                app:layout_constraintTop_toBottomOf="@+id/year_and_month_detail_text_view"
+                app:layout_constraintVertical_bias="0.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

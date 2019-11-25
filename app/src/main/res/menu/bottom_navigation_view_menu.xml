@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-            android:id="@+id/options_fragment"
+            android:id="@+id/optionsFragment"
             android:icon="@android:drawable/ic_menu_share"
             android:title="Options" />
 
     <item
-            android:id="@+id/category_fragment"
+            android:id="@+id/categoryFragment"
             android:icon="@android:drawable/ic_menu_crop"
             android:title="Categories" />
 
     <item
-            android:id="@+id/expense_fragment"
+            android:id="@+id/expenseFragment"
             android:icon="@android:drawable/ic_menu_sort_by_size"
             android:title="Expenses" />
 
     <item
-            android:id="@+id/statistics_fragment"
+            android:id="@+id/statisticsFragment"
             android:icon="@android:drawable/ic_menu_agenda"
             android:title="Statistics" />
 

@@ -44,6 +44,7 @@ class StatisticsFragment : Fragment() {
         val multiChoiceListener = DialogInterface.OnMultiChoiceClickListener { dialog, which, isChecked ->
             statisticsViewModel.updateSelectedCategories(which, isChecked)
             populateExpenseSummaryRecyclerView()
+            calculateTotalAverage()
         }
 
         val allCategoryNames = statisticsViewModel.getAllCategoryNames()
@@ -56,7 +57,7 @@ class StatisticsFragment : Fragment() {
                     BooleanArray(allCategoryNames.size) { index -> statisticsViewModel.isCategoryChecked(index) },
                     multiChoiceListener)
 //                .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteExpense(expense) }
-//                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+                .setNegativeButton("Done") { dialog, _ -> dialog.cancel() }
                 .create()
                 .show()
         }
@@ -67,7 +68,7 @@ class StatisticsFragment : Fragment() {
         binding.statisticsRecyclerView.adapter = statisticsRecyclerViewAdapter
         binding.statisticsRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        statisticsRecyclerViewAdapter.setExpensesByYearAndAmount(statisticsViewModel.filterForSelectedCategories())
+        statisticsRecyclerViewAdapter.setExpensesByYearAndAmount(statisticsViewModel.selectedCategoriesWithExpenses)
     }
 
     private fun calculateTotalAverage() {
