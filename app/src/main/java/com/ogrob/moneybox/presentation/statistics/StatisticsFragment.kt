@@ -56,8 +56,8 @@ class StatisticsFragment : Fragment() {
                     allCategoryNames,
                     BooleanArray(allCategoryNames.size) { index -> statisticsViewModel.isCategoryChecked(index) },
                     multiChoiceListener)
-//                .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteExpense(expense) }
-                .setNegativeButton("Done") { dialog, _ -> dialog.cancel() }
+                .setPositiveButton("Done") { dialog, _ -> dialog.cancel() }
+                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
                 .create()
                 .show()
         }
