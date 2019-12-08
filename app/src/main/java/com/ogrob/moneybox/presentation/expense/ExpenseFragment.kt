@@ -4,8 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -36,67 +35,152 @@ class ExpenseFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_expense, container, false)
 
+        binding.yearTextView.setOnClickListener { onInitYearAndMonthSelectionAlertDialogs() }
+        binding.monthTextView.setOnClickListener { onInitYearAndMonthSelectionAlertDialogs() }
         binding.addExpenseButton.setOnClickListener { onAddNewExpense(it) }
 
-        populateSpinnersAndExpensesRecyclerView()
+        expenseViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
+            populateExpensesRecyclerView(it)
+        })
 
         return binding.root
     }
 
-    private fun populateSpinnersAndExpensesRecyclerView() {
+    private fun onInitYearAndMonthSelectionAlertDialogs() {
         expenseViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
-            val yearsWithExpense: List<Int> = expenseViewModel.getYearsWithExpense()
             val categories: List<Category> = it.map(CategoryWithExpenses::category)
 
-            val adapter = ArrayAdapter(binding.root.context, android.R.layout.simple_spinner_item, yearsWithExpense)
-            adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
-            binding.yearSpinner.adapter = adapter
+            val triple = createYearInformationTriple()
+            val yearsWithExpense: Array<String> = triple.first
+            val selectedYearIndex: Int = triple.second
+            var selectedYear = triple.third
 
-            binding.yearSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                    populateMonthSpinner(yearsWithExpense[position], categories)
-                    expenseViewModel.updatePreferenceInSharedPreferences(
-                        binding.root.context,
-                        SHARED_PREFERENCES_SELECTED_YEAR_KEY,
-                        yearsWithExpense[position].toString())
+            AlertDialog.Builder(binding.root.context)
+                .setTitle("Select year:")
+                .setSingleChoiceItems(
+                    yearsWithExpense,
+                    selectedYearIndex
+                ) { _, which -> selectedYear = yearsWithExpense[which] }
+                .setPositiveButton("Next") { dialog, _ ->
+                    populateMonthAlertDialog(selectedYear, categories)
+                    dialog.cancel()
                 }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                }
-            }
-
-            val selectedYear = expenseViewModel.retrievePreferenceFromSharedPreferences(binding.root.context, SHARED_PREFERENCES_SELECTED_YEAR_KEY)
-            binding.yearSpinner.setSelection(
-                if (selectedYear.isBlank()) yearsWithExpense.lastIndex else yearsWithExpense.indexOf(selectedYear.toInt()),
-                true)
+                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+                .create()
+                .show()
         })
     }
 
-    private fun populateMonthSpinner(yearSelected: Int,
-                                     categories: List<Category>) {
-        val monthsInYearWithExpense: List<Month> = expenseViewModel.getMonthsInYearWithExpense(yearSelected)
+    private fun populateMonthAlertDialog(selectedYear: String,
+                                         categories: List<Category>) {
+        val triple = createMonthInformationTriple(selectedYear)
+        val monthsInYearWithExpense: Array<String> = triple.first
+        val selectedMonthIndex: Int = triple.second
+        var selectedMonth = triple.third
 
-        val adapter = ArrayAdapter(binding.root.context, android.R.layout.simple_spinner_item, monthsInYearWithExpense)
-        adapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line)
-        binding.monthSpinner.adapter = adapter
-
-        binding.monthSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                populateExpenseRecyclerView(yearSelected, monthsInYearWithExpense[position], categories)
-                expenseViewModel.updatePreferenceInSharedPreferences(
-                    binding.root.context,
-                    SHARED_PREFERENCES_SELECTED_MONTH_KEY,
-                    monthsInYearWithExpense[position].toString())
+        AlertDialog.Builder(binding.root.context)
+            .setTitle("Select month in $selectedYear:")
+            .setSingleChoiceItems(
+                monthsInYearWithExpense,
+                selectedMonthIndex
+            ) { _, which -> selectedMonth = monthsInYearWithExpense[which] }
+            .setPositiveButton("Done") { dialog, _ ->
+                onSelectMonth(selectedYear, selectedMonth, categories)
+                dialog.cancel()
             }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+            .create()
+            .show()
+    }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-            }
-        }
+    private fun onSelectMonth(selectedYear: String,
+                              selectedMonth: String,
+                              categories: List<Category>) {
+        val selectedYearFromSharedPreferences = expenseViewModel.retrievePreferenceFromSharedPreferences(
+            binding.root.context,
+            SHARED_PREFERENCES_SELECTED_YEAR_KEY)
+        val selectedMonthFromSharedPreferences = expenseViewModel.retrievePreferenceFromSharedPreferences(
+            binding.root.context,
+            SHARED_PREFERENCES_SELECTED_MONTH_KEY)
 
-        val selectedMonth = expenseViewModel.retrievePreferenceFromSharedPreferences(binding.root.context, SHARED_PREFERENCES_SELECTED_MONTH_KEY)
-        binding.monthSpinner.setSelection(
-            if (selectedMonth.isBlank()) monthsInYearWithExpense.lastIndex else monthsInYearWithExpense.indexOf(Month.valueOf(selectedMonth)),
-            true)
+        val newSelectionSameAsCurrent =
+            selectedYearFromSharedPreferences == selectedYear && selectedMonthFromSharedPreferences == selectedMonth
+
+        if (newSelectionSameAsCurrent)
+            return
+
+        expenseViewModel.updatePreferenceInSharedPreferences(
+            binding.root.context,
+            SHARED_PREFERENCES_SELECTED_YEAR_KEY,
+            selectedYear)
+
+        expenseViewModel.updatePreferenceInSharedPreferences(
+            binding.root.context,
+            SHARED_PREFERENCES_SELECTED_MONTH_KEY,
+            selectedMonth)
+
+        binding.yearTextView.text = selectedYear
+        binding.monthTextView.text = selectedMonth
+
+        populateExpenseRecyclerView(
+            selectedYear.toInt(),
+            Month.valueOf(selectedMonth),
+            categories)
+    }
+
+    private fun populateExpensesRecyclerView(categoryWithExpenses: List<CategoryWithExpenses>) {
+        val categories: List<Category> = categoryWithExpenses.map(CategoryWithExpenses::category)
+
+        val selectedYear = createYearInformationTriple().third
+        val selectedMonth = createMonthInformationTriple(selectedYear).third
+
+        binding.yearTextView.text = selectedYear
+        binding.monthTextView.text = selectedMonth
+
+        populateExpenseRecyclerView(
+            selectedYear.toInt(),
+            Month.valueOf(selectedMonth),
+            categories)
+    }
+
+    private fun createYearInformationTriple(): Triple<Array<String>, Int, String> {
+        val yearsWithExpense: Array<String> = expenseViewModel.getYearsWithExpense()
+            .map(Int::toString)
+            .toTypedArray()
+
+        val selectedYearFromSharedPreferences =
+            expenseViewModel.retrievePreferenceFromSharedPreferences(
+                binding.root.context,
+                SHARED_PREFERENCES_SELECTED_YEAR_KEY)
+
+        val selectedYearIndex: Int =
+            if (selectedYearFromSharedPreferences.isBlank())
+                yearsWithExpense.lastIndex
+            else
+                yearsWithExpense.indexOf(selectedYearFromSharedPreferences)
+
+        return Triple(yearsWithExpense, selectedYearIndex, selectedYearFromSharedPreferences)
+    }
+
+    private fun createMonthInformationTriple(selectedYear: String): Triple<Array<String>, Int, String> {
+        val monthsInYearWithExpense: Array<String> =
+            expenseViewModel.getMonthsInYearWithExpense(selectedYear.toInt())
+                .map(Month::toString)
+                .toTypedArray()
+
+        var selectedMonth =
+            expenseViewModel.retrievePreferenceFromSharedPreferences(
+                binding.root.context,
+                SHARED_PREFERENCES_SELECTED_MONTH_KEY)
+
+        val selectedMonthIndex: Int =
+            if (selectedMonth.isBlank() || !monthsInYearWithExpense.contains(selectedMonth)) {
+                selectedMonth = monthsInYearWithExpense[monthsInYearWithExpense.lastIndex]
+                monthsInYearWithExpense.lastIndex
+            } else
+                monthsInYearWithExpense.indexOf(selectedMonth)
+
+        return Triple(monthsInYearWithExpense, selectedMonthIndex, selectedMonth)
     }
 
     private fun populateExpenseRecyclerView(yearSelected: Int,

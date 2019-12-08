@@ -21,7 +21,7 @@
                 app:layout_constraintHeight_percent="0.8"
                 app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/year_spinner" />
+                app:layout_constraintTop_toBottomOf="@+id/year_text_view" />
 
         <Button
                 android:id="@+id/add_expense_button"
@@ -44,24 +44,28 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/add_expense_button" />
 
-        <Spinner
-                android:id="@+id/year_spinner"
+        <TextView
+                android:id="@+id/year_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:dropDownWidth="fill_parent"
+                android:textSize="22sp"
                 app:layout_constraintStart_toStartOf="@+id/expenses_recycler_view"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="2019" />
 
-        <Spinner
-                android:id="@+id/month_spinner"
+        <TextView
+                android:id="@+id/month_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:dropDownWidth="fill_parent"
-                app:layout_constraintBottom_toBottomOf="@+id/year_spinner"
-                app:layout_constraintStart_toEndOf="@+id/year_spinner"
-                app:layout_constraintTop_toTopOf="@+id/year_spinner" />
+                android:textSize="22sp"
+                app:layout_constraintBottom_toBottomOf="@+id/year_text_view"
+                app:layout_constraintStart_toEndOf="@+id/year_text_view"
+                app:layout_constraintTop_toTopOf="@+id/year_text_view"
+                tools:text="December" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
