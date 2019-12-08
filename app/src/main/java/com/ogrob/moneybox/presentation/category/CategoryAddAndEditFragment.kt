@@ -1,5 +1,6 @@
 package com.ogrob.moneybox.presentation.category
 
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,6 +19,7 @@ import com.ogrob.moneybox.databinding.FragmentCategoryAddAndEditBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.hideKeyboard
+import top.defaults.colorpicker.ColorPickerPopup
 
 class CategoryAddAndEditFragment : Fragment() {
 
@@ -36,6 +38,7 @@ class CategoryAddAndEditFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_category_add_and_edit, container, false)
 
         binding.root.setOnClickListener { it.hideKeyboard() }
+        binding.categoryColorTextView.setOnClickListener { onChooseCategoryColor(it) }
         binding.categoryAddEditPositiveButton.setOnClickListener {
             it.hideKeyboard()
             addNewOrEditedCategory(it)
@@ -48,17 +51,18 @@ class CategoryAddAndEditFragment : Fragment() {
         args = CategoryAddAndEditFragmentArgs.fromBundle(arguments!!)
 
         expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer {
-            initTextViewsAndButtons()
+            initViewsAndButtons()
             applyTextWatcher(it)
         })
 
         return binding.root
     }
 
-    private fun initTextViewsAndButtons() {
-        binding.categoryEditText.setText(args.categoryName)
+    private fun initViewsAndButtons() {
+        binding.categoryNameEditText.setText(args.categoryName)
         binding.categoryAddEditPositiveButton.isEnabled = args.categoryId != NEW_CATEGORY_PLACEHOLDER_ID
         binding.categoryAddEditPositiveButton.text = args.positiveButtonText
+        binding.categoryColorTextView.setBackgroundColor(args.categoryColor)
     }
 
     private fun applyTextWatcher(allCategories: List<Category>) {
@@ -71,7 +75,7 @@ class CategoryAddAndEditFragment : Fragment() {
                 val categoryAlreadyAdded = allCategoryNames.contains(s.toString().toLowerCase(resources.configuration.locales[0]))
 
                 binding.categoryAddEditPositiveButton.isEnabled =
-                    binding.categoryEditText.text.isNotBlank() && !categoryAlreadyAdded
+                    binding.categoryNameEditText.text.isNotBlank() && !categoryAlreadyAdded
 
                 if (categoryAlreadyAdded)
                     Toast.makeText(binding.root.context, "There is already a category named \"$s\"", Toast.LENGTH_LONG).show()
@@ -85,13 +89,33 @@ class CategoryAddAndEditFragment : Fragment() {
 
         }
 
-        binding.categoryEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
+        binding.categoryNameEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
+    }
+
+    private fun onChooseCategoryColor(view: View) {
+        val colorPickerPopup = object : ColorPickerPopup.ColorPickerObserver() {
+            override fun onColorPicked(color: Int) {
+                view.setBackgroundColor(color)
+            }
+        }
+
+        ColorPickerPopup.Builder(binding.root.context)
+            .initialColor((view.background as ColorDrawable).color)
+            .enableBrightness(false)
+            .enableAlpha(false)
+            .okTitle("Choose")
+            .cancelTitle("Cancel")
+            .showIndicator(true)
+            .showValue(true)
+            .build()
+            .show(view, colorPickerPopup)
     }
 
     private fun addNewOrEditedCategory(view: View) {
         expenseViewModel.addOrEditCategory(
             args.categoryId,
-            binding.categoryEditText.text.toString())
+            binding.categoryNameEditText.text.toString(),
+            (binding.categoryColorTextView.background as ColorDrawable).color)
 
         view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
     }

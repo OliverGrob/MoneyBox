@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b81bbeee5cc02f8566b04338501b8fd6",
+    "identityHash": "db7893a8bf013f27867ecb7b6f05ab73",
     "entities": [
       {
         "tableName": "expense",
@@ -52,7 +52,7 @@
             "columnNames": [
               "category_id"
             ],
-            "createSql": "CREATE  INDEX `index_expense_category_id` ON `${TABLE_NAME}` (`category_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_expense_category_id` ON `${TABLE_NAME}` (`category_id`)"
           }
         ],
         "foreignKeys": [
@@ -71,7 +71,7 @@
       },
       {
         "tableName": "category",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `color` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -83,6 +83,12 @@
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -99,7 +105,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b81bbeee5cc02f8566b04338501b8fd6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db7893a8bf013f27867ecb7b6f05ab73')"
     ]
   }
 }

@@ -42,8 +42,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryId))
     }
 
-    fun addNewCategory(categoryName: String) {
-        this.categoryRepository.addNewCategory(Category(categoryName))
+    fun addNewCategory(categoryName: String, categoryColor: Int) {
+        this.categoryRepository.addNewCategory(Category(
+            categoryName,
+            categoryColor))
     }
 
     fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
@@ -55,10 +57,11 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryId))
     }
 
-    fun updateCategory(categoryId: Long, categoryName: String) {
+    fun updateCategory(categoryId: Long, categoryName: String, categoryColor: Int) {
         this.categoryRepository.updateCategory(Category(
             categoryId,
-            categoryName))
+            categoryName,
+            categoryColor))
     }
 
     fun deleteExpense(expense: Expense) {
@@ -124,14 +127,17 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 categoryId)
     }
 
-    fun addOrEditCategory(categoryId: Long, categoryName: String) {
+    fun addOrEditCategory(categoryId: Long, categoryName: String, currentTextColor: Int) {
         if (categoryId == NEW_CATEGORY_PLACEHOLDER_ID)
-            this.addNewCategory(categoryName)
+            this.addNewCategory(
+                categoryName,
+                currentTextColor)
 
         else
             this.updateCategory(
                 categoryId,
-                categoryName)
+                categoryName,
+                currentTextColor)
     }
 
     fun getTotalMoneySpentFormatted(expensesSelected: List<Expense>): String {

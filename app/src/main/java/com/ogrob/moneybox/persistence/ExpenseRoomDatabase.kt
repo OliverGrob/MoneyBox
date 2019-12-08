@@ -1,6 +1,7 @@
 package com.ogrob.moneybox.persistence
 
 import android.content.Context
+import android.graphics.Color
 import android.os.AsyncTask
 import androidx.room.Database
 import androidx.room.Room
@@ -67,17 +68,17 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
 
 
         override fun doInBackground(vararg params: Void): Void? {
-            categoryDao.insert(Category(NO_CATEGORY_ID, NO_CATEGORY_NAME))
-            categoryDao.insert(Category(2, "Food"))
-            categoryDao.insert(Category(3, "Clothing"))
-            categoryDao.insert(Category(4, "Hobby"))
-            categoryDao.insert(Category(5, "Games"))
-            categoryDao.insert(Category(6, "Shoes"))
-            categoryDao.insert(Category(7, "Electronics"))
-            categoryDao.insert(Category(8, "Jewelry"))
-            categoryDao.insert(Category(9, "Food Supplements"))
-            categoryDao.insert(Category(10, "Sweats"))
-            categoryDao.insert(Category(11, "Meats"))
+            categoryDao.insert(Category(NO_CATEGORY_ID, NO_CATEGORY_NAME, Color.GREEN))
+            categoryDao.insert(Category(2, "Food", Color.RED))
+            categoryDao.insert(Category(3, "Clothing", Color.BLUE))
+            categoryDao.insert(Category(4, "Hobby", Color.rgb(200, 20, 40)))
+            categoryDao.insert(Category(5, "Games", Color.WHITE))
+            categoryDao.insert(Category(6, "Shoes", Color.LTGRAY))
+            categoryDao.insert(Category(7, "Electronics", Color.DKGRAY))
+            categoryDao.insert(Category(8, "Jewelry", Color.MAGENTA))
+            categoryDao.insert(Category(9, "Food Supplements", Color.GRAY))
+            categoryDao.insert(Category(10, "Sweats", Color.CYAN))
+            categoryDao.insert(Category(11, "Meats", Color.YELLOW))
             expenseDao.insert(Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), 2))
             expenseDao.insert(Expense(1800.0, "spar gyümi", LocalDateTime.of(2019, 10, 2, 1, 1), 2))
             expenseDao.insert(Expense(3000.0, "CC ivás", LocalDateTime.of(2019, 10, 3, 1, 1), 1))

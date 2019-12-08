@@ -148,18 +148,19 @@ class ExpenseFragment : Fragment() {
             .map(Int::toString)
             .toTypedArray()
 
-        val selectedYearFromSharedPreferences =
+        var selectedYear =
             expenseViewModel.retrievePreferenceFromSharedPreferences(
                 binding.root.context,
                 SHARED_PREFERENCES_SELECTED_YEAR_KEY)
 
         val selectedYearIndex: Int =
-            if (selectedYearFromSharedPreferences.isBlank())
+            if (selectedYear.isBlank()) {
+                selectedYear = yearsWithExpense[yearsWithExpense.lastIndex]
                 yearsWithExpense.lastIndex
-            else
-                yearsWithExpense.indexOf(selectedYearFromSharedPreferences)
+            } else
+                yearsWithExpense.indexOf(selectedYear)
 
-        return Triple(yearsWithExpense, selectedYearIndex, selectedYearFromSharedPreferences)
+        return Triple(yearsWithExpense, selectedYearIndex, selectedYear)
     }
 
     private fun createMonthInformationTriple(selectedYear: String): Triple<Array<String>, Int, String> {

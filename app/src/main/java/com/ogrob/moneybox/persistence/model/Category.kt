@@ -12,9 +12,12 @@ data class Category(
     val id: Long,
 
     @ColumnInfo(name = "name")
-    val name: String
+    val name: String,
+
+    @ColumnInfo(name = "color")
+    val color: Int
 ) {
 
     @Ignore
-    constructor(name: String): this(0, name)
+    constructor(name: String, color: Int): this(0, name, color)
 }

@@ -1,5 +1,6 @@
 package com.ogrob.moneybox.presentation.category
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -59,6 +60,7 @@ class CategoryFragment : Fragment() {
         view.findNavController().navigate(CategoryFragmentDirections.actionCategoryFragmentToCategoryAddAndEditFragment(
             NEW_CATEGORY_PLACEHOLDER_ID,
             EMPTY_STRING,
+            Color.GREEN,
             "Add Category"
         ))
     }

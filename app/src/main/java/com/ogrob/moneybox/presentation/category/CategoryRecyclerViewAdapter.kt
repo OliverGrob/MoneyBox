@@ -29,7 +29,7 @@ class CategoryRecyclerViewAdapter
     class CategoryViewHolder private constructor(val binding: CategoryListItemBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(categoryWithExpenses: CategoryWithExpenses) {
-            binding.categoryNameTextView.text = categoryWithExpenses.category.name + " (" + categoryWithExpenses.expenses.size + ")"
+            binding.categoryWithExpenses = categoryWithExpenses
 
             if (categoryWithExpenses.category.id == NO_CATEGORY_ID) {
                 binding.categoryEditTextView.visibility = View.GONE
@@ -55,6 +55,7 @@ class CategoryRecyclerViewAdapter
             view.findNavController().navigate(CategoryFragmentDirections.actionCategoryFragmentToCategoryAddAndEditFragment(
                 category.id,
                 category.name,
+                category.color,
                 "Save"
             ))
         }

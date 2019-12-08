@@ -13,9 +13,6 @@
         <action
                 android:id="@+id/action_expenseFragment_to_expenseAddAndEditFragment"
                 app:destination="@id/expenseAddAndEditFragment" />
-        <action
-                android:id="@+id/action_expenseFragment_to_statisticsFragment"
-                app:destination="@id/statisticsFragment" />
     </fragment>
     <fragment
             android:id="@+id/expenseAddAndEditFragment"
@@ -67,6 +64,9 @@
         <argument
                 android:name="categoryName"
                 app:argType="string" />
+        <argument
+                android:name="categoryColor"
+                app:argType="integer" />
         <argument
                 android:name="positiveButtonText"
                 app:argType="string" />

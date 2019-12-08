@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
+        <variable
+                name="categoryWithExpenses"
+                type="com.ogrob.moneybox.persistence.model.CategoryWithExpenses" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/categoryListItemConstraintLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@{categoryWithExpenses.category.color}">
 
         <TextView
                 android:id="@+id/categoryNameTextView"
@@ -17,17 +22,18 @@
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:paddingStart="20dp"
-                android:text="14"
-                android:textSize="15sp"
+                android:text="@{categoryWithExpenses.category.name+' '+'('+categoryWithExpenses.expenses.size()+')'}"
+                android:textColor="@android:color/black"
+                android:textSize="20sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.75" />
+                app:layout_constraintWidth_percent="0.75"
+                tools:text="Electronic" />
 
         <TextView
                 android:id="@+id/categoryEditTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
                 android:text="Edit"
                 android:textAlignment="center"
                 android:textAppearance="?android:textAppearanceLarge"
