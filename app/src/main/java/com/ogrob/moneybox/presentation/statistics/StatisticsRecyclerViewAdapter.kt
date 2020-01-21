@@ -6,18 +6,17 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.ogrob.moneybox.data.helper.SortedExpensesByYearAndMonth
 import com.ogrob.moneybox.data.viewmodel.StatisticsViewModel
 import com.ogrob.moneybox.databinding.StatisticsListItemBinding
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
-import com.ogrob.moneybox.persistence.model.Expense
-import java.time.Month
+import com.ogrob.moneybox.presentation.helper.ExpensesByMonth
+import com.ogrob.moneybox.presentation.helper.ExpensesByYear
 
 class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsViewModel)
     : RecyclerView.Adapter<StatisticsRecyclerViewAdapter.StatisticsViewHolder>() {
 
 
-    private lateinit var expensesByYearAndMonth: List<SortedExpensesByYearAndMonth>
+    private lateinit var expensesByYearAndMonth: List<ExpensesByYear>
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StatisticsViewHolder {
@@ -42,20 +41,22 @@ class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsV
 
     class StatisticsViewHolder private constructor(val binding: StatisticsListItemBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(statisticsViewModel: StatisticsViewModel, sortedExpensesByYearAndMonth: SortedExpensesByYearAndMonth) {
+        fun bind(statisticsViewModel: StatisticsViewModel, sortedExpensesByYearAndMonth: ExpensesByYear) {
             binding.statisticsYearTextView.text = "${sortedExpensesByYearAndMonth.year} - ${statisticsViewModel.formatMoneySpent(sortedExpensesByYearAndMonth.totalMoneySpentInYear)}"
 
-            sortedExpensesByYearAndMonth.expensesSortedByMonth.forEach {
+            sortedExpensesByYearAndMonth.expensesByMonth.forEach {
                 createAmountSpentInMonthTextView(statisticsViewModel, sortedExpensesByYearAndMonth.year, it)
             }
         }
 
-        private fun createAmountSpentInMonthTextView(statisticsViewModel: StatisticsViewModel,
-                                                     selectedYear: Int,
-                                                     expensesSortedByMonth: Map.Entry<Month, List<Expense>>) {
+        private fun createAmountSpentInMonthTextView(
+            statisticsViewModel: StatisticsViewModel,
+            selectedYear: Int,
+            expensesSortedByMonth: ExpensesByMonth
+        ) {
             val textView = TextView(itemView.context)
-            val totalMoneySpentInMonth = statisticsViewModel.getTotalMoneySpent(expensesSortedByMonth.value)
-            textView.text = "${expensesSortedByMonth.key.name.toLowerCase().capitalize()} - ${statisticsViewModel.formatMoneySpent(totalMoneySpentInMonth)}"
+            val totalMoneySpentInMonth = statisticsViewModel.getTotalMoneySpent(expensesSortedByMonth.expenses)
+            textView.text = "${expensesSortedByMonth.month.name.toLowerCase().capitalize()} - ${statisticsViewModel.formatMoneySpent(totalMoneySpentInMonth)}"
             textView.setTextColor(statisticsViewModel.getTextColorBasedOnSetMaxExpense(totalMoneySpentInMonth))
 
             textView.layoutParams = RelativeLayout.LayoutParams(
@@ -74,7 +75,7 @@ class StatisticsRecyclerViewAdapter(private val statisticsViewModel: StatisticsV
             textView.setOnClickListener {
                 it.findNavController().navigate(StatisticsFragmentDirections.actionStatisticsFragmentToStatisticsDetailFragment(
                     selectedYear,
-                    expensesSortedByMonth.key.toString()
+                    expensesSortedByMonth.month.toString()
                 ))
             }
 

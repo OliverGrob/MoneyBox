@@ -12,7 +12,9 @@
             tools:layout="@layout/fragment_expense">
         <action
                 android:id="@+id/action_expenseFragment_to_expenseAddAndEditFragment"
-                app:destination="@id/expenseAddAndEditFragment" />
+                app:destination="@id/expenseAddAndEditFragment"
+                app:enterAnim="@anim/nav_default_enter_anim"
+                app:exitAnim="@anim/nav_default_exit_anim" />
     </fragment>
     <fragment
             android:id="@+id/expenseAddAndEditFragment"
@@ -21,7 +23,9 @@
             tools:layout="@layout/fragment_expense_add_and_edit">
         <action
                 android:id="@+id/action_expenseAddAndEditFragment_to_expenseFragment"
-                app:destination="@id/expenseFragment" />
+                app:destination="@id/expenseFragment"
+                app:enterAnim="@anim/nav_default_enter_anim"
+                app:exitAnim="@anim/nav_default_exit_anim" />
         <argument
                 android:name="expenseAmount"
                 app:argType="string" />

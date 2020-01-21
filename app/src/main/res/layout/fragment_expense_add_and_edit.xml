@@ -6,41 +6,74 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/colorAccent"
             tools:context=".presentation.MainActivity">
 
-        <EditText
-                android:id="@+id/expense_amount_edit_text"
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/expense_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:hint="Expense Amount"
-                android:inputType="numberDecimal"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:scrollbars="vertical"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:title="Expense" />
 
-        <AutoCompleteTextView
-                android:id="@+id/expense_description_edit_text"
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/expense_amount_text_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:hint="Expense Description"
-                android:inputType="textAutoCorrect"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:scrollbars="vertical"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="6dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:textColorHint="@color/colorPrimaryText"
+                app:hintTextAppearance="@style/TextInputLabelColor"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expense_amount_edit_text" />
+                app:layout_constraintTop_toBottomOf="@+id/expense_toolbar">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/expense_amount_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Expense Amount"
+                    android:inputType="numberDecimal"
+                    android:paddingTop="6dp"
+                    android:singleLine="true"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/expense_description_text_input_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:textColorHint="@color/colorPrimaryText"
+                app:hintTextAppearance="@style/TextInputLabelColor"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/expense_amount_text_input_layout">
+
+            <AutoCompleteTextView
+                    android:id="@+id/expense_description_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Expense Description"
+                    android:inputType="textAutoCorrect"
+                    android:paddingTop="6dp"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/expense_amount_text_input_layout" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
                 android:id="@+id/expense_date_picker_text_view"
@@ -51,26 +84,45 @@
                 android:hint="Date of Expense"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
-                app:layout_constraintEnd_toEndOf="@+id/expense_description_edit_text"
-                app:layout_constraintStart_toStartOf="@+id/expense_description_edit_text"
-                app:layout_constraintTop_toBottomOf="@+id/expense_description_edit_text" />
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@+id/expense_description_text_input_layout"
+                app:layout_constraintStart_toStartOf="@+id/expense_description_text_input_layout"
+                app:layout_constraintTop_toBottomOf="@+id/expense_description_text_input_layout" />
 
-        <TextView
-                android:id="@+id/expense_category_checkbox_toggle_text_view"
+        <LinearLayout
+                android:id="@+id/expense_category_linear_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="24dp"
+                android:orientation="horizontal"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:text="Category ▶"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
                 app:layout_constraintEnd_toEndOf="@+id/expense_date_picker_text_view"
                 app:layout_constraintStart_toStartOf="@+id/expense_date_picker_text_view"
-                app:layout_constraintTop_toBottomOf="@+id/expense_date_picker_text_view" />
+                app:layout_constraintTop_toBottomOf="@+id/expense_date_picker_text_view">
+
+            <TextView
+                    android:id="@+id/expense_category_checkbox_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/category_header"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="16sp"
+                    tools:text="Category" />
+
+            <TextView
+                    android:id="@+id/expense_category_checkbox_toggle_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/ic_expand_more_white_24dp"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="16sp"
+                    tools:background="@drawable/ic_expand_more_white_24dp" />
+
+        </LinearLayout>
 
         <ScrollView
                 android:id="@+id/category_scroll_view"
@@ -81,9 +133,9 @@
                 android:paddingRight="10dp"
                 android:textSize="15sp"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="@+id/expense_category_checkbox_toggle_text_view"
-                app:layout_constraintStart_toStartOf="@+id/expense_category_checkbox_toggle_text_view"
-                app:layout_constraintTop_toBottomOf="@+id/expense_category_checkbox_toggle_text_view">
+                app:layout_constraintEnd_toEndOf="@+id/expense_category_linear_layout"
+                app:layout_constraintStart_toStartOf="@+id/expense_category_linear_layout"
+                app:layout_constraintTop_toBottomOf="@+id/expense_category_linear_layout">
 
             <RadioGroup
                     android:id="@+id/category_radio_group"

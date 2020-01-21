@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
-import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -51,7 +50,7 @@ class ExpenseAddAndEditFragment : Fragment() {
             it.findNavController().navigate(ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseFragment())
         }
 
-        this.args = ExpenseAddAndEditFragmentArgs.fromBundle(arguments!!)
+        args = ExpenseAddAndEditFragmentArgs.fromBundle(arguments!!)
 
         initTextViewsAndButtons()
         configureDescriptionAutoComplete()
@@ -63,12 +62,11 @@ class ExpenseAddAndEditFragment : Fragment() {
     }
 
     private fun initTextViewsAndButtons() {
-        this.binding.expenseAmountEditText.setText(args.expenseAmount)
-        this.binding.expenseDescriptionEditText.setText(args.expenseDescription)
-        this.binding.expenseDatePickerTextView.text = args.expenseAdditionDate
-        this.binding.expenseCategoryCheckboxToggleTextView.text = "Category ▶"
-        this.binding.expenseAddEditPositiveButton.isEnabled = args.expenseId != NEW_EXPENSE_PLACEHOLDER_ID
-        this.binding.expenseAddEditPositiveButton.text = args.positiveButtonText
+        binding.expenseAmountEditText.setText(args.expenseAmount)
+        binding.expenseDescriptionEditText.setText(args.expenseDescription)
+        binding.expenseDatePickerTextView.text = args.expenseAdditionDate
+        binding.expenseAddEditPositiveButton.isEnabled = args.expenseId != NEW_EXPENSE_PLACEHOLDER_ID
+        binding.expenseAddEditPositiveButton.text = args.positiveButtonText
     }
 
     private fun configureDescriptionAutoComplete() {
@@ -101,7 +99,9 @@ class ExpenseAddAndEditFragment : Fragment() {
         val newExpenseEditTextTextWatcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
                 binding.expenseAddEditPositiveButton.isEnabled =
-                    binding.expenseAmountEditText.text.isNotBlank() && binding.expenseDescriptionEditText.text.isNotBlank()
+                    binding.expenseAmountEditText.text!!.isNotBlank()
+                            && binding.expenseAmountEditText.text.toString().toDoubleOrNull() != null
+                            && binding.expenseDescriptionEditText.text.isNotBlank()
             }
 
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) { }
@@ -116,13 +116,15 @@ class ExpenseAddAndEditFragment : Fragment() {
 
     private fun applyOnClickListeners() {
         this.binding.expenseDatePickerTextView.setOnClickListener { onPickDate() }
-        this.binding.expenseCategoryCheckboxToggleTextView.setOnClickListener {
-            if ((it as TextView).text == "Category ▶") {
-                it.text = "Category ▼"
-                this.binding.categoryScrollView.visibility = View.VISIBLE
-            } else {
-                it.text = "Category ▶"
+        this.binding.expenseCategoryLinearLayout.setOnClickListener {
+            if (expenseViewModel.isCategoryDropdownOpen()) {
+                expenseViewModel.closeCategoryDropdown()
+                binding.expenseCategoryCheckboxToggleTextView.background = resources.getDrawable(R.drawable.ic_expand_more_white_24dp, null)
                 this.binding.categoryScrollView.visibility = View.GONE
+            } else {
+                expenseViewModel.openCategoryDropdown()
+                binding.expenseCategoryCheckboxToggleTextView.background = resources.getDrawable(R.drawable.ic_expand_less_white_24dp, null)
+                this.binding.categoryScrollView.visibility = View.VISIBLE
             }
         }
 

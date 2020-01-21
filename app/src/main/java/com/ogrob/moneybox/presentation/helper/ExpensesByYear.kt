@@ -1,17 +1,17 @@
-package com.ogrob.moneybox.data.helper
+package com.ogrob.moneybox.presentation.helper
 
 import com.ogrob.moneybox.persistence.model.Expense
-import java.time.Month
 
-data class SortedExpensesByYearAndMonth(val year: Int, private val expenses: List<Expense>) {
+data class ExpensesByYear(val year: Int, private val expenses: List<Expense>) {
 
-    val expensesSortedByMonth: Map<Month, List<Expense>>
+    val expensesByMonth: List<ExpensesByMonth>
     val totalMoneySpentInYear: Double
 
 
     init {
-        expensesSortedByMonth = expenses
+        expensesByMonth = expenses
             .groupBy { expense -> expense.additionDate.month }
+            .map { entry -> ExpensesByMonth(year, entry.key, entry.value) }
 
         totalMoneySpentInYear = expenses
             .map(Expense::amount)

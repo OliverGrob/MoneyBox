@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Money Box</string>
+
+    <string name="total_money_spent">Total: %s</string>
+
+    <string name="category_header">Category</string>
+    <string name="add_expense_button">Add Expense</string>
+    <string name="save_button">Save</string>
+
+    <string name="expenses_found_text_singular">%d Item</string>
+    <string name="expenses_found_text_plural">%d Items</string>
+
+    <string name="header_selection_all_text">All</string>
+    <string name="header_selection_right_arrow">></string>
+
+    <string name="money_amount_in_parenthesis">(%.0f)</string>
+    <string name="money_amount_average_in_parenthesis">(%.0f/%s)</string>
 </resources>

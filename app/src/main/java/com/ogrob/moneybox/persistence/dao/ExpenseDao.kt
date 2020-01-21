@@ -8,13 +8,10 @@ import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
 
 @Dao
-interface ExpenseDao: BaseDao<Expense> {
+interface ExpenseDao : BaseDao<Expense> {
 
     @Transaction
     @Query("SELECT * FROM category")
     fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>>
 
-    @Transaction
-    @Query("SELECT * FROM expense")
-    fun getSelectedExpensesForStatistics(): LiveData<List<Expense>>
 }

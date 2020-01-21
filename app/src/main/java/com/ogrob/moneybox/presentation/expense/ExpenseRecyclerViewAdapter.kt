@@ -3,8 +3,6 @@ package com.ogrob.moneybox.presentation.expense
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
-import androidx.appcompat.app.AlertDialog
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -40,30 +38,7 @@ class ExpenseRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel,
             binding.category = categories.single { category -> category.id == expense.categoryId }
             binding.executePendingBindings()
 
-            binding.expenseOptionsTextView.setOnClickListener { createPopupMenu(it, expense, expenseViewModel) }
-        }
-
-        private fun createPopupMenu(it: View,
-                                    expense: Expense,
-                                    expenseViewModel: ExpenseViewModel) {
-            val popup = PopupMenu(itemView.context, binding.expenseOptionsTextView)
-            popup.inflate(R.menu.expense_list_item_options)
-
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.editExpense -> {
-                        navigateToExpenseEditFragment(it, expense)
-                        true
-                    }
-                    R.id.deleteExpense -> {
-                        createExpenseDeleteAlertDialog(expenseViewModel, expense)
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            popup.show()
+            itemView.setOnClickListener { navigateToExpenseEditFragment(it, expense) }
         }
 
         private fun navigateToExpenseEditFragment(view: View, expense: Expense) {
@@ -73,18 +48,18 @@ class ExpenseRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel,
                 expense.additionDate.format(DateTimeFormatter.ISO_LOCAL_DATE).toString(),
                 expense.id,
                 expense.categoryId,
-                "Save"
+                binding.root.resources.getString(R.string.save_button)
             ))
         }
 
-        private fun createExpenseDeleteAlertDialog(expenseViewModel: ExpenseViewModel, expense: Expense) {
-            AlertDialog.Builder(itemView.context)
-                .setTitle("Are you sure you want to delete this expense?")
-                .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteExpense(expense) }
-                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-                .create()
-                .show()
-        }
+//        private fun createExpenseDeleteAlertDialog(expenseViewModel: ExpenseViewModel, expense: Expense) {
+//            AlertDialog.Builder(itemView.context)
+//                .setTitle("Are you sure you want to delete this expense?")
+//                .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteExpense(expense) }
+//                .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+//                .create()
+//                .show()
+//        }
 
 
         companion object {

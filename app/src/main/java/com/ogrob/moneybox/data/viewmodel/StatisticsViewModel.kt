@@ -1,18 +1,17 @@
 package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
-import android.content.Context
 import android.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.ogrob.moneybox.data.helper.SortedExpensesByYearAndMonth
 import com.ogrob.moneybox.data.repository.ExpenseRepository
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.presentation.helper.ExpensesByYear
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY
-import com.ogrob.moneybox.utils.SHARED_PREFERENCES_NAME
+import com.ogrob.moneybox.utils.SharedPreferenceManager
 import java.time.Month
 import kotlin.math.roundToInt
 
@@ -57,17 +56,17 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         .map(Expense::amount)
         .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
 
-    fun sortExpensesByYearAndMonth(categoriesWithExpenses: List<CategoryWithExpenses>): List<SortedExpensesByYearAndMonth> =
+    fun sortExpensesByYearAndMonth(categoriesWithExpenses: List<CategoryWithExpenses>): List<ExpensesByYear> =
         categoriesWithExpenses
             .flatMap(CategoryWithExpenses::expenses)
             .groupBy { expense -> expense.additionDate.year }
             .map { currentExpensesSortedByYear ->
-                SortedExpensesByYearAndMonth(
+                ExpensesByYear(
                     currentExpensesSortedByYear.key,
                     currentExpensesSortedByYear.value
                 )
             }
-            .sortedBy(SortedExpensesByYearAndMonth::year)
+            .sortedBy(ExpensesByYear::year)
 
     fun getTotalMoneySpent(expensesSelected: List<Expense>): Double = expensesSelected
         .map(Expense::amount)
@@ -77,12 +76,10 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         if (currentTotal == currentTotal.toInt().toDouble()) currentTotal.toInt().toString() else currentTotal.toString()
 
     fun getTextColorBasedOnSetMaxExpense(totalMoneySpentInMonth: Double): Int {
-        val maxAmountPerMonth =
-            _application.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE)
-                .getFloat(
-                    SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
-                    SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
-                )
+        val maxAmountPerMonth = SharedPreferenceManager.getFloatSharedPreference(
+            _application.applicationContext,
+            SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
+            SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE)
 
         return if (maxAmountPerMonth < totalMoneySpentInMonth) Color.RED else Color.rgb(0, 160, 0)
     }
