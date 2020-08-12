@@ -1,176 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimaryDark"
+        android:focusableInTouchMode="true"
+        tools:context=".ui.MainActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/expense_copy_text_input_layout"
+            style="@style/TextInputLabelStyle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorAccent"
-            tools:context=".presentation.MainActivity">
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/expense_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPrimary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:title="Expense" />
-
-        <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/expense_amount_text_input_layout"
+        <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                android:id="@+id/expense_copy_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="6dp"
+                android:hint="@string/expense_add_copy_from_hint"
+                android:inputType="textAutoCorrect"
                 android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp"
-                android:textColorHint="@color/colorPrimaryText"
-                app:hintTextAppearance="@style/TextInputLabelColor"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expense_toolbar">
+                android:paddingTop="24dp"
+                android:paddingBottom="12dp"
+                android:textCursorDrawable="@null"
+                android:textSize="16sp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/expense_amount_edit_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Expense Amount"
-                    android:inputType="numberDecimal"
-                    android:paddingTop="6dp"
-                    android:singleLine="true"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/expense_amount_text_input_layout"
+            style="@style/TextInputLabelStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/expense_copy_text_input_layout">
 
-        <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/expense_description_text_input_layout"
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/expense_amount_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp"
-                android:textColorHint="@color/colorPrimaryText"
-                app:hintTextAppearance="@style/TextInputLabelColor"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expense_amount_text_input_layout">
+                android:hint="@string/expense_add_amount_hint"
+                android:inputType="numberDecimal"
+                android:singleLine="true"
+                android:textCursorDrawable="@null"
+                android:textSize="16sp" />
 
-            <AutoCompleteTextView
-                    android:id="@+id/expense_description_edit_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Expense Description"
-                    android:inputType="textAutoCorrect"
-                    android:paddingTop="6dp"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="16sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/expense_amount_text_input_layout" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/expense_description_text_input_layout"
+            style="@style/TextInputLabelStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/expense_amount_text_input_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/expense_description_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/expense_add_description_hint"
+                android:singleLine="true"
+                android:textCursorDrawable="@null"
+                android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+            android:id="@+id/expense_date_picker_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:hint="@string/expense_add_date_of_expense_hint"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/expense_description_text_input_layout"
+            app:layout_constraintStart_toStartOf="@+id/expense_description_text_input_layout"
+            app:layout_constraintTop_toBottomOf="@+id/expense_description_text_input_layout" />
+
+    <LinearLayout
+            android:id="@+id/expense_category_linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            app:layout_constraintEnd_toEndOf="@+id/expense_date_picker_text_view"
+            app:layout_constraintStart_toStartOf="@+id/expense_date_picker_text_view"
+            app:layout_constraintTop_toBottomOf="@+id/expense_date_picker_text_view">
 
         <TextView
-                android:id="@+id/expense_date_picker_text_view"
-                android:layout_width="match_parent"
+                android:id="@+id/expense_category_checkbox_text_view"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:hint="Date of Expense"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
+                android:text="@string/category_header"
                 android:textColor="@color/colorPrimaryText"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="@+id/expense_description_text_input_layout"
-                app:layout_constraintStart_toStartOf="@+id/expense_description_text_input_layout"
-                app:layout_constraintTop_toBottomOf="@+id/expense_description_text_input_layout" />
+                tools:text="Category" />
 
-        <LinearLayout
-                android:id="@+id/expense_category_linear_layout"
+        <TextView
+                android:id="@+id/expense_category_checkbox_toggle_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/ic_expand_more_white_24dp"
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="16sp"
+                tools:background="@drawable/ic_expand_more_white_24dp" />
+
+    </LinearLayout>
+
+    <ScrollView
+            android:id="@+id/category_scroll_view"
+            android:layout_width="fill_parent"
+            android:layout_height="170dp"
+            android:layout_marginHorizontal="20dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textSize="15sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/expense_category_linear_layout"
+            app:layout_constraintStart_toStartOf="@+id/expense_category_linear_layout"
+            app:layout_constraintTop_toBottomOf="@+id/expense_category_linear_layout">
+
+        <RadioGroup
+                android:id="@+id/category_radio_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                app:layout_constraintEnd_toEndOf="@+id/expense_date_picker_text_view"
-                app:layout_constraintStart_toStartOf="@+id/expense_date_picker_text_view"
-                app:layout_constraintTop_toBottomOf="@+id/expense_date_picker_text_view">
-
-            <TextView
-                    android:id="@+id/expense_category_checkbox_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/category_header"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="16sp"
-                    tools:text="Category" />
-
-            <TextView
-                    android:id="@+id/expense_category_checkbox_toggle_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/ic_expand_more_white_24dp"
-                    android:textColor="@color/colorPrimaryText"
-                    android:textSize="16sp"
-                    tools:background="@drawable/ic_expand_more_white_24dp" />
-
-        </LinearLayout>
-
-        <ScrollView
-                android:id="@+id/category_scroll_view"
-                android:layout_width="fill_parent"
-                android:layout_height="170dp"
-                android:layout_marginHorizontal="20dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
+                android:padding="8dp"
                 android:textSize="15sp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="@+id/expense_category_linear_layout"
-                app:layout_constraintStart_toStartOf="@+id/expense_category_linear_layout"
-                app:layout_constraintTop_toBottomOf="@+id/expense_category_linear_layout">
+                app:layout_constraintEnd_toEndOf="@+id/expense_category_checkbox_toggle_text_view"
+                app:layout_constraintStart_toStartOf="@+id/expense_category_checkbox_toggle_text_view"
+                app:layout_constraintTop_toBottomOf="@+id/expense_category_checkbox_toggle_text_view" />
 
-            <RadioGroup
-                    android:id="@+id/category_radio_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Category 1"
-                    android:padding="8dp"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:textSize="15sp"
-                    app:layout_constraintEnd_toEndOf="@+id/expense_category_checkbox_toggle_text_view"
-                    app:layout_constraintStart_toStartOf="@+id/expense_category_checkbox_toggle_text_view"
-                    app:layout_constraintTop_toBottomOf="@+id/expense_category_checkbox_toggle_text_view" />
-        </ScrollView>
+    </ScrollView>
 
-        <Button
-                android:id="@+id/expense_add_edit_positive_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="16dp"
-                android:onClick="onPositive"
-                android:text="Positive"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/expense_add_edit_positive_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Positive" />
 
-        <Button
-                android:id="@+id/expense_add_edit_cancel_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:onClick="onCancel"
-                android:text="Cancel"
-                app:layout_constraintBottom_toBottomOf="@+id/expense_add_edit_positive_button"
-                app:layout_constraintEnd_toStartOf="@+id/expense_add_edit_positive_button"
-                app:layout_constraintTop_toTopOf="@+id/expense_add_edit_positive_button" />
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/expense_add_edit_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="@string/cancel_button_text"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="@+id/expense_add_edit_positive_button"
+            app:layout_constraintEnd_toStartOf="@+id/expense_add_edit_positive_button"
+            app:layout_constraintTop_toTopOf="@+id/expense_add_edit_positive_button" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

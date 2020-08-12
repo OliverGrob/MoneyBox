@@ -1,38 +1,37 @@
 package com.ogrob.moneybox.data.repository
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import com.ogrob.moneybox.persistence.ExpenseRoomDatabase
 import com.ogrob.moneybox.persistence.dao.CategoryDao
 import com.ogrob.moneybox.persistence.model.Category
-import com.ogrob.moneybox.utils.BackgroundOperationAsyncTask
+import kotlinx.coroutines.CoroutineScope
 
-class CategoryRepository(application: Application) {
+class CategoryRepository(
+    application: Application,
+    coroutineScope: CoroutineScope
+) {
 
     private val categoryDao: CategoryDao
 
-    private val allCategories: LiveData<List<Category>>
-
 
     init {
-        val expenseRoomDatabase = ExpenseRoomDatabase.getInstance(application)!!
+        val expenseRoomDatabase = ExpenseRoomDatabase.getDatabase(application, coroutineScope)
         this.categoryDao= expenseRoomDatabase.categoryDao()
-        this.allCategories = this.categoryDao.getAllCategories()
     }
 
 
-    fun getCategories() = this.allCategories
+    fun getCategories() = this.categoryDao.getAllCategories()
 
-    fun addNewCategory(category: Category) {
-        BackgroundOperationAsyncTask(categoryDao::insert).execute(category)
+    suspend fun addNewCategory(category: Category) {
+        categoryDao.insert(category)
     }
 
-    fun updateCategory(category: Category) {
-        BackgroundOperationAsyncTask(categoryDao::update).execute(category)
+    suspend fun updateCategory(category: Category) {
+        categoryDao.update(category)
     }
 
-    fun deleteCategory(category: Category) {
-        BackgroundOperationAsyncTask(categoryDao::delete).execute(category)
+    suspend fun deleteCategoryById(categoryId: Long) {
+        categoryDao.deleteCategoryById(categoryId)
     }
 
 }

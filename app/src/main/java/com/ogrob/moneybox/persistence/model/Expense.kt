@@ -26,7 +26,7 @@ data class Expense(
     @ColumnInfo(name = "addition_date")
     val additionDate: LocalDateTime,
 
-    @ColumnInfo(name = "category_id")
+    @ColumnInfo(name = "category_id", defaultValue = "1")
     val categoryId: Long = 1
 ) {
 

@@ -8,54 +8,38 @@
         <variable
                 name="categoryWithExpenses"
                 type="com.ogrob.moneybox.persistence.model.CategoryWithExpenses" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/categoryListItemConstraintLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@{categoryWithExpenses.category.color}">
+            android:background="@color/colorPrimary">
 
         <TextView
-                android:id="@+id/categoryNameTextView"
+                android:id="@+id/expense_category_color"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@{categoryWithExpenses.category.color}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.01" />
+
+        <TextView
+                android:id="@+id/category_name_text_view"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:paddingStart="20dp"
                 android:text="@{categoryWithExpenses.category.name+' '+'('+categoryWithExpenses.expenses.size()+')'}"
-                android:textColor="@android:color/black"
                 android:textSize="20sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.75"
+                app:layout_constraintWidth_percent="0.99"
                 tools:text="Electronic" />
 
-        <TextView
-                android:id="@+id/categoryEditTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Edit"
-                android:textAlignment="center"
-                android:textAppearance="?android:textAppearanceLarge"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/categoryNameTextView"
-                app:layout_constraintStart_toEndOf="@+id/categoryNameTextView"
-                app:layout_constraintTop_toTopOf="@+id/categoryNameTextView"
-                app:layout_constraintWidth_percent="0.15" />
-        <!--<TextView-->
-        <!--android:text="✖"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_width="0dp"-->
-        <!--app:layout_constraintWidth_percent="0.1"-->
-        <!--android:id="@+id/categoryDeleteTextView"-->
-        <!--android:textSize="20sp"-->
-        <!--android:padding="5dp"-->
-        <!--android:textAlignment="center"-->
-        <!--android:textAppearance="?android:textAppearanceLarge"-->
-        <!--app:layout_constraintTop_toTopOf="@+id/categoryEditTextView"-->
-        <!--app:layout_constraintStart_toEndOf="@+id/categoryEditTextView"-->
-        <!--app:layout_constraintBottom_toBottomOf="@+id/categoryEditTextView"/>-->
-
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>

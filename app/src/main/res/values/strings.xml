@@ -6,13 +6,20 @@
     <string name="category_header">Category</string>
     <string name="add_expense_button">Add Expense</string>
     <string name="save_button">Save</string>
+    <string name="cancel_button_text">Cancel</string>
 
-    <string name="expenses_found_text_singular">%d Item</string>
-    <string name="expenses_found_text_plural">%d Items</string>
+    <string name="expenses_counter_text_singular">%d Item</string>
+    <string name="expenses_counter_text_plural">%d Items</string>
+    <string name="expenses_counter_separator"> - </string>
 
     <string name="header_selection_all_text">All</string>
     <string name="header_selection_right_arrow">></string>
 
     <string name="money_amount_in_parenthesis">(%.0f)</string>
-    <string name="money_amount_average_in_parenthesis">(%.0f/%s)</string>
+    <string name="money_amount_average_in_parenthesis">(%s/%s)</string>
+
+    <string name="expense_add_copy_from_hint">Copy From</string>
+    <string name="expense_add_amount_hint">Expense Amount</string>
+    <string name="expense_add_description_hint">Expense Description</string>
+    <string name="expense_add_date_of_expense_hint">Date of Expense</string>
 </resources>

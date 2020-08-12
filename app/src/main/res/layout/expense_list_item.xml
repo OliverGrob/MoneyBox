@@ -12,30 +12,38 @@
         <variable
                 name="category"
                 type="com.ogrob.moneybox.persistence.model.Category" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/expense_list_item_constraint_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="4dp"
-            android:layout_marginVertical="1dp"
-            android:backgroundTint="@color/colorPrimary"
+            android:background="@color/colorPrimary"
             android:minHeight="40dp"
-            android:paddingHorizontal="4dp"
-            android:paddingVertical="1dp"
             tools:layout_editor_absoluteY="81dp">
+
+        <TextView
+                android:id="@+id/expense_category_color"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@{category.color}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.01" />
 
         <TextView
                 android:id="@+id/expense_addition_date_text_view"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:gravity="right"
                 android:padding="5dp"
                 android:textSize="15sp"
                 app:additionDateString="@{expense}"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="@+id/expense_category_color"
+                app:layout_constraintStart_toEndOf="@+id/expense_category_color"
+                app:layout_constraintTop_toTopOf="@+id/expense_category_color"
                 app:layout_constraintWidth_percent="0.1"
                 tools:text="14" />
 
@@ -43,6 +51,7 @@
                 android:id="@+id/expense_amount_text_view"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:gravity="center"
                 android:padding="5dp"
                 android:textSize="15sp"
                 app:expenseAmountFormatted="@{expense}"
@@ -64,7 +73,7 @@
                 app:layout_constraintBottom_toTopOf="@id/expense_category_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_amount_text_view"
                 app:layout_constraintTop_toTopOf="@+id/expense_amount_text_view"
-                app:layout_constraintWidth_percent="0.65"
+                app:layout_constraintWidth_percent="0.7"
                 tools:text="Example expense description" />
 
         <TextView
@@ -83,4 +92,5 @@
                 tools:text="Example payment category" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>

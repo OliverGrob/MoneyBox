@@ -31,8 +31,10 @@ class BackdropContainer(
         val typedArray =
             context.obtainStyledAttributes(attributeSet, R.styleable.BackdropContainer, 0, 0)
 
-        menuIcon = typedArray.getDrawable(R.styleable.BackdropContainer_menuIcon)
-        closeIcon = typedArray.getDrawable(R.styleable.BackdropContainer_closeIcon)
+//        menuIcon = typedArray.getDrawable(R.styleable.BackdropContainer_menuIcon)
+//        closeIcon = typedArray.getDrawable(R.styleable.BackdropContainer_closeIcon)
+        menuIcon = resources.getDrawable(R.drawable.ic_filter_list_white_24dp, null)
+        closeIcon = resources.getDrawable(R.drawable.ic_close_white_24dp, null)
         duration = typedArray.getInt(R.styleable.BackdropContainer_duration, 1000).toLong()
 
         typedArray.recycle()
@@ -44,7 +46,7 @@ class BackdropContainer(
 
     fun attachToolbar(toolbar: Toolbar): BackdropContainer {
         this.toolbar = toolbar
-        this.toolbar.navigationIcon = menuIcon
+//        this.toolbar.navigationIcon = menuIcon
         return this
     }
 
@@ -70,7 +72,12 @@ class BackdropContainer(
                 duration
             )
 
-            toolbar.setNavigationOnClickListener(toolbarIconClick)
+            toolbar.setLogo(R.drawable.ic_filter_list_white_24dp)
+            toolbar.getChildAt(1).setOnClickListener(toolbarIconClick)
+            val params = toolbar.getChildAt(1).layoutParams as MarginLayoutParams
+            params.rightMargin = 100
+            toolbar.getChildAt(1).layoutParams = params
+//            toolbar.setNavigationOnClickListener(toolbarIconClick)
         } else {
             throw ArrayIndexOutOfBoundsException("Backdrop should contain only two child")
         }

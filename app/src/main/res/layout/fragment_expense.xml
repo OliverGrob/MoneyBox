@@ -1,45 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/expense_fragment_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.MainActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/expense_fragment_constraint_layout"
+    <com.ogrob.moneybox.utils.backdrop.BackdropContainer
+            android:id="@+id/backdrop_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".presentation.MainActivity">
+            android:layout_height="0dp"
+            app:closeIcon="@drawable/ic_close_white_24dp"
+            app:duration="300"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:menuIcon="@drawable/ic_filter_list_white_24dp">
 
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/expense_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPrimary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:title="Expenses" />
+        <include
+                android:id="@+id/expense_backdrop_back_view"
+                layout="@layout/expense_backdrop_back_view" />
 
-        <com.ogrob.moneybox.utils.backdrop.BackdropContainer
-                android:id="@+id/backdrop_container"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                app:closeIcon="@drawable/ic_close_white_24dp"
-                app:duration="500"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/expense_toolbar"
-                app:menuIcon="@drawable/ic_filter_list_white_24dp">
+        <include
+                android:id="@+id/expense_backdrop_front_view"
+                layout="@layout/expense_backdrop_front_view" />
 
-            <include
-                    android:id="@+id/expense_backdrop_back_view"
-                    layout="@layout/expense_backdrop_back_view" />
+    </com.ogrob.moneybox.utils.backdrop.BackdropContainer>
 
-            <include
-                    android:id="@+id/expense_backdrop_front_view"
-                    layout="@layout/expense_backdrop_front_view" />
-
-        </com.ogrob.moneybox.utils.backdrop.BackdropContainer>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,77 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.MainActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <EditText
+            android:id="@+id/category_name_edit_text"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".presentation.MainActivity">
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:hint="Category Name"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:scrollbars="vertical"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-                android:id="@+id/category_name_edit_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:hint="Category Name"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:scrollbars="vertical"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+            android:id="@+id/category_color_label_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Category Color"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:scrollbars="vertical"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="15sp"
+            app:layout_constraintStart_toStartOf="@+id/category_name_edit_text"
+            app:layout_constraintTop_toBottomOf="@+id/category_name_edit_text"
+            app:layout_constraintWidth_percent="0.3" />
 
-        <TextView
-                android:id="@+id/category_color_label_text_view"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:hint="Category Color"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:scrollbars="vertical"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="15sp"
-                app:layout_constraintStart_toStartOf="@+id/category_name_edit_text"
-                app:layout_constraintTop_toBottomOf="@+id/category_name_edit_text"
-                app:layout_constraintWidth_percent="0.3" />
+    <TextView
+            android:id="@+id/category_color_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:scrollbars="vertical"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@+id/category_color_label_text_view"
+            app:layout_constraintStart_toEndOf="@+id/category_color_label_text_view"
+            app:layout_constraintTop_toTopOf="@+id/category_color_label_text_view"
+            app:layout_constraintWidth_percent="0.2" />
 
-        <TextView
-                android:id="@+id/category_color_text_view"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:scrollbars="vertical"
-                android:textSize="15sp"
-                app:layout_constraintBottom_toBottomOf="@+id/category_color_label_text_view"
-                app:layout_constraintStart_toEndOf="@+id/category_color_label_text_view"
-                app:layout_constraintTop_toTopOf="@+id/category_color_label_text_view"
-                app:layout_constraintWidth_percent="0.2" />
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/category_add_edit_positive_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="16dp"
+            android:text="Positive"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <Button
-                android:id="@+id/category_add_edit_positive_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="16dp"
-                android:text="Positive"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/category_add_edit_cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="@+id/category_add_edit_positive_button"
+            app:layout_constraintEnd_toStartOf="@+id/category_add_edit_positive_button"
+            app:layout_constraintTop_toTopOf="@+id/category_add_edit_positive_button" />
 
-        <Button
-                android:id="@+id/category_add_edit_cancel_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:text="Cancel"
-                app:layout_constraintBottom_toBottomOf="@+id/category_add_edit_positive_button"
-                app:layout_constraintEnd_toStartOf="@+id/category_add_edit_positive_button"
-                app:layout_constraintTop_toTopOf="@+id/category_add_edit_positive_button" />
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/category_add_edit_delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/colorNegative"
+            android:text="Delete"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="@+id/category_add_edit_cancel_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/category_add_edit_cancel_button" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

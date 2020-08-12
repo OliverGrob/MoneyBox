@@ -6,19 +6,62 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:colorBackground">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
 
-        <item name="colorControlNormal">#c5c5c5</item>
-        <item name="colorControlActivated">@color/colorPrimaryDark</item>
+        <item name="colorControlNormal">@color/colorControlNormal</item>
+        <item name="colorControlActivated">@color/colorAccent</item>
         <item name="colorControlHighlight">@color/colorPrimary</item>
 
-        <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogTheme</item>
+        <item name="toolbarStyle">@style/CustomToolbarStyle</item>
+
+        <item name="chipStyle">@style/CustomFilterChipStyle</item>
+
+        <item name="floatingActionButtonStyle">@style/CustomFloatingActionButtonStyle</item>
+
+        <item name="bottomNavigationStyle">@style/CustomBottomNavigationView</item>
+
+        <item name="android:datePickerDialogTheme">@style/CustomDatePickerDialogStyle</item>
+
+        <item name="materialButtonStyle">@style/MaterialButtonStyle</item>
     </style>
 
-    <style name="TextInputLabelColor" parent="@android:style/TextAppearance">
-        <item name="android:textColor">@color/colorPrimaryText</item>
+    <style name="CustomToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="background">@color/colorPrimary</item>
+        <item name="titleTextColor">@color/colorPrimaryText</item>
     </style>
 
-    <style name="CustomDatePickerDialogTheme" parent="android:Theme.Material.Light.Dialog">
+    <style name="CustomFilterChipStyle" parent="Widget.MaterialComponents.Chip.Filter">
+        <item name="chipBackgroundColor">@color/filter_chip_background_color</item>
+
+        <item name="textStartPadding">1dp</item>
+        <item name="textEndPadding">1dp</item>
+
+        <item name="shapeAppearanceOverlay">@style/SharpCorners</item>
+    </style>
+
+    <style name="SharpCorners" parent="ShapeAppearanceOverlay.MaterialComponents.Chip">
+        <item name="cornerSize">0%</item>
+    </style>
+
+    <style name="CustomFloatingActionButtonStyle" parent="Widget.Design.FloatingActionButton">
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="CustomBottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <item name="itemIconTint">@color/bottom_navigation_color</item>
+        <item name="itemTextColor">@color/bottom_navigation_color</item>
+        <item name="itemRippleColor">@color/bottom_navigation_color</item>
+        <item name="itemBackground">@drawable/bottom_navigation_background</item>
+    </style>
+
+    <style name="TextInputLabelStyle">
+        <item name="boxStrokeColor">@color/colorAccent</item>
+        <item name="hintTextColor">@color/colorAccent</item>
+        <item name="android:textColorHint">@color/colorPrimaryText</item>
+    </style>
+
+    <style name="CustomDatePickerDialogStyle" parent="android:Theme.Material.Light.Dialog">
         <item name="android:colorAccent">@color/colorPrimary</item>
         <item name="android:buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
         <item name="android:buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
@@ -27,6 +70,13 @@
     <style name="DatePickerButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:backgroundTint">@color/colorPrimaryText</item>
+    </style>
+
+    <style name="MaterialButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">@color/material_button_background_color</item>
+        <item name="android:textColor">@color/material_button_text_color</item>
+        <item name="strokeColor">@color/material_button_stroke_color</item>
+        <item name="strokeWidth">1dp</item>
     </style>
 
 </resources>

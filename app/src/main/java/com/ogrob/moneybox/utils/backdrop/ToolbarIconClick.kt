@@ -5,8 +5,7 @@ import android.animation.ObjectAnimator
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.animation.LinearInterpolator
-import androidx.appcompat.widget.AppCompatImageButton
-
+import android.widget.ImageView
 
 class ToolbarIconClick(
     private val frontView: View,
@@ -20,24 +19,24 @@ class ToolbarIconClick(
 
     private var dropped = false
     private val animatorSet = AnimatorSet()
-    private var toolbarIcon: AppCompatImageButton? = null
+    private var toolbarLogo: ImageView? = null
 
 
     fun open() {
         if (!dropped) {
-            onClick(toolbarIcon)
+            onClick(null)
         }
     }
 
     fun close() {
         if (dropped) {
-            onClick(toolbarIcon)
+            onClick(null)
         }
     }
 
     override fun onClick(view: View?) {
-        if (toolbarIcon == null) {
-            toolbarIcon = view as AppCompatImageButton?
+        if (toolbarLogo == null) {
+            toolbarLogo = view as ImageView?
         }
 
         dropped = !dropped
@@ -46,7 +45,7 @@ class ToolbarIconClick(
         animatorSet.end()
         animatorSet.cancel()
 
-        updateIcon(view!!)
+        updateLogo()
 
 
         val objectAnimator: ObjectAnimator = ObjectAnimator.ofFloat(
@@ -60,12 +59,12 @@ class ToolbarIconClick(
         objectAnimator.start()
     }
 
-    private fun updateIcon(view: View) {
+    private fun updateLogo() {
         if (menuIcon != null && closeIcon != null) {
             if (dropped) {
-                toolbarIcon!!.setImageDrawable(closeIcon)
+                toolbarLogo!!.setImageDrawable(closeIcon)
             } else {
-                toolbarIcon!!.setImageDrawable(menuIcon)
+                toolbarLogo!!.setImageDrawable(menuIcon)
             }
         }
     }

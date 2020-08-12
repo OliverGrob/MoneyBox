@@ -10,4 +10,7 @@ interface CategoryDao: BaseDao<Category> {
 
     @Query("SELECT * FROM category")
     fun getAllCategories(): LiveData<List<Category>>
+
+    @Query("DELETE FROM category WHERE id = :categoryId")
+    suspend fun deleteCategoryById(categoryId: Long)
 }

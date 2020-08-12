@@ -11,13 +11,13 @@
             android:title="Categories" />
 
     <item
-            android:id="@+id/expenseFragment"
+            android:id="@+id/expenseYearFragment"
             android:icon="@android:drawable/ic_menu_sort_by_size"
             android:title="Expenses" />
 
     <item
-            android:id="@+id/statisticsFragment"
+            android:id="@+id/aboutFragment"
             android:icon="@android:drawable/ic_menu_agenda"
-            android:title="Statistics" />
+            android:title="About" />
 
 </menu>

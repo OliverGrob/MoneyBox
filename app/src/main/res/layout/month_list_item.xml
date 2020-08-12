@@ -1,87 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
+            android:id="@+id/month_card_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_margin="4dp"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:padding="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.card.MaterialCardView
-                android:id="@+id/month_card_view"
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:backgroundTint="@color/colorPrimaryDark"
-                android:padding="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:orientation="vertical">
 
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="horizontal">
 
-                <LinearLayout
-                        android:layout_width="match_parent"
+                <TextView
+                        android:id="@+id/month_card_text_view"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:paddingVertical="16dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="6dp"
+                        android:textAllCaps="false"
+                        android:textColor="@color/colorPrimaryText"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="January" />
 
-                    <TextView
-                            android:id="@+id/month_card_text_view"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingVertical="16dp"
-                            android:paddingStart="16dp"
-                            android:paddingEnd="8dp"
-                            android:textAllCaps="false"
-                            android:textColor="@color/colorPrimaryText"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            tools:text="January" />
-
-                    <TextView
-                            android:id="@+id/month_card_total_text_view"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingVertical="10dp"
-                            android:textSize="14sp"
-                            android:textStyle="italic"
-                            tools:text="(140.000)" />
-
-                    <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_vertical">
-
-                        <TextView
-                                android:id="@+id/month_card_collapse_button"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
-                                android:layout_margin="8dp"
-                                android:background="@drawable/ic_expand_less_white_24dp"
-                                android:backgroundTint="@color/colorPrimaryText" />
-
-                    </RelativeLayout>
-
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/day_recycler_view"
-                        android:layout_width="match_parent"
+                <TextView
+                        android:id="@+id/month_card_total_items_separator_text_view"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginVertical="4dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:paddingVertical="10dp"
+                        android:text="@string/expenses_counter_separator"
+                        android:textSize="14sp"
+                        tools:text=" - " />
+
+                <TextView
+                        android:id="@+id/month_card_total_items_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="10dp"
+                        android:textSize="14sp"
+                        tools:text="25 Items" />
+
+                <TextView
+                        android:id="@+id/month_card_total_amount_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="10dp"
+                        android:textSize="14sp"
+                        android:textStyle="italic"
+                        tools:text="(140.000)" />
 
             </LinearLayout>
 
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-</layout>
+</LinearLayout>
