@@ -3,9 +3,7 @@ package com.ogrob.moneybox.data.viewmodel
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
-import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
-import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY
-import com.ogrob.moneybox.utils.SharedPreferenceManager
+import com.ogrob.moneybox.utils.*
 
 class OptionsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -16,11 +14,25 @@ class OptionsViewModel(application: Application) : AndroidViewModel(application)
             SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE)
     }
 
-    fun updateAmountGoalInSharedPreferences(context: Context, goalAmount: Float) {
+    fun updateAmountGoalInSharedPreferences(context: Context, newGoalAmount: Float) {
         SharedPreferenceManager.putFloatSharedPreference(
             context,
             SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_KEY,
-            goalAmount)
+            newGoalAmount)
+    }
+
+    fun retrieveDefaultCurrencyFromSharedPreferences(context: Context): String {
+        return SharedPreferenceManager.getStringSharedPreference(
+            context,
+            SHARED_PREFERENCES_CURRENCY_KEY,
+            SHARED_PREFERENCES_DEFAULT_CURRENCY)
+    }
+
+    fun updateDefaultCurrencyInSharedPreferences(context: Context, newDefaultCurrency: String) {
+        SharedPreferenceManager.putStringSharedPreference(
+            context,
+            SHARED_PREFERENCES_CURRENCY_KEY,
+            newDefaultCurrency)
     }
 
 }
