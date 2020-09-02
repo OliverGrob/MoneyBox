@@ -18,8 +18,11 @@
     <string name="money_amount_in_parenthesis">(%.0f)</string>
     <string name="money_amount_average_in_parenthesis">(%s/%s)</string>
 
+    <string name="money_amount_with_currency">%s %s</string>
+
     <string name="expense_add_copy_from_hint">Copy From</string>
     <string name="expense_add_amount_hint">Expense Amount</string>
     <string name="expense_add_description_hint">Expense Description</string>
     <string name="expense_add_date_of_expense_hint">Date of Expense</string>
+    <string name="expense_add_currency_hint">Currency</string>
 </resources>

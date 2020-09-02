@@ -10,10 +10,9 @@ import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.helper.FixedInterval
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
+import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.utils.EMPTY_STRING
-import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
-import com.ogrob.moneybox.utils.NO_CATEGORY_ID
+import com.ogrob.moneybox.utils.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -26,6 +25,7 @@ class ExpenseYearFragment : ExpenseBaseFragment() {
             EMPTY_STRING,
             LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).toString(),
             NEW_EXPENSE_PLACEHOLDER_ID,
+            SharedPreferenceManager.getStringSharedPreference(binding.root.context, SHARED_PREFERENCES_CURRENCY_KEY, SHARED_PREFERENCES_DEFAULT_CURRENCY),
             NO_CATEGORY_ID,
             resources.getString(R.string.add_expense_button)
         ))

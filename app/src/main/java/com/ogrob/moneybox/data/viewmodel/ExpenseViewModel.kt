@@ -1,14 +1,11 @@
 package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
-import android.icu.util.Currency
 import androidx.lifecycle.*
 import com.ogrob.moneybox.data.helper.FixedInterval
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
-import com.ogrob.moneybox.persistence.model.Category
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
-import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.persistence.model.*
 import com.ogrob.moneybox.ui.helper.ExpensesByMonth
 import com.ogrob.moneybox.ui.helper.ExpensesByYear
 import com.ogrob.moneybox.utils.EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
@@ -41,6 +38,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _selectedFixedInterval: MutableLiveData<FixedInterval> = MutableLiveData()
     val selectedFixedInterval: LiveData<FixedInterval> = _selectedFixedInterval
 
+    private val _selectedCurrency: MutableLiveData<Currency> = MutableLiveData()
+    val selectedCurrency: LiveData<Currency> = _selectedCurrency
+
     private var categoryDropdownIsOpen = false
 
 
@@ -48,11 +48,12 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     fun getAllCategories(): LiveData<List<Category>> = this.categories
 
-    suspend fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
+    suspend fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
         this.expenseRepository.addNewExpense(Expense(
             expenseAmount.toDouble(),
             expenseDescription,
             LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
+            Currency.valueOf(currency),
             categoryId))
     }
 
@@ -62,12 +63,13 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryColor))
     }
 
-    suspend fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
+    suspend fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
         this.expenseRepository.updateExpense(Expense(
             expenseId,
             expenseAmount.toDouble(),
             expenseDescription,
             LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
+            Currency.valueOf(currency),
             categoryId))
     }
 
@@ -93,13 +95,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         .map(Expense::description)
         .distinct()
 
-    fun addOrEditExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, categoryId: Long) {
+    fun addOrEditExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             if (expenseId == NEW_EXPENSE_PLACEHOLDER_ID)
                 addNewExpense(
                     expenseAmount,
                     expenseDescription,
                     expenseDate,
+                    currency,
                     categoryId
                 )
             else
@@ -108,6 +111,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                     expenseAmount,
                     expenseDescription,
                     expenseDate,
+                    currency,
                     categoryId
                 )
         }

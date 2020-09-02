@@ -58,7 +58,7 @@
                 app:layout_constraintBottom_toBottomOf="@+id/expense_addition_date_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_addition_date_text_view"
                 app:layout_constraintTop_toTopOf="@+id/expense_addition_date_text_view"
-                app:layout_constraintWidth_percent="0.2"
+                app:layout_constraintWidth_percent="0.3"
                 tools:text="300000" />
 
         <TextView
@@ -73,7 +73,7 @@
                 app:layout_constraintBottom_toTopOf="@id/expense_category_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_amount_text_view"
                 app:layout_constraintTop_toTopOf="@+id/expense_amount_text_view"
-                app:layout_constraintWidth_percent="0.7"
+                app:layout_constraintWidth_percent="0.6"
                 tools:text="Example expense description" />
 
         <TextView
@@ -88,7 +88,7 @@
                 app:layout_constraintBottom_toBottomOf="@+id/expense_amount_text_view"
                 app:layout_constraintStart_toEndOf="@+id/expense_amount_text_view"
                 app:layout_constraintTop_toBottomOf="@+id/expense_description_text_view"
-                app:layout_constraintWidth_percent="0.7"
+                app:layout_constraintWidth_percent="0.6"
                 tools:text="Example payment category" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

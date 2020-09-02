@@ -84,11 +84,14 @@
                 android:name="expenseId"
                 app:argType="long" />
         <argument
-                android:name="categoryId"
-                app:argType="long" />
+            android:name="currency"
+            app:argType="string" />
         <argument
-                android:name="positiveButtonText"
-                app:argType="string" />
+            android:name="categoryId"
+            app:argType="long" />
+        <argument
+            android:name="positiveButtonText"
+            app:argType="string" />
     </fragment>
     <fragment
             android:id="@+id/categoryFragment"

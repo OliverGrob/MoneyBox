@@ -47,6 +47,7 @@ class ExpenseRecyclerViewAdapter(private val expenseViewModel: ExpenseViewModel,
                 expense.description,
                 expense.additionDate.format(DateTimeFormatter.ISO_LOCAL_DATE).toString(),
                 expense.id,
+                expense.currency.name,
                 expense.categoryId,
                 binding.root.resources.getString(R.string.save_button)
             ))
