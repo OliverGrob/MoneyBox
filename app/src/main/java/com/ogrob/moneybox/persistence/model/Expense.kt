@@ -26,11 +26,14 @@ data class Expense(
     @ColumnInfo(name = "addition_date")
     val additionDate: LocalDateTime,
 
+    @ColumnInfo(name = "currency")
+    val currency: Currency,
+
     @ColumnInfo(name = "category_id", defaultValue = "1")
     val categoryId: Long = 1
 ) {
 
     @Ignore
-    constructor(amount: Double, description: String, additionDate: LocalDateTime, categoryId: Long):
-            this(0, amount, description, additionDate, categoryId)
+    constructor(amount: Double, description: String, additionDate: LocalDateTime, currency: Currency, categoryId: Long):
+            this(0, amount, description, additionDate, currency, categoryId)
 }

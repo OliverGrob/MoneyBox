@@ -9,16 +9,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ogrob.moneybox.persistence.converters.BigDecimalConverter
+import com.ogrob.moneybox.persistence.converters.CurrencyConverter
 import com.ogrob.moneybox.persistence.converters.LocalDateConverter
 import com.ogrob.moneybox.persistence.converters.LocalDateTimeConverter
 import com.ogrob.moneybox.persistence.dao.CategoryDao
-import com.ogrob.moneybox.persistence.dao.CurrencyDao
 import com.ogrob.moneybox.persistence.dao.ExpenseDao
 import com.ogrob.moneybox.persistence.dao.HistoricalExchangeRateDao
-import com.ogrob.moneybox.persistence.model.Category
+import com.ogrob.moneybox.persistence.model.*
 import com.ogrob.moneybox.persistence.model.Currency
-import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.persistence.model.HistoricalExchangeRate
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import com.ogrob.moneybox.utils.NO_CATEGORY_NAME
 import kotlinx.coroutines.CoroutineScope
@@ -28,13 +26,12 @@ import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
-@Database(entities = [Expense::class, Category::class, Currency::class, HistoricalExchangeRate::class], version = 1)
-@TypeConverters(LocalDateTimeConverter::class, LocalDateConverter::class, BigDecimalConverter::class)
+@Database(entities = [Expense::class, Category::class, HistoricalExchangeRate::class], version = 1)
+@TypeConverters(LocalDateTimeConverter::class, LocalDateConverter::class, BigDecimalConverter::class, CurrencyConverter::class)
 abstract class ExpenseRoomDatabase: RoomDatabase() {
 
     abstract fun expenseDao(): ExpenseDao
     abstract fun categoryDao(): CategoryDao
-    abstract fun currencyDao(): CurrencyDao
     abstract fun historicalExchangeRateDao(): HistoricalExchangeRateDao
 
 
@@ -83,9 +80,8 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
                 coroutineScope.launch{
                     val expenseDao = database.expenseDao()
                     val categoryDao = database.categoryDao()
-                    val currencyDao = database.currencyDao()
                     val historicalExchangeRateDao = database.historicalExchangeRateDao()
-                    prePopulateDatabase(expenseDao, categoryDao, currencyDao, historicalExchangeRateDao)
+                    prePopulateDatabase(expenseDao, categoryDao, historicalExchangeRateDao)
                 }
             }
         }
@@ -93,7 +89,6 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
         private suspend fun prePopulateDatabase(
             expenseDao: ExpenseDao,
             categoryDao: CategoryDao,
-            currencyDao: CurrencyDao,
             historicalExchangeRateDao: HistoricalExchangeRateDao
         ) {
             Log.i(TAG, "Prepopulate start")
@@ -121,7 +116,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
             Log.i(TAG, "Creating 5k expenses")
             val sameExpenses: Array<Expense> = IntStream
                 .range(1, 5000)
-                .mapToObj { Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), 2) }
+                .mapToObj { Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.HUF, 2) }
                 .collect(Collectors.toList())
                 .toTypedArray()
             Log.i(TAG, "5k expenses created")
@@ -132,177 +127,140 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
 
             Log.i(TAG, "Creating other expenses")
             val randomExpenses = arrayOf(
-                Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), 2),
-                Expense(1800.0, "spar gyümi", LocalDateTime.of(2019, 10, 2, 1, 1), 2),
-                Expense(3000.0, "CC ivás", LocalDateTime.of(2019, 10, 3, 1, 1), 1),
-                Expense(3600.0, "mogyesz tala", LocalDateTime.of(2019, 10, 5, 1, 1), 1),
-                Expense(3340.0, "telefonszámla", LocalDateTime.of(2019, 10, 6, 1, 1), 4),
-                Expense(2000.0, "belozzo", LocalDateTime.of(2019, 10, 8, 1, 1), 1),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), 4),
-                Expense(1500.0, "spar fagyi", LocalDateTime.of(2019, 11, 11, 1, 1), 7),
-                Expense(3800.0, "steam: anno 1404", LocalDateTime.of(2019, 11, 13, 1, 1), 8),
-                Expense(2000.0, "steam: anno 2070", LocalDateTime.of(2019, 11, 13, 1, 1), 8),
-                Expense(4000.0, "steam: anno 2205", LocalDateTime.of(2019, 12, 13, 1, 1), 1),
-                Expense(2000.0, "kfc", LocalDateTime.of(2019, 10, 15, 1, 1), 2),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), 10),
-                Expense(2400.0, "spar: rágó + gyümi", LocalDateTime.of(2018, 10, 17, 1, 1), 11),
-                Expense(1000.0, "spar", LocalDateTime.of(2018, 10, 18, 1, 1), 4),
-                Expense(1650.0, "balozzo", LocalDateTime.of(2018, 10, 20, 1, 1), 6),
-                Expense(3300.0, "media markt - pendrive", LocalDateTime.of(2019, 10, 20, 1, 1), 7),
-                Expense(660.0, "meki", LocalDateTime.of(2019, 10, 21, 1, 1), 1),
-                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), 2),
-                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), 2),
-                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), 2),
-                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), 2),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), 3),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), 6),
-                Expense(1800.0, "kfc", LocalDateTime.of(2019, 7, 26, 1, 1), 2),
-                Expense(12000.0, "berlin", LocalDateTime.of(2019, 8, 26, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), 4),
-                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), 1),
-                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), 1),
-                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), 1),
-                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), 1),
-                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), 1),
-                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), 2),
-                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), 2),
-                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), 2),
-                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), 2),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1),
-                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), 1)
+                Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.HUF, 2),
+                Expense(1800.0, "spar gyümi", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.HUF, 2),
+                Expense(3000.0, "CC ivás", LocalDateTime.of(2019, 10, 3, 1, 1), Currency.HUF, 1),
+                Expense(3600.0, "mogyesz tala", LocalDateTime.of(2019, 10, 5, 1, 1), Currency.HUF, 1),
+                Expense(3340.0, "telefonszámla", LocalDateTime.of(2019, 10, 6, 1, 1), Currency.HUF, 4),
+                Expense(2000.0, "belozzo", LocalDateTime.of(2019, 10, 8, 1, 1), Currency.HUF, 1),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(3450.0, "bkv bérlet", LocalDateTime.of(2019, 11, 9, 1, 1), Currency.HUF, 4),
+                Expense(1500.0, "spar fagyi", LocalDateTime.of(2019, 11, 11, 1, 1), Currency.HUF, 7),
+                Expense(3800.0, "steam: anno 1404", LocalDateTime.of(2019, 11, 13, 1, 1), Currency.HUF, 8),
+                Expense(2000.0, "steam: anno 2070", LocalDateTime.of(2019, 11, 13, 1, 1), Currency.HUF, 8),
+                Expense(4000.0, "steam: anno 2205", LocalDateTime.of(2019, 12, 13, 1, 1), Currency.HUF, 1),
+                Expense(2000.0, "kfc", LocalDateTime.of(2019, 10, 15, 1, 1), Currency.HUF, 2),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(13500.0, "kondi bérlet", LocalDateTime.of(2018, 10, 16, 1, 1), Currency.HUF, 10),
+                Expense(2400.0, "spar: rágó + gyümi", LocalDateTime.of(2018, 10, 17, 1, 1), Currency.HUF, 11),
+                Expense(1000.0, "spar", LocalDateTime.of(2018, 10, 18, 1, 1), Currency.HUF, 4),
+                Expense(1650.0, "balozzo", LocalDateTime.of(2018, 10, 20, 1, 1), Currency.HUF, 6),
+                Expense(3300.0, "media markt - pendrive", LocalDateTime.of(2019, 10, 20, 1, 1), Currency.HUF, 7),
+                Expense(660.0, "meki", LocalDateTime.of(2019, 10, 21, 1, 1), Currency.HUF, 1),
+                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), Currency.HUF, 2),
+                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), Currency.HUF, 2),
+                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), Currency.HUF, 2),
+                Expense(4000.0, "wow sub", LocalDateTime.of(2019, 10, 21, 1, 1), Currency.HUF, 2),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(1500.0, "buli", LocalDateTime.of(2019, 1, 24, 1, 1), Currency.HUF, 3),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(850.0, "gyros", LocalDateTime.of(2019, 4, 25, 1, 1), Currency.HUF, 6),
+                Expense(1800.0, "kfc", LocalDateTime.of(2019, 7, 26, 1, 1), Currency.HUF, 2),
+                Expense(12000.0, "berlin", LocalDateTime.of(2019, 8, 26, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(20140.0, "scitec vitamin + akció", LocalDateTime.of(2019, 3, 28, 1, 1), Currency.HUF, 4),
+                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), Currency.HUF, 1),
+                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), Currency.HUF, 1),
+                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), Currency.HUF, 1),
+                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), Currency.HUF, 1),
+                Expense(1240.0, "CC ivás", LocalDateTime.of(2018, 1, 30, 1, 1), Currency.HUF, 1),
+                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 2),
+                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 2),
+                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 2),
+                Expense(60000.0, "zara: öltöny + cipő", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 2),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(5000.0, "sticza szülinap", LocalDateTime.of(2018, 1, 31, 1, 1), Currency.HUF, 1),
+
+                Expense(5000.0, "currency test huf", LocalDateTime.of(2020, 1, 31, 1, 1), Currency.HUF, 1),
+                Expense(35.0, "currency test hrk", LocalDateTime.of(2020, 1, 31, 1, 1), Currency.HRK, 1),
+                Expense(700.0, "currency test eur", LocalDateTime.of(2020, 1, 31, 1, 1), Currency.EUR, 1)
             )
             Log.i(TAG, "Other expenses created")
             Log.i(TAG, "Inserting other expenses")
             expenseDao.insertAll(*randomExpenses)
             Log.i(TAG, "Other expenses inserted")
-
-
-            Log.i(TAG, "Creating currencies")
-            val currencies = arrayOf(
-                Currency("Canadian dollar", "CAD", "CA$", 2),
-                Currency("Hong Kong dollar", "HKD", "HK$", 2),
-                Currency("Icelandic króna", "ISK", "kr", 0),
-                Currency("Philippine peso", "PHP", "₱", 2),
-                Currency("Danish krone", "DKK", "kr.", 2),
-                Currency("Hungarian forint", "HUF", "Ft", 0),
-                Currency("Czech koruna", "CZK", "Kč", 2),
-                Currency("Australian dollar", "AUD", "AU$", 2),
-                Currency("Romanian leu", "RON", "L", 2),
-                Currency("Swedish krona", "SEK", "kr", 2),
-                Currency("Indonesian rupiah", "IDR", "Rp", 0),
-                Currency("Indian rupee", "INR", "₹", 2),
-                Currency("Brazilian real", "BRL", "R$", 2),
-                Currency("Russian ruble", "RUB", "₽", 2),
-                Currency("Croatian kuna", "HRK", "kn", 2),
-                Currency("Japanese yen", "JPY", "¥", 0),
-                Currency("Thai baht", "THB", "฿", 2),
-                Currency("Swiss franc", "CHF", "CHF", 2),
-                Currency("Singapore dollar", "SGD", "S$", 2),
-                Currency("Polish złoty", "PLN", "zł", 2),
-                Currency("Bulgarian lev", "BGN", "лв.", 2),
-                Currency("Turkish lira", "TRY", "₺", 2),
-                Currency("Renminbi", "CNY", "元/¥", 2),
-                Currency("Norwegian krone", "NOK", "kr", 2),
-                Currency("New Zealand dollar", "NZD", "NZ$", 2),
-                Currency("South African rand", "ZAR", "R", 2),
-                Currency("United States dollar", "USD", "$", 2),
-                Currency("Mexican peso", "MXN", "Mex$", 2),
-                Currency("Israeli new shekel", "ILS", "₪", 2),
-                Currency("Pound", "GBP", "£", 2),
-                Currency("South Korean won", "KRW", "₩", 0),
-                Currency("Malaysian ringgit", "MYR", "RM", 2)
-            )
-            Log.i(TAG, "Currencies created")
-            Log.i(TAG, "Inserting currencies")
-            currencyDao.insertAll(*currencies)
-            Log.i(TAG, "Currencies inserted")
 
 
 //            Log.i(TAG, "Creating 4k historical exchange rates")
