@@ -1,30 +1,41 @@
 package com.ogrob.moneybox.persistence.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "currency")
-data class Currency(
-
-    @PrimaryKey(autoGenerate = true)
-    val id: Long,
-
-    @ColumnInfo(name = "name")
-    val name: String,
-
-    @ColumnInfo(name = "iso_code")
-    val isoCode: String,
-
-    @ColumnInfo(name = "symbol")
+enum class Currency(
+    val niceName: String,
     val symbol: String,
-
-    @ColumnInfo(name = "fraction_digits")
     val fractionDigits: Int
 ) {
-
-    @Ignore
-    constructor(name: String, isoCode: String, symbol: String, fractionDigits: Int):
-            this(0, name, isoCode, symbol, fractionDigits)
+    EUR("Euro", "€", 2),
+    CAD("Canadian dollar", "CA$", 2),
+    HKD("Hong Kong dollar", "HK$", 2),
+    ISK("Icelandic króna", "kr", 0),
+    PHP("Philippine peso", "₱", 2),
+    DKK("Danish krone", "kr.", 2),
+    HUF("Hungarian forint", "Ft", 0),
+    CZK("Czech koruna", "Kč", 2),
+    AUD("Australian dollar", "AU$", 2),
+    RON("Romanian leu", "L", 2),
+    SEK("Swedish krona", "kr", 2),
+    IDR("Indonesian rupiah", "Rp", 0),
+    INR("Indian rupee", "₹", 2),
+    BRL("Brazilian real", "R$", 2),
+    RUB("Russian ruble", "₽", 2),
+    HRK("Croatian kuna", "kn", 2),
+    JPY("Japanese yen", "¥", 0),
+    THB("Thai baht", "฿", 2),
+    CHF("Swiss franc", "CHF", 2),
+    SGD("Singapore dollar", "S$", 2),
+    PLN("Polish złoty", "zł", 2),
+    BGN("Bulgarian lev", "лв.", 2),
+    TRY("Turkish lira", "₺", 2),
+    CNY("Renminbi", "元/¥", 2),
+    NOK("Norwegian krone", "kr", 2),
+    NZD("New Zealand dollar", "NZ$", 2),
+    ZAR("South African rand", "R", 2),
+    USD("United States dollar", "$", 2),
+    MXN("Mexican peso", "Mex$", 2),
+    ILS("Israeli new shekel", "₪", 2),
+    GBP("Pound", "£", 2),
+    KRW("South Korean won", "₩", 0),
+    MYR("Malaysian ringgit", "RM", 2)
 }
