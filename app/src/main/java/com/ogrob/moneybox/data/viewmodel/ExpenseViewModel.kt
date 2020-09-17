@@ -310,6 +310,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         _selectedFixedInterval.value = selectedFixedInterval
     }
 
+    fun setSelectedCurrency(selectedCurrency: Currency) {
+        _selectedCurrency.value = selectedCurrency
+    }
+
     fun calculateYearlyTotalAverage(expenses: List<Expense>): Double {
         val totalAmount = getTotalMoneySpentUnformatted(expenses)
 

@@ -30,7 +30,7 @@ class OptionsFragment : BaseFragment() {
         binding.root.setOnClickListener { it.hideKeyboard() }
         binding.saveOptionsButton.setOnClickListener {
             it.hideKeyboard()
-            onSaveOptions(it)
+            onSaveOptions()
         }
 
         initOptionFields()
@@ -41,28 +41,35 @@ class OptionsFragment : BaseFragment() {
     }
 
     private fun initOptionFields() {
+        initAmountGoal()
+        initDefaultCurrency()
+    }
+
+    private fun initAmountGoal() {
         val amountGoal = optionsViewModel.retrieveAmountGoalFromSharedPreferences(binding.root.context)
         binding.optionsAmountGoalEditText.setText(
             if (amountGoal == SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE)
                 EMPTY_STRING
             else
                 amountGoal.toString())
+    }
 
-
+    private fun initDefaultCurrency() {
         val defaultCurrency = optionsViewModel.retrieveDefaultCurrencyFromSharedPreferences(binding.root.context)
         binding.optionsDefaultCurrencyTextView.text = defaultCurrency
     }
 
     private fun onCreateCurrencyAlertDialog() {
         val currencies = Currency.values().toList()
+        val currencyNamesArray = currencies
+            .map(Currency::name)
+            .toTypedArray()
         val selectedCurrencyIndex = currencies.indexOf(Currency.valueOf(binding.optionsDefaultCurrencyTextView.text.toString()))
 
         AlertDialog.Builder(binding.root.context)
             .setTitle("Select Currency")
             .setSingleChoiceItems(
-                currencies
-                    .map(Currency::name)
-                    .toTypedArray(),
+                currencyNamesArray,
                 selectedCurrencyIndex
             ) { dialog, which ->
                 onSelectCurrency(currencies[which])
@@ -76,20 +83,25 @@ class OptionsFragment : BaseFragment() {
         binding.optionsDefaultCurrencyTextView.text = currency.name
     }
 
-    private fun onSaveOptions(view: View) {
+    private fun onSaveOptions() {
+        saveAmountGoal()
+        saveDefaultCurrency()
+
+        Toast.makeText(context, "Changes Saved!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun saveAmountGoal() {
         val newGoalAmount = if (binding.optionsAmountGoalEditText.text.isEmpty())
             SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
         else
             binding.optionsAmountGoalEditText.text.toString().toFloat()
 
         optionsViewModel.updateAmountGoalInSharedPreferences(binding.root.context, newGoalAmount)
+    }
 
-
+    private fun saveDefaultCurrency() {
         val newDefaultCurrency = binding.optionsDefaultCurrencyTextView.text.toString()
 
         optionsViewModel.updateDefaultCurrencyInSharedPreferences(binding.root.context, newDefaultCurrency)
-
-
-        Toast.makeText(context, "Changes Saved!", Toast.LENGTH_SHORT).show()
     }
 }
