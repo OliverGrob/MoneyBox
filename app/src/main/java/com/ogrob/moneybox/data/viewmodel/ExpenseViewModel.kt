@@ -9,6 +9,7 @@ import com.ogrob.moneybox.persistence.model.*
 import com.ogrob.moneybox.ui.helper.ExpenseDTOForAdapter
 import com.ogrob.moneybox.ui.helper.ExpensesByMonth
 import com.ogrob.moneybox.ui.helper.ExpensesByYear
+import com.ogrob.moneybox.ui.helper.FilterOption
 import com.ogrob.moneybox.utils.EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
@@ -36,12 +37,15 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _unfilteredExpenses: MutableLiveData<List<CategoryWithExpenses>> = MutableLiveData()
     val unfilteredExpenses: LiveData<List<CategoryWithExpenses>> = _unfilteredExpenses
 
+    private val _filteredCategoriesWithExpensesForFilterUpdate: MutableLiveData<Pair<FilterOption, List<CategoryWithExpenses>>> = MutableLiveData()
+    val filteredCategoriesWithExpensesForFilterUpdate: LiveData<Pair<FilterOption, List<CategoryWithExpenses>>> = _filteredCategoriesWithExpensesForFilterUpdate
+
     private val _allCategories: MutableLiveData<List<Category>> = MutableLiveData()
     val allCategories: LiveData<List<Category>> = _allCategories
 
 
     private lateinit var selectedCategoryIds: MutableList<Long>
-    private lateinit var selectedCurrencies: MutableList<String>
+    private lateinit var selectedCurrencyIds: MutableList<Long>
     private lateinit var selectedExpenseAmountRange: Pair<Double, Double>
 
 
@@ -77,9 +81,41 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun updateAllFilteredExpenses() {
-        viewModelScope.launch {
-            _filteredExpenses.value = filterAllExpenses(_unfilteredExpenses.value!!)
+    private suspend fun selectFiltersDefaults(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            selectedCategoryIds = selectCategories(allCategoriesWithExpenses)
+            selectedCurrencyIds = selectCurrencies(allCategoriesWithExpenses)
+            selectedExpenseAmountRange = selectExpenseAmountRange(allCategoriesWithExpenses)
+        }
+    }
+
+    private suspend fun selectCategories(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
+        return withContext(Dispatchers.Default) {
+            categoriesWithExpenses
+                .map(CategoryWithExpenses::category)
+                .map(Category::id)
+                .toMutableList()
+        }
+    }
+
+    private suspend fun selectCurrencies(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
+        return withContext(Dispatchers.Default) {
+            categoriesWithExpenses
+                .flatMap(CategoryWithExpenses::expenses)
+                .map(Expense::currency)
+                .map(Currency::id)
+                .distinct()
+                .toMutableList()
+        }
+    }
+
+    private suspend fun selectExpenseAmountRange(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {
+        return withContext(Dispatchers.Default) {
+            val allAmountValues = allCategoriesWithExpenses
+                .flatMap(CategoryWithExpenses::expenses)
+                .map(Expense::amount)
+
+            Pair(allAmountValues.min()!!, allAmountValues.max()!!)
         }
     }
 
@@ -101,53 +137,64 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private suspend fun filterAllExpenses(unfilteredExpenses: List<CategoryWithExpenses>): List<Expense> {
+    fun updateAllFilteredExpenses() {
+        viewModelScope.launch {
+            _filteredExpenses.value = filterAllExpensesThroughFiltersOnly(_unfilteredExpenses.value!!)
+        }
+    }
+
+    private suspend fun filterAllExpensesThroughFiltersOnly(unfilteredExpenses: List<CategoryWithExpenses>): List<Expense> {
         return withContext(Dispatchers.Default) {
             unfilteredExpenses
                 .flatMap(CategoryWithExpenses::expenses)
                 .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
-                .filter { expense -> selectedCurrencies.contains(expense.currency.name) }
-                .filter { expense -> selectedExpenseAmountRange.first <= expense.amount && selectedExpenseAmountRange.second >= expense.amount }
+                .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
+                .filter { expense -> isAmountInSelectedExpenseAmountRange(expense.amount) }
         }
     }
 
-    private suspend fun selectFiltersDefaults(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
-        viewModelScope.launch(Dispatchers.Default) {
-            selectedCategoryIds = selectCategories(allCategoriesWithExpenses)
-            selectedCurrencies = selectCurrencies(allCategoriesWithExpenses)
-            selectedExpenseAmountRange = selectExpenseAmountRange(allCategoriesWithExpenses)
+    fun updateFilters(filterOption: FilterOption) {
+        viewModelScope.launch {
+            _filteredCategoriesWithExpensesForFilterUpdate.value = Pair(filterOption, filterAllExpensesForFilterUpdate(_unfilteredExpenses.value!!, filterOption))
         }
     }
 
-    private suspend fun selectCategories(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
+    private suspend fun filterAllExpensesForFilterUpdate(
+        unfilteredExpenses: List<CategoryWithExpenses>,
+        filterOption: FilterOption
+    ): List<CategoryWithExpenses> {
         return withContext(Dispatchers.Default) {
-            categoriesWithExpenses
-                .map(CategoryWithExpenses::category)
-                .map(Category::id)
-                .toMutableList()
+            when (filterOption) {
+                FilterOption.CATEGORY -> unfilteredExpenses
+                    .map { categoryWithExpenses ->
+                        CategoryWithExpenses(
+                            categoryWithExpenses.category,
+                            categoryWithExpenses.expenses.filter { expense ->
+                                selectedCategoryIds.contains(expense.categoryId)
+                            })
+                    }
+                FilterOption.AMOUNT -> unfilteredExpenses
+                    .map { categoryWithExpenses ->
+                        CategoryWithExpenses(
+                            categoryWithExpenses.category,
+                            categoryWithExpenses.expenses.filter { expense ->
+                                isAmountInSelectedExpenseAmountRange(expense.amount)
+                            })
+                    }
+                FilterOption.CURRENCY -> unfilteredExpenses
+                    .map { categoryWithExpenses ->
+                        CategoryWithExpenses(
+                            categoryWithExpenses.category,
+                            categoryWithExpenses.expenses.filter { expense ->
+                                selectedCurrencyIds.contains(expense.currency.id)
+                            })
+                    }
+            }
         }
     }
 
-    private suspend fun selectCurrencies(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<String> {
-        return withContext(Dispatchers.Default) {
-            categoriesWithExpenses
-                .flatMap(CategoryWithExpenses::expenses)
-                .map(Expense::currency)
-                .map(Currency::name)
-                .distinct()
-                .toMutableList()
-        }
-    }
-
-    private suspend fun selectExpenseAmountRange(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {
-        return withContext(Dispatchers.Default) {
-            val allAmountValues = allCategoriesWithExpenses
-                .flatMap(CategoryWithExpenses::expenses)
-                .map(Expense::amount)
-
-            Pair(allAmountValues.min()!!, allAmountValues.max()!!)
-        }
-    }
+    private fun isAmountInSelectedExpenseAmountRange(amount: Double) =
+        selectedExpenseAmountRange.first <= amount && selectedExpenseAmountRange.second >= amount
 
     fun groupExpensesByYearAndMonth(expenses: List<Expense>): List<Any> =
         expenses
@@ -219,13 +266,13 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             selectedCategoryIds.add(categoryId)
     }
 
-    fun isCurrencySelected(currencyName: String) = selectedCurrencies.contains(currencyName)
+    fun isCurrencySelected(currencyId: Long) = selectedCurrencyIds.contains(currencyId)
 
-    fun toggleCurrencyFilter(currencyName: String) {
-        if (selectedCurrencies.contains(currencyName))
-            selectedCurrencies.remove(currencyName)
+    fun toggleCurrencyFilter(currencyId: Long) {
+        if (selectedCurrencyIds.contains(currencyId))
+            selectedCurrencyIds.remove(currencyId)
         else
-            selectedCurrencies.add(currencyName)
+            selectedCurrencyIds.add(currencyId)
     }
 
     fun getCheapestAndMostExpensiveExpenseAmount(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {

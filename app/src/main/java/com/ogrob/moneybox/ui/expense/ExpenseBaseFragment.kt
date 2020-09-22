@@ -10,6 +10,7 @@ import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -25,6 +26,7 @@ import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.ui.BaseFragment
+import com.ogrob.moneybox.ui.helper.FilterOption
 import com.ogrob.moneybox.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -67,6 +69,10 @@ abstract class ExpenseBaseFragment : BaseFragment() {
         expenseViewModel.unfilteredExpenses.observe(viewLifecycleOwner, Observer {
             configureBackdropContainer(filterImageView)
             setupFilters(it)
+        })
+
+        expenseViewModel.filteredCategoriesWithExpensesForFilterUpdate.observe(viewLifecycleOwner, Observer {
+            updateFilters(it)
         })
 
 
@@ -188,28 +194,16 @@ abstract class ExpenseBaseFragment : BaseFragment() {
         newChip.isChecked = expenseViewModel.isCategorySelected(categoryWithExpenseCount.key.id)
 
         newChip.text = "${categoryWithExpenseCount.key.name} (${categoryWithExpenseCount.value})"
+        newChip.tag = categoryWithExpenseCount.key.id
 
         newChip.setOnClickListener { chip ->
             expenseViewModel.toggleCategoryFilter(categoryWithExpenseCount.key.id)
 
-            updateExpensesBasedOnFragmentAndFilters(categoryWithExpenseCount.value, (chip as Chip).isChecked)
+            expenseViewModel.updateFilters(FilterOption.CATEGORY)
+            expenseViewModel.updateAllFilteredExpenses()
         }
 
         binding.expenseBackdropBackView.categoryBodyChipGroup.addView(newChip)
-    }
-
-    private fun updateExpensesBasedOnFragmentAndFilters(
-        expenseCountForCategory: Int,
-        isAddition: Boolean
-    ) {
-        expenseViewModel.updateAllFilteredExpenses()
-
-        val previousItemCount = binding.expenseBackdropFrontView.headerItemCountTextView.text.split(SPACE)[0].toInt()
-
-        if (isAddition)
-            binding.expenseBackdropFrontView.headerItemCountTextView.text = formatExpenseCounterText(previousItemCount.plus(expenseCountForCategory))
-        else
-            binding.expenseBackdropFrontView.headerItemCountTextView.text = formatExpenseCounterText(previousItemCount.minus(expenseCountForCategory))
     }
 
     private fun setupAmountFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
@@ -226,18 +220,66 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     private fun createCurrencyChip(currencyWithExpenseCount: Map.Entry<Currency, Int>) {
         val newChip = Chip(binding.root.context)
 
-        newChip.isChecked = expenseViewModel.isCurrencySelected(currencyWithExpenseCount.key.name)
+        newChip.isChecked = expenseViewModel.isCurrencySelected(currencyWithExpenseCount.key.id)
 
         newChip.text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
+        newChip.tag = currencyWithExpenseCount.key.id
 
         newChip.setOnClickListener { chip ->
-            expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.name)
+            expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.id)
 
-            updateExpensesBasedOnFragmentAndFilters(currencyWithExpenseCount.value, (chip as Chip).isChecked)
+            expenseViewModel.updateFilters(FilterOption.CURRENCY)
+            expenseViewModel.updateAllFilteredExpenses()
         }
 
         binding.expenseBackdropBackView.currencyBodyChipGroup.addView(newChip)
     }
+
+    private fun updateFilters(allCategoriesWithExpenses: Pair<FilterOption, List<CategoryWithExpenses>>) {
+        if (allCategoriesWithExpenses.first != FilterOption.CATEGORY)
+            updateCategoryFilter(allCategoriesWithExpenses.second)
+
+//        if (allCategoriesWithExpenses.first != FilterOption.CATEGORY)
+//            updateCategoryFilter(allCategoriesWithExpenses)
+
+        if (allCategoriesWithExpenses.first != FilterOption.CURRENCY)
+            updateCurrencyFilter(allCategoriesWithExpenses.second)
+    }
+
+    private fun updateCategoryFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        val categoriesWithExpenseCount = expenseViewModel.getCategoriesWithExpenseCount(allCategoriesWithExpenses)
+
+        binding.expenseBackdropBackView.categoryBodyChipGroup.children
+            .forEach { chip ->
+                val categoryWithExpenseCount = getCategory(chip, categoriesWithExpenseCount)
+                (chip as Chip).text = "${categoryWithExpenseCount.key.name} (${categoryWithExpenseCount.value})"
+            }
+    }
+
+    private fun getCategory(chip: View, categoriesWithExpenseCount: Map<Category, Int>): Map.Entry<Category, Int> {
+        return categoriesWithExpenseCount
+            .entries
+            .first { entry -> entry.key.id == chip.tag }
+    }
+
+    private fun updateCurrencyFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        val currenciesWithExpenseCount = expenseViewModel.getCurrenciesWithExpenseCount(allCategoriesWithExpenses)
+
+        binding.expenseBackdropBackView.currencyBodyChipGroup.children
+            .forEach { chip ->
+                val currencyWithExpenseCount = getCurrency(chip, currenciesWithExpenseCount)
+                (chip as Chip).text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
+            }
+    }
+
+    private fun getCurrency(chip: View, currenciesWithExpenseCount: Map<Currency, Int>): Map.Entry<Currency, Int> {
+        return currenciesWithExpenseCount
+            .entries
+            .first { entry -> entry.key.id == chip.tag }
+    }
+
+
+
 
 
 
