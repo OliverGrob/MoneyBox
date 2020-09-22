@@ -2,7 +2,7 @@ package com.ogrob.moneybox.ui.helper
 
 import com.ogrob.moneybox.persistence.model.Expense
 
-data class ExpensesByYear(val year: Int, private val expenses: List<Expense>) {
+data class ExpensesByYear(val year: Int, val expenses: List<Expense>) {
 
     val expensesByMonth: List<ExpensesByMonth>
     val totalMoneySpentInYear: Double

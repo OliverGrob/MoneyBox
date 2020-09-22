@@ -38,7 +38,7 @@ class CategoryAddAndEditFragment : BaseFragment() {
 
         initOnClickListeners()
 
-        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer {
+        expenseViewModel.getAllCategories_OLD().observe(viewLifecycleOwner, Observer {
             initViewsAndButtons()
             applyTextWatcher(it)
         })

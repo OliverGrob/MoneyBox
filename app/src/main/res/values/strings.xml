@@ -1,6 +1,8 @@
 <resources>
+    <!-- App wide base strings -->
     <string name="app_name">Money Box</string>
 
+    <!-- Formatting -->
     <string name="total_money_spent">Total: %s</string>
 
     <string name="category_header">Category</string>
@@ -15,7 +17,6 @@
     <string name="header_selection_all_text">All</string>
     <string name="header_selection_right_arrow">></string>
 
-    <string name="money_amount_in_parenthesis">(%.0f)</string>
     <string name="money_amount_average_in_parenthesis">(%s/%s)</string>
 
     <string name="money_amount_with_currency">%s %s</string>
@@ -25,4 +26,23 @@
     <string name="expense_add_description_hint">Expense Description</string>
     <string name="expense_add_date_of_expense_hint">Date of Expense</string>
     <string name="expense_add_currency_hint">Currency</string>
+
+
+    <!-- Formatting using spaces -->
+    <string name="space_at_the_start">&#160;%s</string>
+    <string name="space_at_the_end">%s&#160;</string>
+
+    <!-- Bottom Navigation Bar -->
+    <string name="bottom_nav_bar_options">Options</string>
+    <string name="bottom_nav_bar_categories">Categories</string>
+    <string name="bottom_nav_bar_expenses">Expenses</string>
+    <string name="bottom_nav_bar_about">About</string>
+
+    <!-- Selected fragment view -->
+    <string name="selected_fragment_back_button">Back</string>
+
+    <!-- Filter names -->
+    <string name="category_filter_name">Category</string>
+    <string name="amount_filter_name">Amount</string>
+    <string name="currency_filter_name">Currency</string>
 </resources>

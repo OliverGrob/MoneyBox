@@ -21,3 +21,9 @@ fun withSuffix(value: Double): String {
         "kMBTQ"[exp - 1]
     )
 }
+
+fun formatExpenseCounterText(expenseCount: Int) =
+    if (expenseCount == 1)
+        "$expenseCount Item"
+    else
+        "$expenseCount Items"

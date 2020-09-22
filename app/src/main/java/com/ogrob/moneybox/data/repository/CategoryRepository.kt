@@ -20,7 +20,9 @@ class CategoryRepository(
     }
 
 
-    fun getCategories() = this.categoryDao.getAllCategories()
+    suspend fun getAllCategoriesWithExpenses() = categoryDao.getAllCategoriesWithExpenses()
+
+    suspend fun getAllCategories() = categoryDao.getAllCategories()
 
     suspend fun addNewCategory(category: Category) {
         categoryDao.insert(category)

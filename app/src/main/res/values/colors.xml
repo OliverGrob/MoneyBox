@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2E303A</color>
-    <color name="colorPrimaryDark">#202329</color>
-    <color name="colorPrimaryText">#FFFFFF</color>
-    <color name="colorPrimaryTextSelected">#31364A</color>
-    <color name="colorAccent">#1E9846</color>
-    <color name="colorControlNormal">#C5C5C5</color>
-
-    <color name="black">#121212</color>
+    <color name="colorPrimary_OLD">#2E303A</color>
+    <color name="colorPrimaryDark_OLD">#202329</color>
+    <color name="colorPrimaryTextSelected_OLD">#31364A</color>
+    <color name="colorAccent_OLD">#1E9846</color>
+    <color name="colorControlNormal_OLD">#C5C5C5</color>
 
     <color name="colorNegative">#C50000</color>
 
     <color name="colorInputBackground">#03A9F4</color>
+
+
+
+    <color name="colorPrimaryGrey">#434343</color>
+    <color name="colorPrimaryDarkGrey">#252525</color>
+    <color name="colorBlack">#121212</color>
+
+    <color name="colorPrimaryGreen">#00900E</color>
+    <color name="colorPrimaryGreenDarker">#9900900E</color>
+    <color name="colorPrimaryGreenDark">#4D00900E</color>
+    <color name="colorCurrency">#56CCF2</color>
+    <color name="colorSelectedCurrencyAmount">#F2994A</color>
+
+    <color name="colorPrimaryText">#FFFFFF</color>
+    <color name="colorPrimaryTextDarker">#CCFFFFFF</color>
 </resources>

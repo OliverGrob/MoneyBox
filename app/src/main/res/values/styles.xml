@@ -3,15 +3,15 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:colorBackground">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary_OLD</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark_OLD</item>
+        <item name="colorAccent">@color/colorAccent_OLD</item>
+        <item name="android:colorBackground">@color/colorPrimaryDark_OLD</item>
         <item name="android:textColor">@color/colorPrimaryText</item>
 
-        <item name="colorControlNormal">@color/colorControlNormal</item>
-        <item name="colorControlActivated">@color/colorAccent</item>
-        <item name="colorControlHighlight">@color/colorPrimary</item>
+        <item name="colorControlNormal">@color/colorControlNormal_OLD</item>
+        <item name="colorControlActivated">@color/colorAccent_OLD</item>
+        <item name="colorControlHighlight">@color/colorPrimary_OLD</item>
 
         <item name="toolbarStyle">@style/CustomToolbarStyle</item>
 
@@ -27,7 +27,7 @@
     </style>
 
     <style name="CustomToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Primary">
-        <item name="background">@color/colorPrimary</item>
+        <item name="background">@color/colorPrimaryGrey</item>
         <item name="titleTextColor">@color/colorPrimaryText</item>
     </style>
 
@@ -45,7 +45,7 @@
     </style>
 
     <style name="CustomFloatingActionButtonStyle" parent="Widget.Design.FloatingActionButton">
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/colorPrimaryGreen</item>
     </style>
 
     <style name="CustomBottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
@@ -56,19 +56,19 @@
     </style>
 
     <style name="TextInputLabelStyle">
-        <item name="boxStrokeColor">@color/colorAccent</item>
-        <item name="hintTextColor">@color/colorAccent</item>
+        <item name="boxStrokeColor">@color/colorAccent_OLD</item>
+        <item name="hintTextColor">@color/colorAccent_OLD</item>
         <item name="android:textColorHint">@color/colorPrimaryText</item>
     </style>
 
     <style name="CustomDatePickerDialogStyle" parent="android:Theme.Material.Light.Dialog">
-        <item name="android:colorAccent">@color/colorPrimary</item>
+        <item name="android:colorAccent">@color/colorPrimary_OLD</item>
         <item name="android:buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
         <item name="android:buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
     </style>
 
     <style name="DatePickerButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorPrimary_OLD</item>
         <item name="android:backgroundTint">@color/colorPrimaryText</item>
     </style>
 

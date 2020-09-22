@@ -1,10 +1,17 @@
 package com.ogrob.moneybox.data.repository
 
 import android.app.Application
+import android.util.Log
 import com.ogrob.moneybox.persistence.ExpenseRoomDatabase
 import com.ogrob.moneybox.persistence.dao.ExpenseDao
 import com.ogrob.moneybox.persistence.model.Expense
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.Month
 
 class ExpenseRepository(
     application: Application,
@@ -20,7 +27,7 @@ class ExpenseRepository(
     }
 
 
-    fun getCategoriesWithExpenses() = this.expenseDao.getAllCategoriesWithExpenses()
+    fun getAllCategoriesWithExpenses() = this.expenseDao.getAllCategoriesWithExpenses()
 
     suspend fun addNewExpense(expense: Expense) {
         expenseDao.insert(expense)
@@ -32,6 +39,20 @@ class ExpenseRepository(
 
     suspend fun deleteExpense(expense: Expense) {
         expenseDao.delete(expense)
+    }
+
+
+
+
+
+
+
+
+    suspend fun speedQuery(year: Int, month: Month) : Int {
+        delay(3000)
+        val startDate = LocalDateTime.of(year, month, 1, 0, 0, 0)
+        val endDate = LocalDateTime.of(year, month, month.length(false), 23, 59, 59)
+        return expenseDao.speedQueryB(startDate, endDate, listOf("HUF", "EUR")).size
     }
 
 }

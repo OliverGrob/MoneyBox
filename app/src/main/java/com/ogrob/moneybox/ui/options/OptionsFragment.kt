@@ -1,12 +1,14 @@
 package com.ogrob.moneybox.ui.options
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.ogrob.moneybox.data.viewmodel.OptionsViewModel
 import com.ogrob.moneybox.databinding.FragmentOptionsBinding
 import com.ogrob.moneybox.persistence.model.Currency
@@ -14,6 +16,7 @@ import com.ogrob.moneybox.ui.BaseFragment
 import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.SHARED_PREFERENCES_AMOUNT_PER_MONTH_GOAL_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.hideKeyboard
+import java.time.Month
 
 class OptionsFragment : BaseFragment() {
 
@@ -33,11 +36,28 @@ class OptionsFragment : BaseFragment() {
             onSaveOptions()
         }
 
+
+        binding.queryButton.setOnClickListener { startQuery() }
+
+
         initOptionFields()
 
         binding.optionsDefaultCurrencyTextView.setOnClickListener { onCreateCurrencyAlertDialog() }
 
         return binding.root
+    }
+
+    private fun startQuery() {
+        optionsViewModel.buttonEnabled.observe(viewLifecycleOwner, Observer {
+            binding.queryButton.isEnabled = it
+        })
+
+        val startTime = System.currentTimeMillis()
+        optionsViewModel.size.observe(viewLifecycleOwner, Observer {
+            val endTime = System.currentTimeMillis()
+            binding.optionsDbSpeedTestTextView.text = "$it expense query time:  ${endTime - startTime}ms"
+        })
+        optionsViewModel.startSpeedQuery(2018, Month.OCTOBER)
     }
 
     private fun initOptionFields() {

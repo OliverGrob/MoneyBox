@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="6dp"
+    android:paddingVertical="2dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/year_and_month_linear_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryGreen"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingVertical="6dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.15">
+
+        <TextView
+            android:id="@+id/year_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="2019" />
+
+        <TextView
+            android:id="@+id/month_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="OCT" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/details_linear_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorPrimaryGreenDarker"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/year_and_month_linear_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/year_and_month_linear_layout"
+        app:layout_constraintTop_toTopOf="@+id/year_and_month_linear_layout"
+        app:layout_constraintWidth_percent="0.85">
+
+        <TextView
+            android:id="@+id/items_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryText"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            tools:text="26 Items" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/total_amount_linear_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/total_amount_in_default_currency_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryText"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text="331.300 " />
+
+            <TextView
+                android:id="@+id/default_currency_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorCurrency"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text="Huf " />
+
+            <TextView
+                android:id="@+id/total_amount_in_selected_currency_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorSelectedCurrencyAmount"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text="(1085 " />
+
+            <TextView
+                android:id="@+id/selected_currency_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorCurrency"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text="Eur" />
+
+            <TextView
+                android:id="@+id/closing_parenthesis_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorSelectedCurrencyAmount"
+                android:textSize="14sp"
+                android:textStyle="italic"
+                tools:text=")" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

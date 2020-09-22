@@ -14,10 +14,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.helper.FixedInterval
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseAddAndEditBinding
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.ui.BaseFragment
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
@@ -52,7 +50,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             val additionDate = LocalDate.parse(args.expenseAdditionDate, DateTimeFormatter.ISO_LOCAL_DATE)
             it.hideKeyboard()
             it.findNavController().navigate(
-                ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseDayFragment(additionDate.year, additionDate.monthValue))
+                ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(additionDate.year, additionDate.monthValue))
         }
 
         initTextViewsAndButtons()
@@ -91,7 +89,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun populateCategoryRadioGroup() {
-        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer { categories ->
+        expenseViewModel.getAllCategories_OLD().observe(viewLifecycleOwner, Observer { categories ->
             categories
                 .forEach { category ->
                     val radioButton = RadioButton(context)
@@ -206,7 +204,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             DateTimeFormatter.ISO_LOCAL_DATE
         )
         view.findNavController().navigate(
-            ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseDayFragment(
+            ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(
                 additionDate.year,
                 additionDate.monthValue
             )

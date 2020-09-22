@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-            android:id="@+id/optionsFragment"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="Options" />
 
     <item
-            android:id="@+id/categoryFragment"
-            android:icon="@android:drawable/ic_menu_crop"
-            android:title="Categories" />
+        android:id="@+id/optionsFragment"
+        android:icon="@drawable/ic_settings_24dp"
+        android:title="@string/bottom_nav_bar_options" />
 
     <item
-            android:id="@+id/expenseYearFragment"
-            android:icon="@android:drawable/ic_menu_sort_by_size"
-            android:title="Expenses" />
+        android:id="@+id/categoryFragment"
+        android:icon="@drawable/ic_categories_dp24"
+        android:title="@string/bottom_nav_bar_categories" />
 
     <item
-            android:id="@+id/aboutFragment"
-            android:icon="@android:drawable/ic_menu_agenda"
-            android:title="About" />
+        android:id="@+id/expenseAllFragment"
+        android:icon="@drawable/ic_expenses_24dp"
+        android:title="@string/bottom_nav_bar_expenses" />
+
+    <item
+        android:id="@+id/aboutFragment"
+        android:icon="@drawable/ic_about_24dp"
+        android:title="@string/bottom_nav_bar_about" />
 
 </menu>

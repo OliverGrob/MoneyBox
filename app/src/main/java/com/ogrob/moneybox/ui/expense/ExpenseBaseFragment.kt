@@ -5,14 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.animation.LinearInterpolator
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.navigation.findNavController
 import com.google.android.material.chip.Chip
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.helper.FixedInterval
@@ -20,11 +22,10 @@ import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
+import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.ui.BaseFragment
-import com.ogrob.moneybox.utils.hideLoadingAnimation
-import com.ogrob.moneybox.utils.showLoadingAnimation
-import com.ogrob.moneybox.utils.withSuffix
+import com.ogrob.moneybox.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 abstract class ExpenseBaseFragment : BaseFragment() {
@@ -39,67 +40,62 @@ abstract class ExpenseBaseFragment : BaseFragment() {
                               savedInstanceState: Bundle?): View? {
         binding = FragmentExpenseBinding.inflate(inflater)
 
-//        configureBackdropContainer()
-        initToolbar()
+        val filterImageView = requireActivity().toolbar.getChildAt(1) as ImageView
+        filterImageView.visibility = View.VISIBLE
+
+
+        binding.expenseBackdropFrontView.bodyConstraintLayout.setOnClickListener {
+            it.findNavController().navigate(ExpenseAllFragmentDirections.actionExpenseAllFragmentToExpenseSelectedFragment(2019, 10))
+        }
 
         showLoadingAnimation()
 
-        initFilterHeaderOnClickListeners()
-
-        binding.expenseBackdropFrontView.headerLinearLayout.setOnClickListener { binding.backdropContainer.closeBackView() }
-        binding.expenseBackdropFrontView.addExpenseFloatingActionButton.setOnClickListener { onAddNewExpense(it) }
+        addOnClickListeners()
 
 
-        initHeaderSelectionTextViewsAndAddClickListeners()
-
-
+        /** still need to do bottom bar */
         initTotalAverageInFixedIntervalObserver()
         binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.setOnClickListener { onChangeTotalAverageInterval(it) }
         binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.paintFlags = Paint.UNDERLINE_TEXT_FLAG
 
 
-        getFilteredExpenses().observe(viewLifecycleOwner, Observer {
-            Thread.sleep(1000)
+        expenseViewModel.filteredExpenses.observe(viewLifecycleOwner, Observer {
             hideLoadingAnimation()
-            configureBackdropContainer()
-            setupBackdropExpenses(it)
-            expenseViewModel.getAllCategories()
-                .observe(viewLifecycleOwner, Observer { allCategories ->
-                    getExpensesWithoutCategoryFiltering().observe(
-                        viewLifecycleOwner,
-                        Observer { categoriesWithExpenses ->
-                            setupBackdropFilters(allCategories, categoriesWithExpenses)
-                        })
-                })
+            setupExpenses(it)
         })
+
+        expenseViewModel.unfilteredExpenses.observe(viewLifecycleOwner, Observer {
+            configureBackdropContainer(filterImageView)
+            setupFilters(it)
+        })
+
+
+        getExpensesBasedOnFragmentAndFilters()
+
+
+//        getFilteredExpenses_OLD().observe(viewLifecycleOwner, Observer {
+////            Thread.sleep(1000)
+//            hideLoadingAnimation()
+//            configureBackdropContainer(filterImageView)
+//            setupBackdropExpenses(it)
+//            expenseViewModel.getAllCategories()
+//                .observe(viewLifecycleOwner, Observer { allCategories ->
+//                    getExpensesWithoutCategoryFiltering().observe(
+//                        viewLifecycleOwner,
+//                        Observer { categoriesWithExpenses ->
+//                            setupBackdropFilters(allCategories, categoriesWithExpenses)
+//                        })
+//                })
+//        })
 
         return binding.root
     }
 
-    private fun initToolbar() {
-        val toolbar = requireActivity().toolbar
-        toolbar.navigationIcon = null
-        toolbar.setLogo(R.drawable.ic_filter_list_white_24dp)
-        val params = toolbar.getChildAt(1).layoutParams as ViewGroup.MarginLayoutParams
-        params.rightMargin = 100
-        toolbar.getChildAt(1).layoutParams = params
-    }
+    private fun addOnClickListeners() {
+        initFilterHeaderOnClickListeners()
 
-    private fun configureBackdropContainer() {
-        val toolbar: Toolbar = requireActivity().toolbar
-
-        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
-
-                binding.backdropContainer
-                    .attachToolbar(toolbar)
-                    .dropInterpolator(LinearInterpolator())
-                    .dropHeight(binding.backdropContainer.height - binding.expenseBackdropFrontView.headerLinearLayout.height)
-                    .build()
-            }
-        })
+        binding.expenseBackdropFrontView.headerLinearLayout.setOnClickListener { binding.backdropContainer.closeBackView() }
+        binding.expenseBackdropFrontView.addExpenseFloatingActionButton.setOnClickListener { onAddNewExpense(it) }
     }
 
     private fun initFilterHeaderOnClickListeners() {
@@ -128,23 +124,133 @@ abstract class ExpenseBaseFragment : BaseFragment() {
         filterBodyView: View
     ) {
         if (filterBodyView.isVisible) {
-            filterHeaderIcon.background = resources.getDrawable(R.drawable.ic_expand_more_white_24dp, null)
+            filterHeaderIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_more_white_24dp, null)
             filterBodyView.visibility = View.GONE
         }
         else {
-            filterHeaderIcon.background = resources.getDrawable(R.drawable.ic_expand_less_white_24dp, null)
+            filterHeaderIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_less_white_24dp, null)
             filterBodyView.visibility = View.VISIBLE
         }
     }
 
     abstract fun onAddNewExpense(view: View)
 
-    abstract fun initHeaderSelectionTextViewsAndAddClickListeners()
+    private fun configureBackdropContainer(filterImageView: ImageView) {
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.root.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                binding.backdropContainer
+                    .dropInterpolator(LinearInterpolator())
+                    .dropHeight(binding.backdropContainer.height - binding.expenseBackdropFrontView.headerLinearLayout.height)
+                    .imageView(filterImageView)
+                    .build()
+            }
+        })
+    }
+
+    private fun setupExpenses(filteredExpenses: List<Expense>) {
+        setupFragmentSpecificViews()
+
+        binding.expenseBackdropFrontView.headerItemCountTextView.text = formatExpenseCounterText(filteredExpenses.size)
+
+        populateRecyclerView(filteredExpenses)
+        calculateTotalMoneySpent(filteredExpenses)
+    }
+
+    abstract fun setupFragmentSpecificViews()
+
+    abstract fun populateRecyclerView(filteredExpenses: List<Expense>)
+
+    private fun calculateTotalMoneySpent(filteredExpenses: List<Expense>) {
+        binding.expenseBackdropFrontView.totalMoneySpentTextView.text =
+            resources.getString(R.string.total_money_spent, expenseViewModel.getTotalMoneySpentFormatted(filteredExpenses))
+    }
+
+    abstract fun getExpensesBasedOnFragmentAndFilters()
+
+    private fun setupFilters(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        setupCategoryFilter(allCategoriesWithExpenses)
+        setupAmountFilter(allCategoriesWithExpenses)
+        setupCurrencyFilter(allCategoriesWithExpenses)
+    }
+
+    private fun setupCategoryFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        val categoriesWithExpenseCount = expenseViewModel.getCategoriesWithExpenseCount(allCategoriesWithExpenses)
+
+        categoriesWithExpenseCount
+            .map(this::createCategoryChip)
+    }
+
+    private fun createCategoryChip(categoryWithExpenseCount: Map.Entry<Category, Int>) {
+        val newChip = Chip(binding.root.context)
+
+        newChip.isChecked = expenseViewModel.isCategorySelected(categoryWithExpenseCount.key.id)
+
+        newChip.text = "${categoryWithExpenseCount.key.name} (${categoryWithExpenseCount.value})"
+
+        newChip.setOnClickListener { chip ->
+            expenseViewModel.toggleCategoryFilter(categoryWithExpenseCount.key.id)
+
+            updateExpensesBasedOnFragmentAndFilters(categoryWithExpenseCount.value, (chip as Chip).isChecked)
+        }
+
+        binding.expenseBackdropBackView.categoryBodyChipGroup.addView(newChip)
+    }
+
+    private fun updateExpensesBasedOnFragmentAndFilters(
+        expenseCountForCategory: Int,
+        isAddition: Boolean
+    ) {
+        expenseViewModel.updateAllFilteredExpenses()
+
+        val previousItemCount = binding.expenseBackdropFrontView.headerItemCountTextView.text.split(SPACE)[0].toInt()
+
+        if (isAddition)
+            binding.expenseBackdropFrontView.headerItemCountTextView.text = formatExpenseCounterText(previousItemCount.plus(expenseCountForCategory))
+        else
+            binding.expenseBackdropFrontView.headerItemCountTextView.text = formatExpenseCounterText(previousItemCount.minus(expenseCountForCategory))
+    }
+
+    private fun setupAmountFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        val cheapestAndMostExpensiveExpenseAmount = expenseViewModel.getCheapestAndMostExpensiveExpenseAmount(allCategoriesWithExpenses)
+    }
+
+    private fun setupCurrencyFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+        val currenciesWithExpenseCount = expenseViewModel.getCurrenciesWithExpenseCount(allCategoriesWithExpenses)
+
+        currenciesWithExpenseCount
+            .map(this::createCurrencyChip)
+    }
+
+    private fun createCurrencyChip(currencyWithExpenseCount: Map.Entry<Currency, Int>) {
+        val newChip = Chip(binding.root.context)
+
+        newChip.isChecked = expenseViewModel.isCurrencySelected(currencyWithExpenseCount.key.name)
+
+        newChip.text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
+
+        newChip.setOnClickListener { chip ->
+            expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.name)
+
+            updateExpensesBasedOnFragmentAndFilters(currencyWithExpenseCount.value, (chip as Chip).isChecked)
+        }
+
+        binding.expenseBackdropBackView.currencyBodyChipGroup.addView(newChip)
+    }
+
+
+
+
+
+
+
+
 
     private fun initTotalAverageInFixedIntervalObserver() {
         expenseViewModel.selectedFixedInterval.observe(viewLifecycleOwner, Observer { fixedInterval ->
 //            expenseViewModel.getFilteredExpensesForFixedIntervalUsingAllFilters()
-            getFilteredExpenses()
+            getFilteredExpenses_OLD()
                 .observe(viewLifecycleOwner, Observer {
                     val expenses = it.flatMap(CategoryWithExpenses::expenses)
 
@@ -193,36 +299,10 @@ abstract class ExpenseBaseFragment : BaseFragment() {
             })
     }
 
-    abstract fun getFilteredExpenses() : LiveData<List<CategoryWithExpenses>>
+    abstract fun getFilteredExpenses_OLD() : LiveData<List<CategoryWithExpenses>>
 
     private fun setupBackdropExpenses(categoriesWithExpenses: List<CategoryWithExpenses>) {
-        val categories = categoriesWithExpenses
-            .map(CategoryWithExpenses::category)
-
-        val expenses = categoriesWithExpenses
-            .flatMap(CategoryWithExpenses::expenses)
-
-
-        displayFilterResultInHeader(expenses.size)
-        populateRecyclerView(categories, expenses)
-        calculateTotalMoneySpent(expenses)
         calculateTotalAverageInFixedInterval()
-    }
-
-    private fun displayFilterResultInHeader(expenseCount: Int) {
-        if (expenseCount == 1)
-            binding.expenseBackdropFrontView.headerItemCountTextView.text =
-                resources.getString(R.string.expenses_counter_text_singular, expenseCount)
-        else
-            binding.expenseBackdropFrontView.headerItemCountTextView.text =
-                resources.getString(R.string.expenses_counter_text_plural, expenseCount)
-    }
-
-    abstract fun populateRecyclerView(categories: List<Category>, expenses: List<Expense>)
-
-    private fun calculateTotalMoneySpent(expenses: List<Expense>) {
-        binding.expenseBackdropFrontView.totalMoneySpentTextView.text =
-            resources.getString(R.string.total_money_spent, expenseViewModel.getTotalMoneySpentFormatted(expenses))
     }
 
     private fun calculateTotalAverageInFixedInterval() {
@@ -285,13 +365,13 @@ abstract class ExpenseBaseFragment : BaseFragment() {
                 newChip.setOnClickListener { chip ->
                     expenseViewModel.toggleCategoryFilter(category.id)
 
-                    getFilteredExpenses().observe(viewLifecycleOwner, Observer {
+                    getFilteredExpenses_OLD().observe(viewLifecycleOwner, Observer {
                         setupBackdropExpenses(it)
-                        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer { allCategories ->
-                            getExpensesWithoutCategoryFiltering().observe(viewLifecycleOwner, Observer { categoriesWithExpenses ->
-                                updateCategoryFilters(categoriesWithExpenses, allCategories)
-                            })
-                        })
+//                        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer { allCategories ->
+//                            getExpensesWithoutCategoryFiltering().observe(viewLifecycleOwner, Observer { categoriesWithExpenses ->
+//                                updateCategoryFilters(categoriesWithExpenses, allCategories)
+//                            })
+//                        })
                     })
                 }
 
@@ -301,24 +381,24 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
     abstract fun getExpensesWithoutCategoryFiltering(): LiveData<List<CategoryWithExpenses>>
 
-    private fun updateCategoryFilters(
-        categoriesWithExpenses: List<CategoryWithExpenses>,
-        allCategories: List<Category>
-    ) {
-        (0 until binding.expenseBackdropBackView.categoryBodyChipGroup.childCount)
-            .map { index ->
-                val chip = binding.expenseBackdropBackView.categoryBodyChipGroup.getChildAt(index) as Chip
-
-                val currentCategory = allCategories[index]
-
-                val expenseCountForCategory = categoriesWithExpenses
-                    .filter { categoryWithExpenses -> categoryWithExpenses.category == currentCategory }
-                    .flatMap(CategoryWithExpenses::expenses)
-                    .size
-
-                chip.text = "${currentCategory.name} (${expenseCountForCategory})"
-            }
-    }
+//    private fun updateCategoryFilters(
+//        categoriesWithExpenses: List<CategoryWithExpenses>,
+//        allCategories: List<Category>
+//    ) {
+//        (0 until binding.expenseBackdropBackView.categoryBodyChipGroup.childCount)
+//            .map { index ->
+//                val chip = binding.expenseBackdropBackView.categoryBodyChipGroup.getChildAt(index) as Chip
+//
+//                val currentCategory = allCategories[index]
+//
+//                val expenseCountForCategory = categoriesWithExpenses
+//                    .filter { categoryWithExpenses -> categoryWithExpenses.category == currentCategory }
+//                    .flatMap(CategoryWithExpenses::expenses)
+//                    .size
+//
+//                chip.text = "${currentCategory.name} (${expenseCountForCategory})"
+//            }
+//    }
 
     private fun createExpenseAmountFilter(allCategories: List<Category>) {
         val rangeSeekbar = binding.expenseBackdropBackView.amountRangeSeekbar
@@ -333,7 +413,7 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
         rangeSeekbar.setOnRangeSeekbarFinalValueListener { minValue, maxValue ->
             expenseViewModel.setMinAndMaxAmount(minValue.toDouble(), maxValue.toDouble())
-            getFilteredExpenses().observe(viewLifecycleOwner, Observer {
+            getFilteredExpenses_OLD().observe(viewLifecycleOwner, Observer {
                 setupBackdropExpenses(it)
             })
         }

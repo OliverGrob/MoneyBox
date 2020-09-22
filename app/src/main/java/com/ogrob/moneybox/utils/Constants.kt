@@ -7,6 +7,7 @@ const val NO_CATEGORY_ID = 1L
 const val NO_CATEGORY_NAME = "No Category"
 
 const val EMPTY_STRING = ""
+const val SPACE = " "
 
 
 const val SHARED_PREFERENCES_NAME = "moneybox_preferences"
