@@ -115,7 +115,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 .flatMap(CategoryWithExpenses::expenses)
                 .map(Expense::amount)
 
-            Pair(allAmountValues.min()!!, allAmountValues.max()!!)
+            if (allAmountValues.isNullOrEmpty())
+                Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+            else
+                Pair(allAmountValues.min()!!, allAmountValues.max()!!)
         }
     }
 
@@ -280,7 +283,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             .flatMap(CategoryWithExpenses::expenses)
             .map(Expense::amount)
 
-        return Pair(allAmountValues.min()!!, allAmountValues.max()!!)
+        return if (allAmountValues.isNullOrEmpty())
+            Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+        else
+            Pair(allAmountValues.min()!!, allAmountValues.max()!!)
     }
 
     fun getCurrenciesWithExpenseCount(allCategoriesWithExpenses: List<CategoryWithExpenses>): Map<Currency, Int> =

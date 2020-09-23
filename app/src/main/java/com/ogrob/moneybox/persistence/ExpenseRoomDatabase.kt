@@ -128,6 +128,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
             Log.i(TAG, "Creating other expenses")
             val randomExpenses = arrayOf(
                 Expense(2300.0, "belozzo", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.HUF, 2),
+                Expense(1650.0, "games", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.EUR, 5),
                 Expense(1800.0, "spar gyümi", LocalDateTime.of(2019, 10, 2, 1, 1), Currency.HUF, 2),
                 Expense(3000.0, "CC ivás", LocalDateTime.of(2019, 10, 3, 1, 1), Currency.HUF, 1),
                 Expense(3600.0, "mogyesz tala", LocalDateTime.of(2019, 10, 5, 1, 1), Currency.HUF, 1),
