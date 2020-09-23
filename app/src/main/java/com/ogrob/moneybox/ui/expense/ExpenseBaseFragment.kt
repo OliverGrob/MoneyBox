@@ -268,14 +268,20 @@ abstract class ExpenseBaseFragment : BaseFragment() {
         binding.expenseBackdropBackView.currencyBodyChipGroup.children
             .forEach { chip ->
                 val currencyWithExpenseCount = getCurrency(chip, currenciesWithExpenseCount)
-                (chip as Chip).text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
+
+                val currentChip = (chip as Chip)
+
+                if (currencyWithExpenseCount == null)
+                    currentChip.text = "${currentChip.text.split(SPACE)[0]} (0)"
+                else
+                    currentChip.text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
             }
     }
 
-    private fun getCurrency(chip: View, currenciesWithExpenseCount: Map<Currency, Int>): Map.Entry<Currency, Int> {
+    private fun getCurrency(chip: View, currenciesWithExpenseCount: Map<Currency, Int>): Map.Entry<Currency, Int>? {
         return currenciesWithExpenseCount
             .entries
-            .first { entry -> entry.key.id == chip.tag }
+            .firstOrNull { entry -> entry.key.id == chip.tag }
     }
 
 
