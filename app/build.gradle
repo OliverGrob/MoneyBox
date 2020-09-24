@@ -89,4 +89,7 @@ dependencies {
 
     // Crystal Range Seekbar
     implementation 'com.crystal:crystalrangeseekbar:1.1.3'
+
+    // Kotlin reflection API
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.72"
 }

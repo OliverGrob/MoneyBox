@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.KFunction1
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -155,6 +156,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     fun updateFilters(filterOption: FilterOption) {
         viewModelScope.launch {
+            val updatedFilterValueCalculator = UpdatedFilterValueCalculator(_unfilteredExpenses.value!!, selectedCategoryIds.toList(), selectedCurrencyIds.toList())
             _filteredCategoriesWithExpensesForFilterUpdate.value = Pair(filterOption, filterAllExpensesForFilterUpdate(_unfilteredExpenses.value!!, filterOption))
         }
     }
@@ -165,14 +167,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     ): List<CategoryWithExpenses> {
         return withContext(Dispatchers.Default) {
             when (filterOption) {
-                FilterOption.CATEGORY -> unfilteredExpenses
-                    .map { categoryWithExpenses ->
-                        CategoryWithExpenses(
-                            categoryWithExpenses.category,
-                            categoryWithExpenses.expenses.filter { expense ->
-                                selectedCategoryIds.contains(expense.categoryId)
-                            })
-                    }
+                FilterOption.CATEGORY -> filterAllExpensesForSingleFilterUpdate(unfilteredExpenses, selectedCategoryIds::contains)
                 FilterOption.AMOUNT -> unfilteredExpenses
                     .map { categoryWithExpenses ->
                         CategoryWithExpenses(
@@ -181,16 +176,23 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                                 isAmountInSelectedExpenseAmountRange(expense.amount)
                             })
                     }
-                FilterOption.CURRENCY -> unfilteredExpenses
-                    .map { categoryWithExpenses ->
-                        CategoryWithExpenses(
-                            categoryWithExpenses.category,
-                            categoryWithExpenses.expenses.filter { expense ->
-                                selectedCurrencyIds.contains(expense.currency.id)
-                            })
-                    }
+                    FilterOption.CURRENCY -> filterAllExpensesForSingleFilterUpdate(unfilteredExpenses, selectedCurrencyIds::contains)
             }
         }
+    }
+
+    private fun filterAllExpensesForSingleFilterUpdate(
+        unfilteredExpenses: List<CategoryWithExpenses>,
+        kFunction1: KFunction1<Long, Boolean>
+    ): List<CategoryWithExpenses> {
+        return unfilteredExpenses
+            .map { categoryWithExpenses ->
+                CategoryWithExpenses(
+                    categoryWithExpenses.category,
+                    categoryWithExpenses.expenses.filter { expense ->
+                        kFunction1.call(expense.categoryId)
+                    })
+            }
     }
 
     private fun isAmountInSelectedExpenseAmountRange(amount: Double) =
