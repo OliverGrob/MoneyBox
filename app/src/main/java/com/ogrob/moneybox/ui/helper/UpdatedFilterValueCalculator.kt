@@ -4,7 +4,6 @@ import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
 
 class UpdatedFilterValueCalculator(
-    filterOption: FilterOption,
     unfilteredExpenses: List<CategoryWithExpenses>,
     private val selectedCategoryIds: List<Long>,
     private val selectedCurrencyIds: List<Long>
@@ -36,7 +35,6 @@ class UpdatedFilterValueCalculator(
             .toMap()
 
         updatedFilterValuesDTO = UpdatedFilterValuesDTO(
-            filterOption,
             filteredCategoryWithExpenseCount,
             filteredCurrencyWithExpenseCount,
             totalAndSelectedCategoryWithExpenseCount,

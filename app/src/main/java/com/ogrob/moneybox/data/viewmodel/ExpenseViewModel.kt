@@ -42,9 +42,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     val allCategories: LiveData<List<Category>> = _allCategories
 
 
-    private lateinit var selectedCategoryIds: MutableList<Long>
-    private lateinit var selectedCurrencyIds: MutableList<Long>
-    private lateinit var selectedExpenseAmountRange: Pair<Double, Double>
+    private var selectedCategoryIds: MutableList<Long> = mutableListOf()
+    private var selectedCurrencyIds: MutableList<Long> = mutableListOf()
+    private var selectedExpenseAmountRange: Pair<Double, Double> =
+        Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
 
 
     fun getAllCategories() {
@@ -91,6 +92,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         return withContext(Dispatchers.Default) {
             categoriesWithExpenses
                 .asSequence()
+                .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isNotEmpty() }
                 .map(CategoryWithExpenses::category)
                 .map(Category::id)
                 .toMutableList()
@@ -140,6 +142,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                             .filter { expense -> expense.additionDate.month == month }
                     )
                 }
+                .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isNotEmpty() }
                 .toList()
         }
     }
@@ -162,51 +165,15 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun updateFilters(filterOption: FilterOption) {
+    fun updateFilters() {
         viewModelScope.launch {
             val updatedFilterValueCalculator = UpdatedFilterValueCalculator(
-                filterOption,
                 _unfilteredExpenses.value!!,
                 selectedCategoryIds.toList(),
                 selectedCurrencyIds.toList()
             )
             _filteredCategoriesWithExpensesForFilterUpdate.value = updatedFilterValueCalculator.updatedFilterValuesDTO
-//            _filteredCategoriesWithExpensesForFilterUpdate.value = Pair(filterOption, filterAllExpensesForFilterUpdate(_unfilteredExpenses.value!!, filterOption))
         }
-    }
-
-    private suspend fun filterAllExpensesForFilterUpdate(
-        unfilteredExpenses: List<CategoryWithExpenses>,
-        filterOption: FilterOption
-    ): List<CategoryWithExpenses> {
-        return withContext(Dispatchers.Default) {
-            when (filterOption) {
-                FilterOption.CATEGORY -> filterAllExpensesForSingleFilterUpdate(unfilteredExpenses, selectedCategoryIds::contains)
-                FilterOption.AMOUNT -> unfilteredExpenses
-                    .map { categoryWithExpenses ->
-                        CategoryWithExpenses(
-                            categoryWithExpenses.category,
-                            categoryWithExpenses.expenses.filter { expense ->
-                                isAmountInSelectedExpenseAmountRange(expense.amount)
-                            })
-                    }
-                    FilterOption.CURRENCY -> filterAllExpensesForSingleFilterUpdate(unfilteredExpenses, selectedCurrencyIds::contains)
-            }
-        }
-    }
-
-    private fun filterAllExpensesForSingleFilterUpdate(
-        unfilteredExpenses: List<CategoryWithExpenses>,
-        kFunction1: KFunction1<Long, Boolean>
-    ): List<CategoryWithExpenses> {
-        return unfilteredExpenses
-            .map { categoryWithExpenses ->
-                CategoryWithExpenses(
-                    categoryWithExpenses.category,
-                    categoryWithExpenses.expenses.filter { expense ->
-                        kFunction1.call(expense.categoryId)
-                    })
-            }
     }
 
     private fun isAmountInSelectedExpenseAmountRange(amount: Double) =

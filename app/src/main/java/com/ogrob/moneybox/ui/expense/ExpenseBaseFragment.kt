@@ -202,7 +202,7 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     newChip.setOnClickListener { chip ->
       expenseViewModel.toggleCategoryFilter(categoryWithExpenseCount.key.id)
 
-      expenseViewModel.updateFilters(FilterOption.CATEGORY)
+      expenseViewModel.updateFilters()
       expenseViewModel.updateAllFilteredExpenses()
     }
 
@@ -231,7 +231,7 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     newChip.setOnClickListener { chip ->
       expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.id)
 
-      expenseViewModel.updateFilters(FilterOption.CURRENCY)
+      expenseViewModel.updateFilters()
       expenseViewModel.updateAllFilteredExpenses()
     }
 
