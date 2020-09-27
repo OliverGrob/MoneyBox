@@ -35,8 +35,8 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _unfilteredExpenses: MutableLiveData<List<CategoryWithExpenses>> = MutableLiveData()
     val unfilteredExpenses: LiveData<List<CategoryWithExpenses>> = _unfilteredExpenses
 
-    private val _filteredCategoriesWithExpensesForFilterUpdate: MutableLiveData<Pair<FilterOption, List<CategoryWithExpenses>>> = MutableLiveData()
-    val filteredCategoriesWithExpensesForFilterUpdate: LiveData<Pair<FilterOption, List<CategoryWithExpenses>>> = _filteredCategoriesWithExpensesForFilterUpdate
+    private val _filteredCategoriesWithExpensesForFilterUpdate: MutableLiveData<UpdatedFilterValuesDTO> = MutableLiveData()
+    val filteredCategoriesWithExpensesForFilterUpdate: LiveData<UpdatedFilterValuesDTO> = _filteredCategoriesWithExpensesForFilterUpdate
 
     private val _allCategories: MutableLiveData<List<Category>> = MutableLiveData()
     val allCategories: LiveData<List<Category>> = _allCategories
@@ -90,6 +90,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun selectCategories(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
         return withContext(Dispatchers.Default) {
             categoriesWithExpenses
+                .asSequence()
                 .map(CategoryWithExpenses::category)
                 .map(Category::id)
                 .toMutableList()
@@ -99,7 +100,8 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun selectCurrencies(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
         return withContext(Dispatchers.Default) {
             categoriesWithExpenses
-                .flatMap(CategoryWithExpenses::expenses)
+                .asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
                 .map(Expense::currency)
                 .map(Currency::id)
                 .distinct()
@@ -110,8 +112,10 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun selectExpenseAmountRange(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {
         return withContext(Dispatchers.Default) {
             val allAmountValues = allCategoriesWithExpenses
-                .flatMap(CategoryWithExpenses::expenses)
+                .asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
                 .map(Expense::amount)
+                .toList()
 
             if (allAmountValues.isNullOrEmpty())
                 Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
@@ -127,6 +131,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     ): List<CategoryWithExpenses> {
         return withContext(Dispatchers.Default) {
             allCategoriesWithExpenses
+                .asSequence()
                 .map { categoryWithExpenses ->
                     CategoryWithExpenses(
                         categoryWithExpenses.category,
@@ -135,6 +140,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                             .filter { expense -> expense.additionDate.month == month }
                     )
                 }
+                .toList()
         }
     }
 
@@ -147,17 +153,25 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun filterAllExpensesThroughFiltersOnly(unfilteredExpenses: List<CategoryWithExpenses>): List<Expense> {
         return withContext(Dispatchers.Default) {
             unfilteredExpenses
-                .flatMap(CategoryWithExpenses::expenses)
+                .asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
                 .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
                 .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
                 .filter { expense -> isAmountInSelectedExpenseAmountRange(expense.amount) }
+                .toList()
         }
     }
 
     fun updateFilters(filterOption: FilterOption) {
         viewModelScope.launch {
-            val updatedFilterValueCalculator = UpdatedFilterValueCalculator(_unfilteredExpenses.value!!, selectedCategoryIds.toList(), selectedCurrencyIds.toList())
-            _filteredCategoriesWithExpensesForFilterUpdate.value = Pair(filterOption, filterAllExpensesForFilterUpdate(_unfilteredExpenses.value!!, filterOption))
+            val updatedFilterValueCalculator = UpdatedFilterValueCalculator(
+                filterOption,
+                _unfilteredExpenses.value!!,
+                selectedCategoryIds.toList(),
+                selectedCurrencyIds.toList()
+            )
+            _filteredCategoriesWithExpensesForFilterUpdate.value = updatedFilterValueCalculator.updatedFilterValuesDTO
+//            _filteredCategoriesWithExpensesForFilterUpdate.value = Pair(filterOption, filterAllExpensesForFilterUpdate(_unfilteredExpenses.value!!, filterOption))
         }
     }
 
@@ -290,7 +304,8 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     fun getCurrenciesWithExpenseCount(allCategoriesWithExpenses: List<CategoryWithExpenses>): Map<Currency, Int> =
         allCategoriesWithExpenses
-            .flatMap(CategoryWithExpenses::expenses)
+            .asSequence()
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
             .groupBy(Expense::currency)
             .map { currencyWithExpenses ->
                 Pair(
