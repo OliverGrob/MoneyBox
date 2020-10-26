@@ -30,4 +30,17 @@ object SharedPreferenceManager {
             .apply()
     }
 
+    fun getStringSetSharedPreference(context: Context, key: String, defaultValue: Set<String>): Set<String> {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+            .getStringSet(key, defaultValue)
+            .orEmpty()
+    }
+
+    fun putStringSetSharedPreference(context: Context, key: String, value: Set<String>) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .edit()
+            .putStringSet(key, value)
+            .apply()
+    }
+
 }

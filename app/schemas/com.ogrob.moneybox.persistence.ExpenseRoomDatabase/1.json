@@ -1,0 +1,336 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "f4daea8a225ecfdc5a239e0f9fbd2335",
+    "entities": [
+      {
+        "tableName": "expense",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `amount` REAL NOT NULL, `description` TEXT NOT NULL, `addition_date` INTEGER NOT NULL, `currency` TEXT NOT NULL, `category_id` INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE NO ACTION ON DELETE SET DEFAULT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "additionDate",
+            "columnName": "addition_date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currency",
+            "columnName": "currency",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryId",
+            "columnName": "category_id",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_expense_category_id",
+            "unique": false,
+            "columnNames": [
+              "category_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_expense_category_id` ON `${TABLE_NAME}` (`category_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "category",
+            "onDelete": "SET DEFAULT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "category_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "category",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `color` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "historical_exchange_rate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `exchange_rate_cad` TEXT NOT NULL, `exchange_rate_hkd` TEXT NOT NULL, `exchange_rate_isk` TEXT NOT NULL, `exchange_rate_php` TEXT NOT NULL, `exchange_rate_dkk` TEXT NOT NULL, `exchange_rate_huf` TEXT NOT NULL, `exchange_rate_czk` TEXT NOT NULL, `exchange_rate_aud` TEXT NOT NULL, `exchange_rate_ron` TEXT NOT NULL, `exchange_rate_sek` TEXT NOT NULL, `exchange_rate_idr` TEXT NOT NULL, `exchange_rate_inr` TEXT NOT NULL, `exchange_rate_brl` TEXT NOT NULL, `exchange_rate_rub` TEXT NOT NULL, `exchange_rate_hrk` TEXT NOT NULL, `exchange_rate_jpy` TEXT NOT NULL, `exchange_rate_thb` TEXT NOT NULL, `exchange_rate_chf` TEXT NOT NULL, `exchange_rate_sgd` TEXT NOT NULL, `exchange_rate_pln` TEXT NOT NULL, `exchange_rate_bgn` TEXT NOT NULL, `exchange_rate_try` TEXT NOT NULL, `exchange_rate_cny` TEXT NOT NULL, `exchange_rate_nok` TEXT NOT NULL, `exchange_rate_nzd` TEXT NOT NULL, `exchange_rate_zar` TEXT NOT NULL, `exchange_rate_usd` TEXT NOT NULL, `exchange_rate_mxn` TEXT NOT NULL, `exchange_rate_ils` TEXT NOT NULL, `exchange_rate_gbp` TEXT NOT NULL, `exchange_rate_krw` TEXT NOT NULL, `exchange_rate_myr` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateCad",
+            "columnName": "exchange_rate_cad",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateHkd",
+            "columnName": "exchange_rate_hkd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateIsk",
+            "columnName": "exchange_rate_isk",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRatePhp",
+            "columnName": "exchange_rate_php",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateDkk",
+            "columnName": "exchange_rate_dkk",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateHuf",
+            "columnName": "exchange_rate_huf",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateCzk",
+            "columnName": "exchange_rate_czk",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateAud",
+            "columnName": "exchange_rate_aud",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateRon",
+            "columnName": "exchange_rate_ron",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateSek",
+            "columnName": "exchange_rate_sek",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateIdr",
+            "columnName": "exchange_rate_idr",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateInr",
+            "columnName": "exchange_rate_inr",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateBrl",
+            "columnName": "exchange_rate_brl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateRub",
+            "columnName": "exchange_rate_rub",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateHrk",
+            "columnName": "exchange_rate_hrk",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateJpy",
+            "columnName": "exchange_rate_jpy",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateThb",
+            "columnName": "exchange_rate_thb",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateChf",
+            "columnName": "exchange_rate_chf",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateSgd",
+            "columnName": "exchange_rate_sgd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRatePln",
+            "columnName": "exchange_rate_pln",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateBgn",
+            "columnName": "exchange_rate_bgn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateTry",
+            "columnName": "exchange_rate_try",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateCny",
+            "columnName": "exchange_rate_cny",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateNok",
+            "columnName": "exchange_rate_nok",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateNzd",
+            "columnName": "exchange_rate_nzd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateZar",
+            "columnName": "exchange_rate_zar",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateUsd",
+            "columnName": "exchange_rate_usd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateMxn",
+            "columnName": "exchange_rate_mxn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateIls",
+            "columnName": "exchange_rate_ils",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateGbp",
+            "columnName": "exchange_rate_gbp",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateKrw",
+            "columnName": "exchange_rate_krw",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exchangeRateMyr",
+            "columnName": "exchange_rate_myr",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f4daea8a225ecfdc5a239e0f9fbd2335')"
+    ]
+  }
+}

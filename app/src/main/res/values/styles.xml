@@ -31,8 +31,8 @@
         <item name="titleTextColor">@color/colorPrimaryText</item>
     </style>
 
-    <style name="CustomFilterChipStyle" parent="Widget.MaterialComponents.Chip.Filter">
-        <item name="chipBackgroundColor">@color/filter_chip_background_color</item>
+    <style name="CustomFilterChipStyle" parent="Widget.MaterialComponents.Chip.Entry">
+        <item name="chipBackgroundColor">@color/chip_colors</item>
 
         <item name="textStartPadding">1dp</item>
         <item name="textEndPadding">1dp</item>

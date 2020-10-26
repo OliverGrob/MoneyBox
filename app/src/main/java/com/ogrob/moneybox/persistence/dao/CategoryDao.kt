@@ -18,4 +18,7 @@ interface CategoryDao: BaseDao<Category> {
 
     @Query("DELETE FROM category WHERE id = :categoryId")
     suspend fun deleteCategoryById(categoryId: Long)
+
+    @Query("SELECT category.*, expense.* FROM category JOIN expense ON expense.category_id = category.id WHERE expense.addition_date BETWEEN :startDate AND :endDate")
+    suspend fun getAllCategoriesWithExpensesInYearAndMonth(startDate: Long, endDate: Long): List<CategoryWithExpenses>
 }

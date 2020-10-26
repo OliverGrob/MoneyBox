@@ -45,4 +45,7 @@
     <string name="category_filter_name">Category</string>
     <string name="amount_filter_name">Amount</string>
     <string name="currency_filter_name">Currency</string>
+
+    <!-- Filter text -->
+    <string name="filter_text">%s (%d)</string>
 </resources>

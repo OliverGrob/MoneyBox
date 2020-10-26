@@ -22,6 +22,8 @@ class CategoryRepository(
 
     suspend fun getAllCategoriesWithExpenses() = categoryDao.getAllCategoriesWithExpenses()
 
+    suspend fun getAllCategoriesWithExpensesInYearAndMonth(startDate: Long, endDate: Long) = categoryDao.getAllCategoriesWithExpensesInYearAndMonth(startDate, endDate)
+
     suspend fun getAllCategories() = categoryDao.getAllCategories()
 
     suspend fun addNewCategory(category: Category) {

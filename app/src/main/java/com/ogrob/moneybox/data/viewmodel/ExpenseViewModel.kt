@@ -2,10 +2,13 @@ package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.ogrob.moneybox.data.helper.FixedInterval
+import com.ogrob.moneybox.data.helper.*
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
-import com.ogrob.moneybox.persistence.model.*
+import com.ogrob.moneybox.persistence.model.Category
+import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
+import com.ogrob.moneybox.persistence.model.Currency
+import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.ui.helper.*
 import com.ogrob.moneybox.utils.EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
@@ -19,7 +22,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.format.DateTimeFormatter
-import kotlin.reflect.KFunction1
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -42,10 +44,22 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     val allCategories: LiveData<List<Category>> = _allCategories
 
 
+    @Deprecated("The new field for this is _allCategoryFilterInfo")
     private var selectedCategoryIds: MutableList<Long> = mutableListOf()
+    @Deprecated("The new field for this is _allCurrencyFilterInfo")
     private var selectedCurrencyIds: MutableList<Long> = mutableListOf()
+    @Deprecated("The new field for this is _allAmountFilterInfo")
     private var selectedExpenseAmountRange: Pair<Double, Double> =
         Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+
+    private val _allCategoryFilterInfo: MutableLiveData<CategoryFilterInfo> = MutableLiveData()
+    val allCategoryFilterInfo: LiveData<CategoryFilterInfo> = _allCategoryFilterInfo
+
+    private val _allAmountFilterInfo: MutableLiveData<AmountFilterInfo> = MutableLiveData()
+    val allAmountFilterInfo: LiveData<AmountFilterInfo> = _allAmountFilterInfo
+
+    private val _allCurrencyFilterInfo: MutableLiveData<CurrencyFilterInfo> = MutableLiveData()
+    val allCurrencyFilterInfo: LiveData<CurrencyFilterInfo> = _allCurrencyFilterInfo
 
 
     fun getAllCategories() {
@@ -54,11 +68,60 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun getAllFilteredExpenses() {
+    fun getAllFilteredExpenses(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>) {
         viewModelScope.launch {
             val allCategoriesWithExpenses = categoryRepository.getAllCategoriesWithExpenses()
 
-            selectFiltersDefaults(allCategoriesWithExpenses)
+            val selectedCategoryIds = getSelectedCategoryIds(filterValuesFromSharedPreferences.first)
+            val selectedAmountRange = getSelectedAmountRange(filterValuesFromSharedPreferences.second)
+            val selectedCurrencyIds = getSelectedCurrencyIds(filterValuesFromSharedPreferences.third)
+
+            _unfilteredExpenses.value = allCategoriesWithExpenses
+
+            val filteredExpenses = allCategoriesWithExpenses
+                .asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
+                .filter { expense -> isAmountInSelectedExpenseAmountRange(selectedAmountRange.first, selectedAmountRange.second, expense.amount) }
+                .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
+                .toList()
+
+            val updatedCategoryFilterInfo = CategoryFilterInfo(
+                selectedCategoryIds,
+                createDefaultCategoryFilterInfo(selectedAmountRange, selectedCurrencyIds, allCategoriesWithExpenses),
+                UpdateFilterOption.CREATE_CHIPS
+            )
+            val updatedAmountFilterInfo = createDefaultAmountFilterInfo(
+                selectedAmountRange,
+                allCategoriesWithExpenses
+            )
+            val updatedCurrencyFilterInfo = CurrencyFilterInfo(
+                selectedCurrencyIds,
+                createDefaultCurrencyFilterInfo(selectedCategoryIds, selectedAmountRange, allCategoriesWithExpenses),
+                UpdateFilterOption.CREATE_CHIPS
+            )
+
+            _allCategoryFilterInfo.value = updatedCategoryFilterInfo
+            _allAmountFilterInfo.value = updatedAmountFilterInfo
+            _allCurrencyFilterInfo.value = updatedCurrencyFilterInfo
+
+            _filteredExpenses.value = filteredExpenses
+        }
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun getAllFilteredExpenses_OLD(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>) {
+        viewModelScope.launch {
+            // TODO - this should work differently
+            /**
+             * 1a. Select default filters from shared preferences
+             * 1b. There is no value in shared preferences, so there is no filters
+             * 2. Filter expenses right at the spot
+             */
+            val allCategoriesWithExpenses = categoryRepository.getAllCategoriesWithExpenses()
+
+//            selectFiltersDefaults(allCategoriesWithExpenses)
+            selectFiltersDefaults_OLD(filterValuesFromSharedPreferences, allCategoriesWithExpenses)
 
             _unfilteredExpenses.value = allCategoriesWithExpenses
 
@@ -66,11 +129,74 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun getAllCategoriesWithExpensesForSelectedYearAndMonth(year: Int, month: Month) {
+    fun getAllCategoriesWithExpensesForSelectedYearAndMonth(
+        filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>,
+        year: Int,
+        month: Month
+    ) {
         viewModelScope.launch {
+//            val allCategoriesWithExpenses = categoryRepository
+//                .getAllCategoriesWithExpensesInYearAndMonth(
+//                    LocalDateTime.of(year, month, 1, 1, 1, 1).atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
+//                    LocalDateTime.of(year, month, month.length(year % 4 == 0), 1, 1, 1).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
+//                )
+            val allCategoriesWithExpenses = categoryRepository.getAllCategoriesWithExpenses()
+            val filteredCategoryWithExpenses = filterAllExpensesForSelectedYearAndMonth(allCategoriesWithExpenses, year, month)
+
+            val selectedCategoryIds = getSelectedCategoryIds(filterValuesFromSharedPreferences.first)
+            val selectedAmountRange = getSelectedAmountRange(filterValuesFromSharedPreferences.second)
+            val selectedCurrencyIds = getSelectedCurrencyIds(filterValuesFromSharedPreferences.third)
+
+            _unfilteredExpenses.value = filteredCategoryWithExpenses
+
+            val filteredExpenses = filteredCategoryWithExpenses
+                .asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
+                .filter { expense -> isAmountInSelectedExpenseAmountRange(selectedAmountRange.first, selectedAmountRange.second, expense.amount) }
+                .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
+                .toList()
+
+            val updatedCategoryFilterInfo = CategoryFilterInfo(
+                selectedCategoryIds,
+                createDefaultCategoryFilterInfo(selectedAmountRange, selectedCurrencyIds, filteredCategoryWithExpenses),
+                UpdateFilterOption.CREATE_CHIPS
+            )
+            val updatedAmountFilterInfo = createDefaultAmountFilterInfo(
+                selectedAmountRange,
+                filteredCategoryWithExpenses
+            )
+            val updatedCurrencyFilterInfo = CurrencyFilterInfo(
+                selectedCurrencyIds,
+                createDefaultCurrencyFilterInfo(selectedCategoryIds, selectedAmountRange, filteredCategoryWithExpenses),
+                UpdateFilterOption.CREATE_CHIPS
+            )
+
+            _allCategoryFilterInfo.value = updatedCategoryFilterInfo
+            _allAmountFilterInfo.value = updatedAmountFilterInfo
+            _allCurrencyFilterInfo.value = updatedCurrencyFilterInfo
+
+            _filteredExpenses.value = filteredExpenses
+        }
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun getAllCategoriesWithExpensesForSelectedYearAndMonth_OLD(
+        filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>,
+        year: Int,
+        month: Month
+    ) {
+        viewModelScope.launch {
+            // TODO - this should work differently
+            /**
+             * 1a. Select default filters from shared preferences
+             * 1b. There is no value in shared preferences, so there is no filters
+             * 2. Filter expenses right at the spot
+             */
             val allCategoriesWithExpenses = categoryRepository.getAllCategoriesWithExpenses()
 
-            selectFiltersDefaults(allCategoriesWithExpenses)
+//            selectFiltersDefaults(allCategoriesWithExpenses)
+            selectFiltersDefaults_OLD(filterValuesFromSharedPreferences, allCategoriesWithExpenses)
 
             val allCategoriesWithExpensesFilteredForYearAndMonth = filterAllExpensesForSelectedYearAndMonth(allCategoriesWithExpenses, year, month)
 
@@ -80,25 +206,161 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private suspend fun selectFiltersDefaults(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
-        viewModelScope.launch(Dispatchers.Default) {
-            selectedCategoryIds = selectCategories(allCategoriesWithExpenses)
-            selectedCurrencyIds = selectCurrencies(allCategoriesWithExpenses)
-            selectedExpenseAmountRange = selectExpenseAmountRange(allCategoriesWithExpenses)
+    private fun getSelectedCategoryIds(categoryIdsFromSharedPreference: Set<String>): MutableSet<Long> {
+        return if (categoryIdsFromSharedPreference.isEmpty())
+            mutableSetOf()
+        else
+            categoryIdsFromSharedPreference
+                .map(String::toLong)
+                .toMutableSet()
+    }
+
+    private fun getSelectedAmountRange(amountRangeFromSharedPreference: Set<String>): Pair<Double, Double> {
+        val defaultSelectedExpenseAmountRangeValues = amountRangeFromSharedPreference
+            .map(String::toDouble)
+
+        return if (amountRangeFromSharedPreference.isEmpty() || defaultSelectedExpenseAmountRangeValues.iterator().next() == EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+            Pair(
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
+            )
+        else
+            Pair(
+                defaultSelectedExpenseAmountRangeValues.minOrNull()!!,
+                defaultSelectedExpenseAmountRangeValues.maxOrNull()!!
+            )
+    }
+
+    private fun getSelectedCurrencyIds(currencyIdsFromSharedPreference: Set<String>): MutableSet<Long> {
+        return if (currencyIdsFromSharedPreference.isEmpty())
+            mutableSetOf()
+        else
+            currencyIdsFromSharedPreference
+                .map(String::toLong)
+                .toMutableSet()
+    }
+
+    private fun createDefaultCategoryFilterInfo(
+        selectedAmountRange: Pair<Double, Double>,
+        selectedCurrencyIds: MutableSet<Long>,
+        allCategoriesWithExpenses: List<CategoryWithExpenses>
+    ): Map<Category, Int> {
+        return allCategoriesWithExpenses
+            .asSequence()
+            .map { categoryWithExpenses -> Pair(
+                categoryWithExpenses.category,
+                categoryWithExpenses.expenses
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(selectedAmountRange.first, selectedAmountRange.second, expense.amount) }
+                    .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
+                    .count()
+            ) }
+            .toMap()
+    }
+
+    private fun createDefaultAmountFilterInfo(
+        selectedAmountRange: Pair<Double, Double>,
+        allCategoriesWithExpenses: List<CategoryWithExpenses>
+    ): AmountFilterInfo {
+        val allAmountValues = allCategoriesWithExpenses
+            .asSequence()
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+            .map(Expense::amount)
+            .toList()
+
+        return if (allAmountValues.isEmpty())
+            AmountFilterInfo(
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                true
+            )
+        else {
+            if (selectedAmountRange.first != EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+                AmountFilterInfo(
+                    allAmountValues.minOrNull()!!,
+                    allAmountValues.maxOrNull()!!,
+                    selectedAmountRange.first,
+                    selectedAmountRange.second,
+                    true
+                )
+            else
+                AmountFilterInfo(
+                    allAmountValues.minOrNull()!!,
+                    allAmountValues.maxOrNull()!!,
+                    EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                    EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE,
+                    true
+                )
         }
     }
 
+    private fun createDefaultCurrencyFilterInfo(
+        selectedCategoryIds: MutableSet<Long>,
+        selectedAmountRange: Pair<Double, Double>,
+        allCategoriesWithExpenses: List<CategoryWithExpenses>
+    ): Map<Currency, Int> {
+        val currenciesWithExpenses = allCategoriesWithExpenses
+            .flatMap(CategoryWithExpenses::expenses)
+            .groupBy(Expense::currency)
+            .map { entry -> Pair(entry.key, entry.value) }
+            .toMap()
+
+        return currenciesWithExpenses
+            .map { entry -> Pair(
+                entry.key,
+                entry.value
+                    .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(selectedAmountRange.first, selectedAmountRange.second, expense.amount) }
+                    .count()
+            ) }
+            .toMap()
+    }
+
+    @Deprecated("Use the one without OLD")
+    private fun selectFiltersDefaults_OLD(
+        filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>,
+        allCategoriesWithExpenses: List<CategoryWithExpenses>
+    ) {
+        viewModelScope.launch(Dispatchers.Default) {
+            selectedCategoryIds = if (filterValuesFromSharedPreferences.first.isNotEmpty())
+                filterValuesFromSharedPreferences.first
+                    .map(String::toLong)
+                    .toMutableList()
+            else
+                selectCategories(allCategoriesWithExpenses)
+
+            selectedExpenseAmountRange = if (filterValuesFromSharedPreferences.second.isNotEmpty()) {
+                val defaultSelectedExpenseAmountRangeValues =
+                    filterValuesFromSharedPreferences.second
+                        .map(String::toDouble)
+                        .toList()
+                Pair(defaultSelectedExpenseAmountRangeValues[0], defaultSelectedExpenseAmountRangeValues[1])
+            }
+            else
+                selectExpenseAmountRange(allCategoriesWithExpenses)
+
+            selectedCurrencyIds = if (filterValuesFromSharedPreferences.third.isNotEmpty())
+                filterValuesFromSharedPreferences.third
+                    .map(String::toLong)
+                    .toMutableList()
+            else
+                selectCurrencies(allCategoriesWithExpenses)
+        }
+    }
+
+    @Deprecated("Use the one without OLD")
     private suspend fun selectCategories(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
         return withContext(Dispatchers.Default) {
             categoriesWithExpenses
                 .asSequence()
-                .filter { categoryWithExpenses -> categoryWithExpenses.expenses.isNotEmpty() }
                 .map(CategoryWithExpenses::category)
                 .map(Category::id)
                 .toMutableList()
         }
     }
 
+    @Deprecated("Use the one without OLD")
     private suspend fun selectCurrencies(categoriesWithExpenses: List<CategoryWithExpenses>): MutableList<Long> {
         return withContext(Dispatchers.Default) {
             categoriesWithExpenses
@@ -111,6 +373,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    @Deprecated("Use the one without OLD")
     private suspend fun selectExpenseAmountRange(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {
         return withContext(Dispatchers.Default) {
             val allAmountValues = allCategoriesWithExpenses
@@ -122,7 +385,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             if (allAmountValues.isNullOrEmpty())
                 Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
             else
-                Pair(allAmountValues.min()!!, allAmountValues.max()!!)
+                Pair(allAmountValues.minOrNull()!!, allAmountValues.maxOrNull()!!)
         }
     }
 
@@ -147,6 +410,198 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun selectAllCategoryFilters() {
+        viewModelScope.launch {
+            val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                CategoryFilterInfo(
+                    it.categoriesWithExpenseCount.keys.map(Category::id).toMutableSet(),
+                    it.categoriesWithExpenseCount,
+                    UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                )
+            }
+            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            val updatedFilteredExpenses =  _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                    .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                    .filter { expense -> _allCurrencyFilterInfo.value!!.selectedCurrencyIds.contains(expense.currency.id) }
+                    .toList()
+            }
+            _filteredExpenses.postValue(updatedFilteredExpenses)
+            val updatedCurrenciesWithExpenses = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap(CategoryWithExpenses::expenses)
+                    .groupBy(Expense::currency)
+                    .map { entry -> Pair(entry.key, entry.value) }
+                    .toMap()
+            }
+            val updatedCurrenciesWithExpenseCount = updatedCurrenciesWithExpenses?.let {
+                it.asSequence()
+                    .map { entry -> Pair(
+                        entry.key,
+                        entry.value
+                            .asSequence()
+                            .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                            .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                            .count()
+                    )
+                    }
+                    .toMap()
+            }
+            val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                CurrencyFilterInfo(
+                    it.selectedCurrencyIds,
+                    updatedCurrenciesWithExpenseCount!!,
+                    UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                )
+            }
+            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+        }
+    }
+
+    fun deSelectAllCategoryFilters() {
+        viewModelScope.launch {
+            _allCategoryFilterInfo.value?.let {
+                val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                    CategoryFilterInfo(
+                        mutableSetOf(),
+                        it.categoriesWithExpenseCount,
+                        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                    )
+                }
+                _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+                val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+                    it.asSequence()
+                        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                        .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                        .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                        .filter { expense -> _allCurrencyFilterInfo.value!!.selectedCurrencyIds.contains(expense.currency.id) }
+                        .toList()
+                }
+                _filteredExpenses.postValue(updatedFilteredExpenses)
+                val updatedCategoriesWithExpenses = _unfilteredExpenses.value?.let {
+                    it.asSequence()
+                        .flatMap(CategoryWithExpenses::expenses)
+                        .groupBy(Expense::currency)
+                        .map { entry -> Pair(entry.key, entry.value) }
+                        .toMap()
+                }
+                val updatedCurrenciesWithExpenseCount = updatedCategoriesWithExpenses?.let {
+                    it.asSequence()
+                        .map { entry -> Pair(
+                            entry.key,
+                            entry.value
+                                .asSequence()
+                                .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                                .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                                .count()
+                        )
+                        }
+                        .toMap()
+                }
+                val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                    CurrencyFilterInfo(
+                        it.selectedCurrencyIds,
+                        updatedCurrenciesWithExpenseCount!!,
+                        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                    )
+                }
+                _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            }
+        }
+    }
+
+    fun selectAllCurrencyFilters() {
+        viewModelScope.launch {
+            val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                CurrencyFilterInfo(
+                    it.currenciesWithExpenseCount.keys.map(Currency::id).toMutableSet(),
+                    it.currenciesWithExpenseCount,
+                    UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                )
+            }
+            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                    .filter { expense -> _allCategoryFilterInfo.value!!.selectedCategoryIds.contains(expense.categoryId) }
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                    .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                    .toList()
+            }
+            _filteredExpenses.postValue(updatedFilteredExpenses)
+            val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .map { categoryWithExpenses ->
+                        Pair(
+                            categoryWithExpenses.category,
+                            categoryWithExpenses.expenses
+                                .asSequence()
+                                .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                                .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                                .count()
+                        )
+                    }
+                    .toMap()
+            }
+            val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                CategoryFilterInfo(
+                    it.selectedCategoryIds,
+                    updatedCategoriesWithExpenseCount!!,
+                    UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                )
+            }
+            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+        }
+    }
+
+    fun deSelectAllCurrencyFilters() {
+        viewModelScope.launch {
+            _allCurrencyFilterInfo.value?.let {
+                val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                    CurrencyFilterInfo(
+                        mutableSetOf(),
+                        it.currenciesWithExpenseCount,
+                        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                    )
+                }
+                _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+                val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+                    it.asSequence()
+                        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                        .filter { expense -> _allCategoryFilterInfo.value!!.selectedCategoryIds.contains(expense.categoryId) }
+                        .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                        .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                        .toList()
+                }
+                _filteredExpenses.postValue(updatedFilteredExpenses)
+                val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
+                    it.asSequence()
+                        .map { categoryWithExpenses ->
+                            Pair(
+                                categoryWithExpenses.category,
+                                categoryWithExpenses.expenses
+                                    .asSequence()
+                                    .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                                    .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                                    .count()
+                            )
+                        }
+                        .toMap()
+                }
+                val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                    CategoryFilterInfo(
+                        it.selectedCategoryIds,
+                        updatedCategoriesWithExpenseCount!!,
+                        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                    )
+                }
+                _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            }
+        }
+    }
+
     fun updateAllFilteredExpenses() {
         viewModelScope.launch {
             _filteredExpenses.value = filterAllExpensesThroughFiltersOnly(_unfilteredExpenses.value!!)
@@ -160,7 +615,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
                 .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
                 .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
-                .filter { expense -> isAmountInSelectedExpenseAmountRange(expense.amount) }
+                .filter { expense -> isAmountInSelectedExpenseAmountRange_OLD(expense.amount) }
                 .toList()
         }
     }
@@ -170,13 +625,21 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val updatedFilterValueCalculator = UpdatedFilterValueCalculator(
                 _unfilteredExpenses.value!!,
                 selectedCategoryIds.toList(),
-                selectedCurrencyIds.toList()
+                selectedCurrencyIds.toList(),
+                selectedExpenseAmountRange
             )
             _filteredCategoriesWithExpensesForFilterUpdate.value = updatedFilterValueCalculator.updatedFilterValuesDTO
         }
     }
 
-    private fun isAmountInSelectedExpenseAmountRange(amount: Double) =
+    private fun isAmountInSelectedExpenseAmountRange(selectedAmountMinValue: Double, selectedAmountMaxValue: Double, amount: Double) =
+        if (selectedAmountMinValue != EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+            amount in selectedAmountMinValue..selectedAmountMaxValue
+        else
+            true
+
+    @Deprecated("Use the one without OLD")
+    private fun isAmountInSelectedExpenseAmountRange_OLD(amount: Double) =
         selectedExpenseAmountRange.first <= amount && selectedExpenseAmountRange.second >= amount
 
     fun groupExpensesByYearAndMonth(expenses: List<Expense>): List<Any> =
@@ -240,34 +703,246 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             }
             .toMap()
 
+    @Deprecated("Use the one without OLD")
     fun isCategorySelected(categoryId: Long) = selectedCategoryIds.contains(categoryId)
 
+    @Deprecated("Use the one without OLD")
+    fun allCategorySelected() = selectedCategoryIds
+
+    fun getCurrentlySelectedCategoryIds() =
+        _allCategoryFilterInfo.value!!.selectedCategoryIds
+
     fun toggleCategoryFilter(categoryId: Long) {
-        if (selectedCategoryIds.contains(categoryId))
-            selectedCategoryIds.remove(categoryId)
-        else
-            selectedCategoryIds.add(categoryId)
+        viewModelScope.launch {
+            val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                if (it.selectedCategoryIds.contains(categoryId))
+                    it.selectedCategoryIds.remove(categoryId)
+                else
+                    it.selectedCategoryIds.add(categoryId)
+
+                CategoryFilterInfo(
+                    it.selectedCategoryIds,
+                    it.categoriesWithExpenseCount,
+                    UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                )
+            }
+            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                    .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                    .filter { expense -> _allCurrencyFilterInfo.value!!.selectedCurrencyIds.contains(expense.currency.id) }
+                    .toList()
+            }
+            _filteredExpenses.postValue(updatedFilteredExpenses)
+            val updatedCurrenciesWithExpenses = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap(CategoryWithExpenses::expenses)
+                    .groupBy(Expense::currency)
+                    .map { entry -> Pair(entry.key, entry.value) }
+                    .toMap()
+            }
+            val updatedCurrenciesWithExpenseCount = updatedCurrenciesWithExpenses?.let {
+                it.asSequence()
+                    .map { entry -> Pair(
+                        entry.key,
+                        entry.value
+                            .asSequence()
+                            .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                            .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                            .count()
+                    )
+                    }
+                    .toMap()
+            }
+            val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                CurrencyFilterInfo(
+                    it.selectedCurrencyIds,
+                    updatedCurrenciesWithExpenseCount!!,
+                    UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                )
+            }
+            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+        }
     }
 
+    @Deprecated("Use the one without OLD")
+    fun toggleCategoryFilter_OLD(categoryId: Long) {
+        if (isCategorySelected(categoryId))
+            removeCategoryFilter(categoryId)
+        else
+            addCategoryFilter(categoryId)
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun removeCategoryFilter(categoryId: Long) {
+        selectedCategoryIds.remove(categoryId)
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun addCategoryFilter(categoryId: Long) {
+        selectedCategoryIds.add(categoryId)
+    }
+
+    @Deprecated("Use the one without OLD")
     fun isCurrencySelected(currencyId: Long) = selectedCurrencyIds.contains(currencyId)
 
+    @Deprecated("Use the one without OLD")
+    fun allCurrencySelected() = selectedCurrencyIds
+
+    fun getCurrentlySelectedCurrencyIds() =
+        _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+
     fun toggleCurrencyFilter(currencyId: Long) {
-        if (selectedCurrencyIds.contains(currencyId))
-            selectedCurrencyIds.remove(currencyId)
-        else
-            selectedCurrencyIds.add(currencyId)
+        viewModelScope.launch {
+            val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+                if (it.selectedCurrencyIds.contains(currencyId))
+                    it.selectedCurrencyIds.remove(currencyId)
+                else
+                    it.selectedCurrencyIds.add(currencyId)
+
+                CurrencyFilterInfo(
+                    it.selectedCurrencyIds,
+                    it.currenciesWithExpenseCount,
+                    UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
+                )
+            }
+            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                    .filter { expense -> _allCategoryFilterInfo.value!!.selectedCategoryIds.contains(expense.categoryId) }
+                    .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                    .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                    .toList()
+            }
+            _filteredExpenses.postValue(updatedFilteredExpenses)
+            val updatedCurrenciesWithExpenseCount = _unfilteredExpenses.value?.let {
+                it.asSequence()
+                    .map { categoryWithExpenses ->
+                        Pair(
+                            categoryWithExpenses.category,
+                            categoryWithExpenses.expenses
+                                .asSequence()
+                                .filter { expense -> isAmountInSelectedExpenseAmountRange(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue, expense.amount) }
+                                .filter { expense -> updatedCurrencyFilterInfo!!.selectedCurrencyIds.contains(expense.currency.id) }
+                                .count()
+                        )
+                    }
+                    .toMap()
+            }
+            val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+                CategoryFilterInfo(
+                    it.selectedCategoryIds,
+                    updatedCurrenciesWithExpenseCount!!,
+                    UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+                )
+            }
+            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+        }
     }
 
-    fun getCheapestAndMostExpensiveExpenseAmount(allCategoriesWithExpenses: List<CategoryWithExpenses>): Pair<Double, Double> {
-        val allAmountValues = allCategoriesWithExpenses
-            .flatMap(CategoryWithExpenses::expenses)
-            .map(Expense::amount)
-
-        return if (allAmountValues.isNullOrEmpty())
-            Pair(EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE, EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+    @Deprecated("Use the one without OLD")
+    fun toggleCurrencyFilter_OLD(currencyId: Long) {
+        if (isCurrencySelected(currencyId))
+            removeCurrencyFilter(currencyId)
         else
-            Pair(allAmountValues.min()!!, allAmountValues.max()!!)
+            addCurrencyFilter(currencyId)
     }
+
+    @Deprecated("Use the one without OLD")
+    fun removeCurrencyFilter(currencyId: Long) {
+        selectedCurrencyIds.remove(currencyId)
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun addCurrencyFilter(currencyId: Long) {
+        selectedCurrencyIds.add(currencyId)
+    }
+
+    fun setMinAndMaxSelectedAmount(
+        minAmount: Double,
+        maxAmount: Double,
+        minSelectedAmount: Double,
+        maxSelectedAmount: Double
+    ) {
+        val updatedAmountFilterInfo = AmountFilterInfo(
+            minAmount,
+            maxAmount,
+            minSelectedAmount,
+            maxSelectedAmount,
+            false
+        )
+        _allAmountFilterInfo.postValue(updatedAmountFilterInfo)
+        val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
+            it.asSequence()
+                .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+                .filter { expense -> _allCategoryFilterInfo.value!!.selectedCategoryIds.contains(expense.categoryId) }
+                .filter { expense -> isAmountInSelectedExpenseAmountRange(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue, expense.amount) }
+                .filter { expense -> _allCurrencyFilterInfo.value!!.selectedCurrencyIds.contains(expense.currency.id) }
+                .toList()
+        }
+        _filteredExpenses.postValue(updatedFilteredExpenses)
+        val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
+            it.asSequence()
+                .map { categoryWithExpenses ->
+                    Pair(
+                        categoryWithExpenses.category,
+                        categoryWithExpenses.expenses
+                            .asSequence()
+                            .filter { expense -> isAmountInSelectedExpenseAmountRange(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue, expense.amount) }
+                            .filter { expense -> _allCurrencyFilterInfo.value!!.selectedCurrencyIds.contains(expense.currency.id) }
+                            .count()
+                    )
+                }
+                .toMap()
+        }
+        val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
+            CategoryFilterInfo(
+                it.selectedCategoryIds,
+                updatedCategoriesWithExpenseCount!!,
+                UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+            )
+        }
+        _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+        val updatedCurrenciesWithExpenses = _unfilteredExpenses.value?.let {
+            it.asSequence()
+                .flatMap(CategoryWithExpenses::expenses)
+                .groupBy(Expense::currency)
+                .map { entry -> Pair(entry.key, entry.value) }
+                .toMap()
+        }
+        val updatedCurrenciesWithExpenseCount = updatedCurrenciesWithExpenses?.let {
+            it.asSequence()
+                .map { entry -> Pair(
+                    entry.key,
+                    entry.value
+                        .asSequence()
+                        .filter { expense -> updatedCategoryFilterInfo!!.selectedCategoryIds.contains(expense.categoryId) }
+                        .filter { expense -> isAmountInSelectedExpenseAmountRange(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue, expense.amount) }
+                        .count()
+                )
+                }
+                .toMap()
+        }
+        val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
+            CurrencyFilterInfo(
+                it.selectedCurrencyIds,
+                updatedCurrenciesWithExpenseCount!!,
+                UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
+            )
+        }
+        _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun setMinAndMaxAmount_OLD(minAmount: Double, maxAmount: Double) {
+        selectedExpenseAmountRange = Pair(minAmount, maxAmount)
+    }
+
+    @Deprecated("Use the one without OLD")
+    fun getCheapestAndMostExpensiveExpenseAmount() = Pair(selectedExpenseAmountRange.first, selectedExpenseAmountRange.second)
 
     fun getCurrenciesWithExpenseCount(allCategoriesWithExpenses: List<CategoryWithExpenses>): Map<Currency, Int> =
         allCategoriesWithExpenses
@@ -505,10 +1180,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         categoryWithExpenses.expenses.isNotEmpty()
 
     fun categoryIsSelected(categoryId: Long): Boolean = selectedCategoryIds.contains(categoryId)
-
-    fun setMinAndMaxAmount(minAmount: Double, maxAmount: Double) {
-        selectedExpenseAmountRange = Pair(minAmount, maxAmount)
-    }
 
     fun groupExpensesByMonthInYear(expenses: List<Expense>, year: Int): List<ExpensesByMonth> =
         expenses

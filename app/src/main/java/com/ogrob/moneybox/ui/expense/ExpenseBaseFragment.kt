@@ -1,5 +1,6 @@
 package com.ogrob.moneybox.ui.expense
 
+import android.app.ActionBar
 import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,9 +19,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.helper.FixedInterval
+import com.ogrob.moneybox.data.helper.*
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.persistence.model.Category
@@ -28,7 +28,6 @@ import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.ui.BaseFragment
-import com.ogrob.moneybox.ui.helper.FilterOption
 import com.ogrob.moneybox.ui.helper.UpdatedFilterValuesDTO
 import com.ogrob.moneybox.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
@@ -64,19 +63,7 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.paintFlags = Paint.UNDERLINE_TEXT_FLAG
 
 
-    expenseViewModel.filteredExpenses.observe(viewLifecycleOwner, Observer {
-      hideLoadingAnimation()
-      setupExpenses(it)
-    })
-
-    expenseViewModel.unfilteredExpenses.observe(viewLifecycleOwner, Observer {
-      configureBackdropContainer(filterImageView)
-      setupFilters(it)
-    })
-
-    expenseViewModel.filteredCategoriesWithExpensesForFilterUpdate.observe(viewLifecycleOwner, Observer {
-      updateFilters(it)
-    })
+    setupObservers(filterImageView)
 
 
     getExpensesBasedOnFragmentAndFilters()
@@ -142,6 +129,52 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     }
   }
 
+  private fun setupObservers(filterImageView: ImageView) {
+    expenseViewModel.filteredExpenses.observe(viewLifecycleOwner) {
+      hideLoadingAnimation()
+      setupExpenses(it)
+    }
+
+    expenseViewModel.unfilteredExpenses.observe(viewLifecycleOwner) {
+      configureBackdropContainer(filterImageView)
+      setupFilters(it)
+    }
+
+    expenseViewModel.allCategoryFilterInfo.observe(viewLifecycleOwner) {
+      // TODO - we should not give the parameter as list, set should be fine
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY, it.selectedCategoryIds.toMutableList())
+
+      when (it.updateFilterOption) {
+        UpdateFilterOption.CREATE_CHIPS -> setupCategoryFilter(it)
+        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCategoryFilterCheckboxes(it)
+        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCategoryFilterChipTexts(it)
+      }
+    }
+    expenseViewModel.allAmountFilterInfo.observe(viewLifecycleOwner) {
+      SharedPreferenceManager.putStringSetSharedPreference(
+        binding.root.context,
+        SHARED_PREFERENCES_SELECTED_EXPENSE_AMOUNT_RANGE_KEY,
+        setOf(it.selectedAmountMinValue.toString(), it.selectedAmountMaxValue.toString())
+      )
+
+      if (it.createRangeBar)
+        setupAmountFilter(it)
+    }
+    expenseViewModel.allCurrencyFilterInfo.observe(viewLifecycleOwner) {
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, it.selectedCurrencyIds.toMutableList())
+
+      when (it.updateFilterOption) {
+        UpdateFilterOption.CREATE_CHIPS -> setupCurrencyFilter(it)
+        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCurrencyFilterCheckboxes(it)
+        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCurrencyFilterChipTexts(it)
+      }
+    }
+
+    expenseViewModel.filteredCategoriesWithExpensesForFilterUpdate.observe(viewLifecycleOwner) {
+      updateFiltersAndFilterIcons(it)
+    }
+  }
+
   abstract fun onAddNewExpense(view: View)
 
   private fun configureBackdropContainer(filterImageView: ImageView) {
@@ -178,105 +211,619 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
   abstract fun getExpensesBasedOnFragmentAndFilters()
 
-  private fun setupFilters(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
-    setupCategoryFilter(allCategoriesWithExpenses)
-    setupAmountFilter(allCategoriesWithExpenses)
-    setupCurrencyFilter(allCategoriesWithExpenses)
+  protected fun getFilterValuesFromSharedPreferences(): Triple<Set<String>, Set<String>, Set<String>> {
+    val selectedCategoryIdStrings = SharedPreferenceManager.getStringSetSharedPreference(
+      binding.root.context,
+      SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY,
+      setOf()
+    )
+    val selectedExpenseAmountRangeStrings = SharedPreferenceManager.getStringSetSharedPreference(
+      binding.root.context,
+      SHARED_PREFERENCES_SELECTED_EXPENSE_AMOUNT_RANGE_KEY,
+      setOf()
+    )
+    val selectedCurrencyIdStrings = SharedPreferenceManager.getStringSetSharedPreference(
+      binding.root.context,
+      SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY,
+      setOf()
+    )
+
+    return Triple(selectedCategoryIdStrings, selectedExpenseAmountRangeStrings, selectedCurrencyIdStrings)
   }
 
-  private fun setupCategoryFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+  private fun setupFilters(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+//    setupCategoryFilter_OLD(allCategoriesWithExpenses)
+//    setupAmountFilter_OLD(allCategoriesWithExpenses)
+//    setupCurrencyFilter_OLD(allCategoriesWithExpenses)
+  }
+
+  private fun setupCategoryFilter(allCategoryFilterInfo: CategoryFilterInfo) {
+    allCategoryFilterInfo.categoriesWithExpenseCount
+      .map { categoryWithExpenseCount -> createCategoryChip(categoryWithExpenseCount, allCategoryFilterInfo.selectedCategoryIds) }
+
+    updateFilterIcon(
+      binding.expenseBackdropBackView.categoryCheckboxIcon,
+      allCategoryFilterInfo.categoriesWithExpenseCount.size,
+      allCategoryFilterInfo.selectedCategoryIds.size
+    )
+
+    binding.expenseBackdropBackView.categoryCheckboxIcon.setOnClickListener {
+      // TODO - get the currently selected category ids' size for the when clause
+      val currentlySelectedCategoryIds = expenseViewModel.getCurrentlySelectedCategoryIds()
+
+      when (currentlySelectedCategoryIds.size) {
+          0 -> selectAllCategoryFilters()
+          else -> deSelectAllCategoryFilters()
+      }
+//      when (currentlySelectedCategoryIds.size) {
+//        0 -> expenseViewModel.selectAllCategoryFilters()
+//        else -> expenseViewModel.deSelectAllCategoryFilters()
+//      }
+    }
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun setupCategoryFilter_OLD(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
     val categoriesWithExpenseCount = expenseViewModel.getCategoriesWithExpenseCount(allCategoriesWithExpenses)
 
     categoriesWithExpenseCount
-      .map(this::createCategoryChip)
+      .map(this::createCategoryChip_OLD)
+
+    val allCategorySelectedNumber = expenseViewModel.allCategorySelected().size
+
+    binding.expenseBackdropBackView.categoryCheckboxIcon.setOnClickListener {
+      val currentlySelectedCategoryNumber = expenseViewModel.allCategorySelected().size
+
+      when {
+        allCategorySelectedNumber == currentlySelectedCategoryNumber -> selectAllCategories_OLD(false)
+        currentlySelectedCategoryNumber == 0 -> selectAllCategories_OLD()
+        else -> selectAllCategories_OLD(false)
+      }
+
+      updateFiltersAndExpenses()
+    }
   }
 
-  private fun createCategoryChip(categoryWithExpenseCount: Map.Entry<Category, Int>) {
-    val newChip = Chip(binding.root.context)
+  private fun selectAllCategoryFilters() {
+    binding.expenseBackdropBackView.categoryBodyChipGroup.children.forEach {
+      (it as Chip).apply {
+        isChecked = true
+        chipIcon = setFilterChipIcon(true)
+      }
+    }
+    binding.expenseBackdropBackView.categoryCheckboxIcon.background =
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
 
-    newChip.isChecked = expenseViewModel.isCategorySelected(categoryWithExpenseCount.key.id)
+    expenseViewModel.selectAllCategoryFilters()
+  }
 
-    newChip.text = "${categoryWithExpenseCount.key.name} (${categoryWithExpenseCount.value})"
-    newChip.tag = categoryWithExpenseCount.key.id
+  private fun deSelectAllCategoryFilters() {
+    binding.expenseBackdropBackView.categoryBodyChipGroup.children.forEach {
+      (it as Chip).apply {
+        isChecked = false
+        chipIcon = setFilterChipIcon(false)
+      }
+    }
+    binding.expenseBackdropBackView.categoryCheckboxIcon.background =
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
+
+    expenseViewModel.deSelectAllCategoryFilters()
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun selectAllCategories_OLD(selectAllCategories: Boolean = true) {
+    binding.expenseBackdropBackView.categoryBodyChipGroup.children.forEach {
+      val chip = (it as Chip).apply {
+        isChecked = selectAllCategories
+        chipIcon = setFilterChipIcon(selectAllCategories)
+      }
+
+      if (selectAllCategories)
+        expenseViewModel.addCategoryFilter(chip.tag.toString().toLong())
+      else
+        expenseViewModel.removeCategoryFilter(chip.tag.toString().toLong())
+
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, expenseViewModel.allCurrencySelected())
+    }
+  }
+
+  private fun createCategoryChip(
+    categoryWithExpenseCount: Map.Entry<Category, Int>,
+    selectedCategoryIds: MutableSet<Long>
+  ) {
+    val newChip = Chip(binding.root.context).apply {
+      checkedIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+      closeIcon = null
+      isChecked = selectedCategoryIds.contains(categoryWithExpenseCount.key.id)
+      chipIcon = setFilterChipIcon(isChecked)
+
+      val params = ActionBar.LayoutParams(
+        ActionBar.LayoutParams.WRAP_CONTENT,
+        ActionBar.LayoutParams.WRAP_CONTENT
+      )
+      params.setMargins(2, 2, 2, 2)
+      layoutParams = params
+
+      text = resources.getString(
+        R.string.filter_text,
+        categoryWithExpenseCount.key.name,
+        categoryWithExpenseCount.value
+      )
+      tag = categoryWithExpenseCount.key.id
+    }
 
     newChip.setOnClickListener { chip ->
-      expenseViewModel.toggleCategoryFilter(categoryWithExpenseCount.key.id)
+      (chip as Chip).apply {
+        chipIcon = setFilterChipIcon(isChecked)
+      }
 
-      expenseViewModel.updateFilters()
-      expenseViewModel.updateAllFilteredExpenses()
+      expenseViewModel.toggleCategoryFilter(categoryWithExpenseCount.key.id)
     }
 
     binding.expenseBackdropBackView.categoryBodyChipGroup.addView(newChip)
   }
 
-  private fun setupAmountFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
-    val cheapestAndMostExpensiveExpenseAmount = expenseViewModel.getCheapestAndMostExpensiveExpenseAmount(allCategoriesWithExpenses)
+  private fun createCategoryChip_OLD(categoryWithExpenseCount: Map.Entry<Category, Int>) {
+    val newChip = Chip(binding.root.context).apply {
+      checkedIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+      closeIcon = null
+      isChecked = expenseViewModel.isCategorySelected(categoryWithExpenseCount.key.id)
+
+      val params = ActionBar.LayoutParams(
+        ActionBar.LayoutParams.WRAP_CONTENT,
+        ActionBar.LayoutParams.WRAP_CONTENT
+      )
+      params.setMargins(2, 2, 2, 2)
+      layoutParams = params
+
+      text = resources.getString(
+        R.string.filter_text,
+        categoryWithExpenseCount.key.name,
+        categoryWithExpenseCount.value
+      )
+      tag = categoryWithExpenseCount.key.id
+    }
+
+//    newChip.setOnCheckedChangeListener { chip, isChecked ->
+    newChip.setOnClickListener { chip ->
+      (chip as Chip).apply {
+        chipIcon = setFilterChipIcon(isChecked)
+      }
+
+      expenseViewModel.toggleCategoryFilter_OLD(categoryWithExpenseCount.key.id)
+
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY, expenseViewModel.allCategorySelected())
+      updateFiltersAndExpenses()
+    }
+
+    binding.expenseBackdropBackView.categoryBodyChipGroup.addView(newChip)
   }
 
-  private fun setupCurrencyFilter(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+  private fun setupAmountFilter(allAmountFilterInfo: AmountFilterInfo) {
+    if (allAmountFilterInfo.amountMinValue == EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+      return
+
+    val cheapestAndMostExpensiveExpenseAmount = Pair(allAmountFilterInfo.amountMinValue, allAmountFilterInfo.amountMaxValue)
+    val cheapestAndMostExpensiveSelectedExpenseAmount = if (allAmountFilterInfo.selectedAmountMinValue == EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE)
+      cheapestAndMostExpensiveExpenseAmount
+    else
+      Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue)
+
+    updateAmountFilterCheckbox(cheapestAndMostExpensiveSelectedExpenseAmount, cheapestAndMostExpensiveExpenseAmount.first, cheapestAndMostExpensiveExpenseAmount.second)
+
+    val rangeSeekbar = binding.expenseBackdropBackView.amountRangeSeekbar.apply {
+      setMinValue(cheapestAndMostExpensiveExpenseAmount.first.toFloat())
+      setMinStartValue(cheapestAndMostExpensiveSelectedExpenseAmount.first.toFloat())
+
+      setMaxValue(cheapestAndMostExpensiveExpenseAmount.second.toFloat())
+      setMaxStartValue(cheapestAndMostExpensiveSelectedExpenseAmount.second.toFloat())
+
+      apply()
+    }
+
+    val rangeSeekbarMinTextView = binding.expenseBackdropBackView.amountRangeSeekbarMinTextView.apply {
+      text = cheapestAndMostExpensiveSelectedExpenseAmount.first.toString()
+    }
+    val rangeSeekbarMaxTextView = binding.expenseBackdropBackView.amountRangeSeekbarMaxTextView.apply {
+      text = cheapestAndMostExpensiveSelectedExpenseAmount.second.toString()
+    }
+
+    rangeSeekbar.setOnRangeSeekbarChangeListener { minValue, maxValue ->
+      rangeSeekbarMinTextView.text = minValue.toString()
+      rangeSeekbarMaxTextView.text = maxValue.toString()
+    }
+
+    rangeSeekbar.setOnRangeSeekbarFinalValueListener { minValue, maxValue ->
+      expenseViewModel.setMinAndMaxSelectedAmount(
+        cheapestAndMostExpensiveExpenseAmount.first,
+        cheapestAndMostExpensiveExpenseAmount.second,
+        minValue.toDouble(),
+        maxValue.toDouble()
+      )
+
+      updateAmountFilterCheckbox(cheapestAndMostExpensiveExpenseAmount, minValue, maxValue)
+    }
+
+    binding.expenseBackdropBackView.amountCheckboxIcon.setOnClickListener {
+      if (cheapestAndMostExpensiveExpenseAmount.first != binding.expenseBackdropBackView.amountRangeSeekbar.selectedMinValue ||
+        cheapestAndMostExpensiveExpenseAmount.second != binding.expenseBackdropBackView.amountRangeSeekbar.selectedMaxValue)
+        resetRangeBar(
+          cheapestAndMostExpensiveExpenseAmount,
+          cheapestAndMostExpensiveSelectedExpenseAmount
+        )
+    }
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun setupAmountFilter_OLD(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
+//    val cheapestAndMostExpensiveExpenseAmount = expenseViewModel.getCheapestAndMostExpensiveExpenseAmount()
+    val cheapestAndMostExpensiveExpenseAmount = Pair(1.0, 1000000.0)
+
+    val rangeSeekbar = binding.expenseBackdropBackView.amountRangeSeekbar.apply {
+      setMinValue(cheapestAndMostExpensiveExpenseAmount.first.toFloat())
+      setMinStartValue(cheapestAndMostExpensiveExpenseAmount.first.toFloat())
+
+      setMaxValue(cheapestAndMostExpensiveExpenseAmount.second.toFloat())
+      setMaxStartValue(cheapestAndMostExpensiveExpenseAmount.second.toFloat())
+    }
+
+    val rangeSeekbarMinTextView = binding.expenseBackdropBackView.amountRangeSeekbarMinTextView.apply {
+      text = cheapestAndMostExpensiveExpenseAmount.first.toString()
+    }
+    val rangeSeekbarMaxTextView = binding.expenseBackdropBackView.amountRangeSeekbarMaxTextView.apply {
+      text = cheapestAndMostExpensiveExpenseAmount.second.toString()
+    }
+
+    rangeSeekbar.setOnRangeSeekbarChangeListener { minValue, maxValue ->
+      rangeSeekbarMinTextView.text = minValue.toString()
+      rangeSeekbarMaxTextView.text = maxValue.toString()
+    }
+
+    rangeSeekbar.setOnRangeSeekbarFinalValueListener { minValue, maxValue ->
+      expenseViewModel.setMinAndMaxAmount_OLD(minValue.toDouble(), maxValue.toDouble())
+
+      updateAmountFilterCheckbox(cheapestAndMostExpensiveExpenseAmount, minValue, maxValue)
+
+      SharedPreferenceManager.putStringSetSharedPreference(
+        binding.root.context,
+        SHARED_PREFERENCES_SELECTED_EXPENSE_AMOUNT_RANGE_KEY,
+        setOf(minValue.toString(), maxValue.toString())
+      )
+
+      updateFiltersAndExpenses()
+    }
+
+    binding.expenseBackdropBackView.amountCheckboxIcon.setOnClickListener {
+      if (cheapestAndMostExpensiveExpenseAmount.first != binding.expenseBackdropBackView.amountRangeSeekbar.selectedMinValue ||
+        cheapestAndMostExpensiveExpenseAmount.second != binding.expenseBackdropBackView.amountRangeSeekbar.selectedMaxValue)
+        resetRangeBar(cheapestAndMostExpensiveExpenseAmount, Pair(1.0, 1.0))
+    }
+  }
+
+  private fun resetRangeBar(
+    cheapestAndMostExpensiveExpenseAmount: Pair<Double, Double>,
+    cheapestAndMostExpensiveSelectedExpenseAmount: Pair<Double, Double>
+  ) {
+    binding.expenseBackdropBackView.amountRangeSeekbar.apply {
+      expenseViewModel.setMinAndMaxSelectedAmount(
+        cheapestAndMostExpensiveExpenseAmount.first,
+        cheapestAndMostExpensiveExpenseAmount.second,
+        cheapestAndMostExpensiveSelectedExpenseAmount.first,
+        cheapestAndMostExpensiveSelectedExpenseAmount.second
+      )
+
+      setMinValue(cheapestAndMostExpensiveExpenseAmount.first.toFloat())
+      setMinStartValue(cheapestAndMostExpensiveExpenseAmount.first.toFloat())
+
+      setMaxValue(cheapestAndMostExpensiveExpenseAmount.second.toFloat())
+      setMaxStartValue(cheapestAndMostExpensiveExpenseAmount.second.toFloat())
+
+      apply()
+
+      binding.expenseBackdropBackView.amountCheckboxIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+    }
+  }
+
+  private fun updateAmountFilterCheckbox(
+    cheapestAndMostExpensiveExpenseAmount: Pair<Double, Double>,
+    minValue: Number,
+    maxValue: Number
+  ) {
+    binding.expenseBackdropBackView.amountCheckboxIcon.background =
+      if (cheapestAndMostExpensiveExpenseAmount.first == minValue.toDouble() && cheapestAndMostExpensiveExpenseAmount.second == maxValue.toDouble())
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+      else
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
+  }
+
+  private fun setupCurrencyFilter(allCurrencyFilterInfo: CurrencyFilterInfo) {
+    allCurrencyFilterInfo.currenciesWithExpenseCount
+      .map { currencyWithExpenseCount -> createCurrencyChip(currencyWithExpenseCount, allCurrencyFilterInfo.selectedCurrencyIds) }
+
+    updateFilterIcon(
+      binding.expenseBackdropBackView.currencyCheckboxIcon,
+      allCurrencyFilterInfo.currenciesWithExpenseCount.size,
+      allCurrencyFilterInfo.selectedCurrencyIds.size
+    )
+
+    binding.expenseBackdropBackView.currencyCheckboxIcon.setOnClickListener {
+      // TODO - get the currently selected category ids' size for the when clause
+      val currentlySelectedCurrencyIds = expenseViewModel.getCurrentlySelectedCurrencyIds()
+
+      when (currentlySelectedCurrencyIds.size) {
+        0 -> selectAllCurrencyFilters()
+        else -> deSelectAllCurrencyFilters()
+      }
+    }
+  }
+
+  private fun selectAllCurrencyFilters() {
+    binding.expenseBackdropBackView.currencyBodyChipGroup.children.forEach {
+      (it as Chip).apply {
+        isChecked = true
+        chipIcon = setFilterChipIcon(true)
+      }
+    }
+    binding.expenseBackdropBackView.currencyCheckboxIcon.background =
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+
+    expenseViewModel.selectAllCurrencyFilters()
+  }
+
+  private fun deSelectAllCurrencyFilters() {
+    binding.expenseBackdropBackView.currencyBodyChipGroup.children.forEach {
+      (it as Chip).apply {
+        isChecked = false
+        chipIcon = setFilterChipIcon(false)
+      }
+    }
+    binding.expenseBackdropBackView.currencyCheckboxIcon.background =
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
+
+    expenseViewModel.deSelectAllCurrencyFilters()
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun setupCurrencyFilter_OLD(allCategoriesWithExpenses: List<CategoryWithExpenses>) {
     val currenciesWithExpenseCount = expenseViewModel.getCurrenciesWithExpenseCount(allCategoriesWithExpenses)
 
     currenciesWithExpenseCount
-      .map(this::createCurrencyChip)
+      .map(this::createCurrencyChip_OLD)
+
+    val allCurrencySelectedNumber = expenseViewModel.allCurrencySelected().size
+
+    binding.expenseBackdropBackView.currencyCheckboxIcon.setOnClickListener {
+      val currentlySelectedCurrencyNumber = expenseViewModel.allCurrencySelected().size
+
+      when {
+        allCurrencySelectedNumber == currentlySelectedCurrencyNumber -> selectAllCurrencies(false)
+        currentlySelectedCurrencyNumber == 0 -> selectAllCurrencies()
+        else -> selectAllCurrencies(false)
+      }
+
+      updateFiltersAndExpenses()
+    }
   }
 
-  private fun createCurrencyChip(currencyWithExpenseCount: Map.Entry<Currency, Int>) {
-    val newChip = Chip(binding.root.context)
+  private fun selectAllCurrencies(selectAllCurrencies: Boolean = true) {
+    binding.expenseBackdropBackView.currencyBodyChipGroup.children.forEach {
+      val chip = (it as Chip).apply {
+        isChecked = selectAllCurrencies
+        chipIcon = setFilterChipIcon(selectAllCurrencies)
+      }
 
-    newChip.isChecked = expenseViewModel.isCurrencySelected(currencyWithExpenseCount.key.id)
+      if (selectAllCurrencies)
+        expenseViewModel.addCurrencyFilter(chip.tag.toString().toLong())
+      else
+        expenseViewModel.removeCurrencyFilter(chip.tag.toString().toLong())
 
-    newChip.text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
-    newChip.tag = currencyWithExpenseCount.key.id
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, expenseViewModel.allCurrencySelected())
+    }
+  }
+
+  private fun createCurrencyChip(
+    currencyWithExpenseCount: Map.Entry<Currency, Int>,
+    selectedCurrencyIds: MutableSet<Long>
+  ) {
+    val newChip = Chip(binding.root.context).apply {
+      checkedIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+      closeIcon = null
+      isChecked = selectedCurrencyIds.contains(currencyWithExpenseCount.key.id)
+      chipIcon = setFilterChipIcon(isChecked)
+
+      val params = ActionBar.LayoutParams(
+        ActionBar.LayoutParams.WRAP_CONTENT,
+        ActionBar.LayoutParams.WRAP_CONTENT
+      )
+      params.setMargins(2, 2, 2, 2)
+      layoutParams = params
+
+      text = resources.getString(
+        R.string.filter_text,
+        currencyWithExpenseCount.key.name,
+        currencyWithExpenseCount.value
+      )
+      tag = currencyWithExpenseCount.key.id
+    }
 
     newChip.setOnClickListener { chip ->
-      expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.id)
+      (chip as Chip).apply {
+        chipIcon = setFilterChipIcon(isChecked)
+      }
 
-      expenseViewModel.updateFilters()
-      expenseViewModel.updateAllFilteredExpenses()
+      expenseViewModel.toggleCurrencyFilter(currencyWithExpenseCount.key.id)
     }
 
     binding.expenseBackdropBackView.currencyBodyChipGroup.addView(newChip)
   }
 
-  private fun updateFilters(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
-      updateCategoryFilter(updatedFilterValuesDTO)
+  private fun createCurrencyChip_OLD(currencyWithExpenseCount: Map.Entry<Currency, Int>) {
+    val newChip = Chip(binding.root.context).apply {
+      checkedIcon = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+      closeIcon = null
+      isChecked = expenseViewModel.isCurrencySelected(currencyWithExpenseCount.key.id)
 
-//      updateCategoryFilter(allCategoriesWithExpenses)
+      text = resources.getString(
+        R.string.filter_text,
+        currencyWithExpenseCount.key.name,
+        currencyWithExpenseCount.value
+      )
+      tag = currencyWithExpenseCount.key.id
+    }
 
-      updateCurrencyFilter(updatedFilterValuesDTO)
+//    newChip.setOnCheckedChangeListener { chip, isChecked ->
+    newChip.setOnClickListener { chip ->
+      (chip as Chip).apply {
+        chipIcon = setFilterChipIcon(isChecked)
+      }
+
+      expenseViewModel.toggleCurrencyFilter_OLD(currencyWithExpenseCount.key.id)
+
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, expenseViewModel.allCurrencySelected())
+      updateFiltersAndExpenses()
+    }
+
+    binding.expenseBackdropBackView.currencyBodyChipGroup.addView(newChip)
   }
 
-  private fun updateCategoryFilter(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
-    updateFilterIcon(binding.expenseBackdropBackView.categoryCheckboxIcon, updatedFilterValuesDTO.totalAndSelectedCategoryWithExpenseCount)
+  private fun setFilterChipIcon(checked: Boolean) =
+    if (checked)
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+    else
+      ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
 
+  private fun updateFilterSharedPreferences(
+    sharedPreferencesKey: String,
+    sharedPreferencesValues: MutableList<Long>
+  ) {
+    val sharedPreferencesValuesStringSet = sharedPreferencesValues
+      .map(Long::toString)
+      .toSet()
+
+    SharedPreferenceManager.putStringSetSharedPreference(
+      binding.root.context,
+      sharedPreferencesKey,
+      sharedPreferencesValuesStringSet
+    )
+  }
+
+  private fun updateFiltersAndExpenses() {
+    expenseViewModel.updateFilters()
+    expenseViewModel.updateAllFilteredExpenses()
+  }
+
+  private fun updateFiltersAndFilterIcons(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
+//      updateCategoryFilterAndIcon_OLD(updatedFilterValuesDTO)
+
+//      updateCurrencyFilterAndIcon(updatedFilterValuesDTO)
+  }
+
+  private fun updateCategoryFilterCheckboxes(allCategoryFilterInfo: CategoryFilterInfo) {
+    updateFilterIcon(
+      binding.expenseBackdropBackView.categoryCheckboxIcon,
+      allCategoryFilterInfo.categoriesWithExpenseCount.size,
+      allCategoryFilterInfo.selectedCategoryIds.size
+    )
+  }
+
+  private fun updateCategoryFilterChipTexts(allCategoryFilterInfo: CategoryFilterInfo) {
     binding.expenseBackdropBackView.categoryBodyChipGroup.children
       .forEach { chip ->
-        val categoryWithExpenseCount = getCategory(chip, updatedFilterValuesDTO)
-        (chip as Chip).text = "${categoryWithExpenseCount.key.name} (${categoryWithExpenseCount.value})"
+        val categoryWithExpenseCount = getCategory(chip.tag.toString().toLong(), allCategoryFilterInfo)
+
+        (chip as Chip).apply {
+          text = resources.getString(
+            R.string.filter_text,
+            categoryWithExpenseCount.key.name,
+            categoryWithExpenseCount.value
+          )
+        }
       }
   }
 
-  private fun getCategory(chip: View, categoriesWithExpenseCount: UpdatedFilterValuesDTO): Map.Entry<Category, Int> {
+  @Deprecated("Use the one without OLD")
+  private fun updateCategoryFilterAndIcon_OLD(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
+    updateFilterIcon_OLD(binding.expenseBackdropBackView.categoryCheckboxIcon, updatedFilterValuesDTO.totalAndSelectedCategoryWithExpenseCount)
+
+    binding.expenseBackdropBackView.categoryBodyChipGroup.children
+      .forEach { chip ->
+        val categoryWithExpenseCount = getCategory_OLD(chip, updatedFilterValuesDTO)
+
+        (chip as Chip).apply {
+          text = resources.getString(
+            R.string.filter_text,
+            categoryWithExpenseCount.key.name,
+            categoryWithExpenseCount.value
+          )
+        }
+      }
+  }
+
+  private fun getCategory(tag: Long, allCategoryFilterInfo: CategoryFilterInfo): Map.Entry<Category, Int> {
+    return allCategoryFilterInfo
+      .categoriesWithExpenseCount
+      .entries
+      .first { entry -> entry.key.id == tag }
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun getCategory_OLD(chip: View, categoriesWithExpenseCount: UpdatedFilterValuesDTO): Map.Entry<Category, Int> {
     return categoriesWithExpenseCount
       .filteredCategoryWithExpenseCount
       .entries
       .first { entry -> entry.key.id == chip.tag }
   }
 
-  private fun updateCurrencyFilter(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
-    updateFilterIcon(binding.expenseBackdropBackView.currencyCheckboxIcon, updatedFilterValuesDTO.totalAndSelectedCurrencyWithExpenseCount)
+  private fun updateCurrencyFilterCheckboxes(allCurrencyFilterInfo: CurrencyFilterInfo) {
+    updateFilterIcon(
+      binding.expenseBackdropBackView.currencyCheckboxIcon,
+      allCurrencyFilterInfo.currenciesWithExpenseCount.size,
+      allCurrencyFilterInfo.selectedCurrencyIds.size
+    )
+  }
 
+  private fun updateCurrencyFilterChipTexts(allCurrencyFilterInfo: CurrencyFilterInfo) {
     binding.expenseBackdropBackView.currencyBodyChipGroup.children
       .forEach { chip ->
-        val currencyWithExpenseCount = getCurrency(chip, updatedFilterValuesDTO)
+        val currencyWithExpenseCount = getCurrency(chip.tag.toString().toLong(), allCurrencyFilterInfo)
 
-        val currentChip = (chip as Chip)
-
-        currentChip.text = "${currencyWithExpenseCount.key.name} (${currencyWithExpenseCount.value})"
+        (chip as Chip).apply {
+          text = resources.getString(
+            R.string.filter_text,
+            currencyWithExpenseCount.key.name,
+            currencyWithExpenseCount.value
+          )
+        }
       }
   }
 
-  private fun getCurrency(chip: View, currenciesWithExpenseCount: UpdatedFilterValuesDTO): Map.Entry<Currency, Int> {
+  @Deprecated("Use the one without OLD")
+  private fun updateCurrencyFilterAndIcon_OLD(updatedFilterValuesDTO: UpdatedFilterValuesDTO) {
+    updateFilterIcon_OLD(binding.expenseBackdropBackView.currencyCheckboxIcon, updatedFilterValuesDTO.totalAndSelectedCurrencyWithExpenseCount)
+
+    binding.expenseBackdropBackView.currencyBodyChipGroup.children
+      .forEach { chip ->
+        val currencyWithExpenseCount = getCurrency_OLD(chip, updatedFilterValuesDTO)
+
+        (chip as Chip).apply {
+          text = resources.getString(
+            R.string.filter_text,
+            currencyWithExpenseCount.key.name,
+            currencyWithExpenseCount.value
+          )
+        }
+      }
+  }
+
+  private fun getCurrency(tag: Long, allCurrencyFilterInfo: CurrencyFilterInfo): Map.Entry<Currency, Int> {
+    return allCurrencyFilterInfo
+      .currenciesWithExpenseCount
+      .entries
+      .first { entry -> entry.key.id == tag }
+  }
+
+  @Deprecated("Use the one without OLD")
+  private fun getCurrency_OLD(chip: View, currenciesWithExpenseCount: UpdatedFilterValuesDTO): Map.Entry<Currency, Int> {
     return currenciesWithExpenseCount
       .filteredCurrencyWithExpenseCount
       .entries
@@ -285,19 +832,55 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
   private fun updateFilterIcon(
     filterCheckboxIcon: TextView,
-    totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>
+    totalExpenseCount: Int,
+    selectedExpenseCount: Int
   ) {
     when {
-      allFiltersInDropdownSelected(totalAndSelectedFilterWithExpenseCount) -> filterCheckboxIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
-      noFilterInDropdownSelected(totalAndSelectedFilterWithExpenseCount) -> filterCheckboxIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
-      else -> filterCheckboxIcon.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_indeterminate_check_box_24, null)
+      allFiltersInDropdownSelected(totalExpenseCount, selectedExpenseCount) -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+
+      noFilterInDropdownSelected(selectedExpenseCount) -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
+
+      else -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_indeterminate_check_box_24, null)
     }
   }
 
-  private fun allFiltersInDropdownSelected(totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>): Boolean =
+  @Deprecated("Use the one without OLD")
+  private fun updateFilterIcon_OLD(
+    filterCheckboxIcon: TextView,
+    totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>
+  ) {
+    when {
+      allFiltersInDropdownSelected_OLD(totalAndSelectedFilterWithExpenseCount) -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_24, null)
+
+      noFilterInDropdownSelected_OLD(totalAndSelectedFilterWithExpenseCount) -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_check_box_blank_24, null)
+
+      else -> filterCheckboxIcon.background =
+        ResourcesCompat.getDrawable(resources, R.drawable.ic_indeterminate_check_box_24, null)
+    }
+  }
+
+  private fun allFiltersInDropdownSelected(
+    totalExpenseCount: Int,
+    selectedExpenseCount: Int
+  ): Boolean =
+    totalExpenseCount == selectedExpenseCount
+
+  private fun noFilterInDropdownSelected(
+    selectedExpenseCount: Int
+  ): Boolean =
+    selectedExpenseCount == 0
+
+  @Deprecated("Use the one without OLD")
+  private fun allFiltersInDropdownSelected_OLD(totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>): Boolean =
     totalAndSelectedFilterWithExpenseCount.first == totalAndSelectedFilterWithExpenseCount.second
 
-  private fun noFilterInDropdownSelected(totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>): Boolean =
+  @Deprecated("Use the one without OLD")
+  private fun noFilterInDropdownSelected_OLD(totalAndSelectedFilterWithExpenseCount: Pair<Int, Int>): Boolean =
     totalAndSelectedFilterWithExpenseCount.second == 0
 
 
@@ -399,121 +982,4 @@ abstract class ExpenseBaseFragment : BaseFragment() {
           FixedInterval.DAY.toString().toLowerCase()
         )
     }
-
-  private fun setupBackdropFilters(
-    allCategories: List<Category>,
-    filteredCategoriesWithExpenses: List<CategoryWithExpenses>
-  ) {
-    createCategoryFilter(allCategories, filteredCategoriesWithExpenses)
-    createCurrencyFilter(allCategories)
-    createExpenseAmountFilter(allCategories)
-  }
-
-  private fun createCategoryFilter(
-    allCategories: List<Category>,
-    filteredCategoriesWithExpenses: List<CategoryWithExpenses>
-  ) {
-    allCategories
-      .map { category ->
-        val newChip = Chip(binding.root.context)
-
-        newChip.isChecked = true
-
-        expenseViewModel.toggleCategoryFilter(category.id)
-
-        val expenseCountForCategory = filteredCategoriesWithExpenses
-          .filter { categoryWithExpenses -> categoryWithExpenses.category == category }
-          .flatMap(CategoryWithExpenses::expenses)
-          .size
-        newChip.text = "${category.name} (${expenseCountForCategory})"
-
-        newChip.setOnClickListener { chip ->
-          expenseViewModel.toggleCategoryFilter(category.id)
-
-          getFilteredExpenses_OLD().observe(viewLifecycleOwner, Observer {
-            setupBackdropExpenses(it)
-//                        expenseViewModel.getAllCategories().observe(viewLifecycleOwner, Observer { allCategories ->
-//                            getExpensesWithoutCategoryFiltering().observe(viewLifecycleOwner, Observer { categoriesWithExpenses ->
-//                                updateCategoryFilters(categoriesWithExpenses, allCategories)
-//                            })
-//                        })
-          })
-        }
-
-        binding.expenseBackdropBackView.categoryBodyChipGroup.addView(newChip)
-      }
-  }
-
-  abstract fun getExpensesWithoutCategoryFiltering(): LiveData<List<CategoryWithExpenses>>
-
-//    private fun updateCategoryFilters(
-//        categoriesWithExpenses: List<CategoryWithExpenses>,
-//        allCategories: List<Category>
-//    ) {
-//        (0 until binding.expenseBackdropBackView.categoryBodyChipGroup.childCount)
-//            .map { index ->
-//                val chip = binding.expenseBackdropBackView.categoryBodyChipGroup.getChildAt(index) as Chip
-//
-//                val currentCategory = allCategories[index]
-//
-//                val expenseCountForCategory = categoriesWithExpenses
-//                    .filter { categoryWithExpenses -> categoryWithExpenses.category == currentCategory }
-//                    .flatMap(CategoryWithExpenses::expenses)
-//                    .size
-//
-//                chip.text = "${currentCategory.name} (${expenseCountForCategory})"
-//            }
-//    }
-
-  private fun createExpenseAmountFilter(allCategories: List<Category>) {
-    val rangeSeekbar = binding.expenseBackdropBackView.amountRangeSeekbar
-
-    val rangeSeekbarMinTextView = binding.expenseBackdropBackView.amountRangeSeekbarMinTextView
-    val rangeSeekbarMaxTextView = binding.expenseBackdropBackView.amountRangeSeekbarMaxTextView
-
-    rangeSeekbar.setOnRangeSeekbarChangeListener { minValue, maxValue ->
-      rangeSeekbarMinTextView.text = minValue.toString()
-      rangeSeekbarMaxTextView.text = maxValue.toString()
-    }
-
-    rangeSeekbar.setOnRangeSeekbarFinalValueListener { minValue, maxValue ->
-      expenseViewModel.setMinAndMaxAmount(minValue.toDouble(), maxValue.toDouble())
-      getFilteredExpenses_OLD().observe(viewLifecycleOwner, Observer {
-        setupBackdropExpenses(it)
-      })
-    }
-
-//        amountTextInputEditText.addTextChangedListener(object : TextWatcher {
-//            private var timeAfterLastTextChange: Long = 0
-//            private val DELAY: Long = 700
-//
-//            private var handler = Handler()
-//
-//            private val inputFinishChecker = Runnable {
-//                if (System.currentTimeMillis() > (timeAfterLastTextChange + DELAY - 500)) {
-//                    getFilteredExpenses().observe(viewLifecycleOwner, Observer {
-//                        setupBackdropExpenses(it)
-//                    })
-//                }
-//            }
-//
-//            override fun afterTextChanged(s: Editable) {
-//                if (s.isNotEmpty()) {
-//                    timeAfterLastTextChange = System.currentTimeMillis()
-//                    kFunction1(s.toString())
-//                    handler.postDelayed(inputFinishChecker, DELAY)
-//                }
-//            }
-//
-//            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) { }
-//
-//            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-//                handler.removeCallbacks(inputFinishChecker)
-//            }
-//        })
-  }
-
-  private fun createCurrencyFilter(allCategories: List<Category>) {
-
-  }
 }

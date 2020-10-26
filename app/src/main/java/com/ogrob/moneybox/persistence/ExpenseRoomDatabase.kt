@@ -102,9 +102,9 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
                 Category(5, "Games", Color.WHITE),
                 Category(6, "Shoes", Color.LTGRAY),
                 Category(7, "Electronics", Color.DKGRAY),
-                Category(8, "Jewelry", Color.MAGENTA),
+                Category(8, "Party", Color.MAGENTA),
                 Category(9, "Food Supplements", Color.GRAY),
-                Category(10, "Sweats", Color.CYAN),
+                Category(10, "Gym", Color.CYAN),
                 Category(11, "Meats", Color.YELLOW)
             )
             Log.i(TAG, "Categories created")

@@ -6,18 +6,42 @@ import com.ogrob.moneybox.persistence.model.Expense
 class UpdatedFilterValueCalculator(
     unfilteredExpenses: List<CategoryWithExpenses>,
     private val selectedCategoryIds: List<Long>,
-    private val selectedCurrencyIds: List<Long>
+    private val selectedCurrencyIds: List<Long>,
+    private val selectedExpenseAmountRange: Pair<Double, Double>
 ) {
 
     val updatedFilterValuesDTO: UpdatedFilterValuesDTO
 
 
     init {
-        val totalAndSelectedCategoryWithExpenseCount = Pair(unfilteredExpenses.count(), selectedCategoryIds.size)
+        val allCategoryIdsFromFilteredExpenses = unfilteredExpenses
+            .map { categoryWithExpenses -> categoryWithExpenses.category.id }
+
+        val totalAndSelectedCategoryWithExpenseCount = Pair(
+            unfilteredExpenses.count(),
+            selectedCategoryIds
+                .filter { selectedCategoryId -> allCategoryIdsFromFilteredExpenses.contains(selectedCategoryId) }
+                .size
+        )
         val filteredCategoryWithExpenseCount = unfilteredExpenses
             .asSequence()
-            .map { categoryWithExpenses -> Pair(categoryWithExpenses.category, categoryWithExpenses.expenses.filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }.size) }
+            .map { categoryWithExpenses ->
+                Pair(
+                    categoryWithExpenses.category,
+                    categoryWithExpenses.expenses
+                        .filter { expense -> selectedCurrencyIds.contains(expense.currency.id) }
+                        .filter { expense -> isExpenseAmountInSelectedAmountRange(expense.amount) }
+                        .size
+                )
+            }
             .toMap()
+
+
+        val allCurrencyIdsFromFilteredExpenses = unfilteredExpenses
+            .asSequence()
+            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
+            .map { expense -> expense.currency.id }
+            .distinct()
 
         val totalAndSelectedCurrencyWithExpenseCount = Pair(
             unfilteredExpenses
@@ -25,21 +49,36 @@ class UpdatedFilterValueCalculator(
                 .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
                 .groupBy(Expense::currency)
                 .count(),
-            selectedCurrencyIds.size
+            selectedCurrencyIds
+                .filter { selectedCurrencyId -> allCurrencyIdsFromFilteredExpenses.contains(selectedCurrencyId) }
+                .size
         )
         val filteredCurrencyWithExpenseCount = unfilteredExpenses
             .asSequence()
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses.asSequence() }
             .groupBy(Expense::currency)
-            .map { entry -> Pair(entry.key, entry.value.filter { expense -> selectedCategoryIds.contains(expense.categoryId) }.size) }
+            .map { entry ->
+                Pair(
+                    entry.key,
+                    entry.value
+                        .filter { expense -> selectedCategoryIds.contains(expense.categoryId) }
+                        .filter { expense -> isExpenseAmountInSelectedAmountRange(expense.amount) }
+                        .size
+                )
+            }
             .toMap()
 
         updatedFilterValuesDTO = UpdatedFilterValuesDTO(
             filteredCategoryWithExpenseCount,
             filteredCurrencyWithExpenseCount,
             totalAndSelectedCategoryWithExpenseCount,
-            totalAndSelectedCurrencyWithExpenseCount
+            totalAndSelectedCurrencyWithExpenseCount,
+            selectedExpenseAmountRange.first,
+            selectedExpenseAmountRange.second
         )
     }
+
+    private fun isExpenseAmountInSelectedAmountRange(amount: Double) =
+        selectedExpenseAmountRange.first <= amount && selectedExpenseAmountRange.second >= amount
 
 }

@@ -31,7 +31,18 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
     }
 
     override fun getExpensesBasedOnFragmentAndFilters() {
-        expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth(args.year, Month.values()[args.monthIndex - 1])
+        val filterValuesFromSharedPreferences = getFilterValuesFromSharedPreferences()
+
+        expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth(
+            filterValuesFromSharedPreferences,
+            args.year,
+            Month.values()[args.monthIndex - 1]
+        )
+//        expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth_OLD(
+//            filterValuesFromSharedPreferences,
+//            args.year,
+//            Month.values()[args.monthIndex - 1]
+//        )
     }
 
     override fun onAddNewExpense(view: View) {
@@ -69,10 +80,6 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
 
     override fun getFixedInterval(): FixedInterval {
         return FixedInterval.DAY
-    }
-
-    override fun getExpensesWithoutCategoryFiltering(): LiveData<List<CategoryWithExpenses>> {
-        return liveData {  }
     }
 
 }
