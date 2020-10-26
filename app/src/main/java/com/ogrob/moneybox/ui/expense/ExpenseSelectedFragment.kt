@@ -6,13 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.liveData
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.helper.FixedInterval
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.utils.EMPTY_STRING
+import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
+import com.ogrob.moneybox.utils.NO_CATEGORY_ID
+import com.ogrob.moneybox.utils.SYSTEM_BASE_CURRENCY_STRING
+import java.time.LocalDate
 import java.time.Month
 
 class ExpenseSelectedFragment : ExpenseBaseFragment() {
@@ -30,23 +36,24 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun getExpensesBasedOnFragmentAndFilters() {
-        val filterValuesFromSharedPreferences = getFilterValuesFromSharedPreferences()
-
+    override fun getExpensesBasedOnFragmentAndFilters(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>) {
         expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth(
             filterValuesFromSharedPreferences,
             args.year,
             Month.values()[args.monthIndex - 1]
         )
-//        expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth_OLD(
-//            filterValuesFromSharedPreferences,
-//            args.year,
-//            Month.values()[args.monthIndex - 1]
-//        )
     }
 
     override fun onAddNewExpense(view: View) {
-
+        view.findNavController().navigate(ExpenseSelectedFragmentDirections.actionExpenseSelectedFragmentToExpenseAddAndEditFragment(
+            EMPTY_STRING,
+            EMPTY_STRING,
+            LocalDate.now().toString(),
+            NEW_EXPENSE_PLACEHOLDER_ID,
+            SYSTEM_BASE_CURRENCY_STRING,
+            NO_CATEGORY_ID,
+            resources.getString(R.string.add_expense_button)
+        ))
     }
 
     override fun setupFragmentSpecificViews() {
@@ -59,13 +66,13 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
     }
 
     override fun populateRecyclerView(filteredExpenses: List<Expense>) {
-        expenseViewModel.allCategories.observe(viewLifecycleOwner, Observer {
+        expenseViewModel.allCategories.observe(viewLifecycleOwner) {
             val yearRecyclerViewAdapter = SelectedExpensesRecyclerViewAdapter(it)
             binding.expenseBackdropFrontView.recyclerView.adapter = yearRecyclerViewAdapter
             binding.expenseBackdropFrontView.recyclerView.layoutManager = LinearLayoutManager(context)
 
             yearRecyclerViewAdapter.setAdapterDataList(expenseViewModel.createNormalAndHeaderExpenses(filteredExpenses))
-        })
+        }
 
         expenseViewModel.getAllCategories()
     }

@@ -6,6 +6,8 @@ const val NEW_CATEGORY_PLACEHOLDER_ID = -1L
 const val NO_CATEGORY_ID = 1L
 const val NO_CATEGORY_NAME = "No Category"
 
+const val SYSTEM_BASE_CURRENCY_STRING = "EUR"
+
 const val EMPTY_STRING = ""
 const val SPACE = " "
 

@@ -1,5 +1,6 @@
 package com.ogrob.moneybox.ui.category
 
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
@@ -136,7 +137,8 @@ class CategoryAddAndEditFragment : BaseFragment() {
         expenseViewModel.addOrEditCategory(
             args.categoryId,
             binding.categoryNameEditText.text.toString(),
-            (binding.categoryColorTextView.background as ColorDrawable).color
+            Color.RED
+//            (binding.categoryColorTextView.background as ColorDrawable).color
             )
 
         view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())

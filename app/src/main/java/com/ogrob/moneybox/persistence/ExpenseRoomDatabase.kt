@@ -15,8 +15,10 @@ import com.ogrob.moneybox.persistence.converters.LocalDateTimeConverter
 import com.ogrob.moneybox.persistence.dao.CategoryDao
 import com.ogrob.moneybox.persistence.dao.ExpenseDao
 import com.ogrob.moneybox.persistence.dao.HistoricalExchangeRateDao
-import com.ogrob.moneybox.persistence.model.*
+import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.Currency
+import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.persistence.model.HistoricalExchangeRate
 import com.ogrob.moneybox.utils.NO_CATEGORY_ID
 import com.ogrob.moneybox.utils.NO_CATEGORY_NAME
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +53,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
                             ExpenseRoomDatabase::class.java,
                             "moneyBoxDB"
                         )
+//                        .addCallback(ExpenseDatabaseTestCallback(coroutineScope))
                         .addCallback(ExpenseDatabaseCallback(coroutineScope))
                         .build()
                 }
@@ -72,6 +75,40 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
     ) : RoomDatabase.Callback() {
 
         private val TAG = "ExpenseDatabaseCallback"
+
+
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            super.onCreate(db)
+            INSTANCE?.let { database ->
+                coroutineScope.launch{
+                    val categoryDao = database.categoryDao()
+                    prePopulateDatabase(categoryDao)
+                }
+            }
+        }
+
+        private suspend fun prePopulateDatabase(categoryDao: CategoryDao) {
+            Log.i(TAG, "Prepopulate start")
+
+            Log.i(TAG, "Creating default category")
+            val defaultCategory = Category(NO_CATEGORY_ID, NO_CATEGORY_NAME, Color.GREEN)
+            Log.i(TAG, "Default category created")
+
+            Log.i(TAG, "Inserting default category")
+            categoryDao.insert(defaultCategory)
+            Log.i(TAG, "Default category inserted")
+
+            Log.i(TAG, "Prepopulate end")
+        }
+
+    }
+
+
+    private class ExpenseDatabaseTestCallback(
+        private val coroutineScope: CoroutineScope
+    ) : RoomDatabase.Callback() {
+
+        private val TAG = "ExpenseDatabaseTestCallback"
 
 
         override fun onCreate(db: SupportSQLiteDatabase) {

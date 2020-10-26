@@ -39,7 +39,7 @@ class CategoryFragment : BaseFragment() {
     }
 
     private fun populateCategoryRecyclerView() {
-        expenseViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
+        expenseViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner, Observer {
             hideLoadingAnimation()
             val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter()
             binding.categoryRecyclerView.adapter = categoryRecyclerViewAdapter

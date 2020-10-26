@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
@@ -77,7 +77,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun configureDescriptionAutoComplete() {
-        expenseViewModel.getAllCategoriesWithExpenses().observe(viewLifecycleOwner, Observer {
+        expenseViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner) {
             binding.expenseCopyEditText.setAdapter(
                 ArrayAdapter(
                     binding.root.context,
@@ -85,11 +85,11 @@ class ExpenseAddAndEditFragment : BaseFragment() {
                     expenseViewModel.getAllExpensesDescription(it))
             )
             binding.expenseCopyEditText.threshold = 1
-        })
+        }
     }
 
     private fun populateCategoryRadioGroup() {
-        expenseViewModel.getAllCategories_OLD().observe(viewLifecycleOwner, Observer { categories ->
+        expenseViewModel.allCategories.observe(viewLifecycleOwner) { categories ->
             categories
                 .forEach { category ->
                     val radioButton = RadioButton(context)
@@ -99,7 +99,9 @@ class ExpenseAddAndEditFragment : BaseFragment() {
                     radioButton.textSize = 15f
                     binding.categoryRadioGroup.addView(radioButton)
                 }
-        })
+        }
+
+        expenseViewModel.getAllCategories()
     }
 
     private fun applyTextWatchers() {
@@ -135,11 +137,11 @@ class ExpenseAddAndEditFragment : BaseFragment() {
         binding.expenseCategoryLinearLayout.setOnClickListener {
             if (expenseViewModel.isCategoryDropdownOpen()) {
                 expenseViewModel.closeCategoryDropdown()
-                binding.expenseCategoryCheckboxToggleTextView.background = resources.getDrawable(R.drawable.ic_expand_more_white_24dp, null)
+                binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_more_white_24dp, null)
                 binding.categoryScrollView.visibility = View.GONE
             } else {
                 expenseViewModel.openCategoryDropdown()
-                binding.expenseCategoryCheckboxToggleTextView.background = resources.getDrawable(R.drawable.ic_expand_less_white_24dp, null)
+                binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_less_white_24dp, null)
                 binding.categoryScrollView.visibility = View.VISIBLE
             }
         }
