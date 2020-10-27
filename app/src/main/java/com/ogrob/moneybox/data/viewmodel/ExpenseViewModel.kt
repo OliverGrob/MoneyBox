@@ -14,16 +14,12 @@ import com.ogrob.moneybox.ui.helper.ExpensesByMonth
 import com.ogrob.moneybox.ui.helper.ExpensesByYear
 import com.ogrob.moneybox.utils.EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
 import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
-import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.withSuffix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.Month
-import java.time.format.DateTimeFormatter
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -43,14 +39,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     val allCategories: LiveData<List<Category>> = _allCategories
 
 
-    private val _allCategoryFilterInfo: MutableLiveData<CategoryFilterInfo> = MutableLiveData()
-    val allCategoryFilterInfo: LiveData<CategoryFilterInfo> = _allCategoryFilterInfo
+    private val _allCategoryFilterInfo: MutableLiveData<Event<CategoryFilterInfo>> = MutableLiveData()
+    val allCategoryFilterInfo: LiveData<Event<CategoryFilterInfo>> = _allCategoryFilterInfo
 
-    private val _allAmountFilterInfo: MutableLiveData<AmountFilterInfo> = MutableLiveData()
-    val allAmountFilterInfo: LiveData<AmountFilterInfo> = _allAmountFilterInfo
+    private val _allAmountFilterInfo: MutableLiveData<Event<AmountFilterInfo>> = MutableLiveData()
+    val allAmountFilterInfo: LiveData<Event<AmountFilterInfo>> = _allAmountFilterInfo
 
-    private val _allCurrencyFilterInfo: MutableLiveData<CurrencyFilterInfo> = MutableLiveData()
-    val allCurrencyFilterInfo: LiveData<CurrencyFilterInfo> = _allCurrencyFilterInfo
+    private val _allCurrencyFilterInfo: MutableLiveData<Event<CurrencyFilterInfo>> = MutableLiveData()
+    val allCurrencyFilterInfo: LiveData<Event<CurrencyFilterInfo>> = _allCurrencyFilterInfo
 
 
     fun getAllCategories() {
@@ -92,9 +88,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 UpdateFilterOption.CREATE_CHIPS
             )
 
-            _allCategoryFilterInfo.value = updatedCategoryFilterInfo
-            _allAmountFilterInfo.value = updatedAmountFilterInfo
-            _allCurrencyFilterInfo.value = updatedCurrencyFilterInfo
+            _allCategoryFilterInfo.value = Event(updatedCategoryFilterInfo)
+            _allAmountFilterInfo.value = Event(updatedAmountFilterInfo)
+            _allCurrencyFilterInfo.value = Event(updatedCurrencyFilterInfo)
 
             _filteredExpenses.value = filteredExpenses
         }
@@ -141,9 +137,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 UpdateFilterOption.CREATE_CHIPS
             )
 
-            _allCategoryFilterInfo.value = updatedCategoryFilterInfo
-            _allAmountFilterInfo.value = updatedAmountFilterInfo
-            _allCurrencyFilterInfo.value = updatedCurrencyFilterInfo
+            _allCategoryFilterInfo.value = Event(updatedCategoryFilterInfo)
+            _allAmountFilterInfo.value = Event(updatedAmountFilterInfo)
+            _allCurrencyFilterInfo.value = Event(updatedCurrencyFilterInfo)
 
             _filteredExpenses.value = filteredExpenses
         }
@@ -285,20 +281,23 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                 CategoryFilterInfo(
-                    it.categoriesWithExpenseCount.keys.map(Category::id).toMutableSet(),
-                    it.categoriesWithExpenseCount,
+                    it.peekContent().categoriesWithExpenseCount.keys.map(Category::id).toMutableSet(),
+                    it.peekContent().categoriesWithExpenseCount,
                     UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                 )
             }
-            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
 
+
+            val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
+            val allCurrencyFilterInfo = _allCurrencyFilterInfo.value!!.peekContent()
 
             val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                 filterUpdatedFilteredExpenses(
                     it,
-                    updatedCategoryFilterInfo!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+                    updatedCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    allCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -307,18 +306,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val updatedCurrenciesWithExpenseCount = _unfilteredExpenses.value?.let {
                 calculateUpdatedCategoriesWithExpenses(
                     it,
-                    updatedCategoryFilterInfo!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue)
+                    updatedCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue)
                 )
             }
             val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                 CurrencyFilterInfo(
-                    it.selectedCurrencyIds,
+                    it.peekContent().selectedCurrencyIds,
                     updatedCurrenciesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
         }
     }
 
@@ -328,19 +327,22 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                     CategoryFilterInfo(
                         mutableSetOf(),
-                        it.categoriesWithExpenseCount,
+                        it.peekContent().categoriesWithExpenseCount,
                         UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                     )
                 }
-                _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+                _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
 
+
+                val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
+                val allCurrencyFilterInfo = _allCurrencyFilterInfo.value!!.peekContent()
 
                 val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                     filterUpdatedFilteredExpenses(
                         it,
-                        updatedCategoryFilterInfo!!.selectedCategoryIds,
-                        Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                        _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+                        updatedCategoryFilterInfo.selectedCategoryIds,
+                        Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                        allCurrencyFilterInfo.selectedCurrencyIds
                     )
                 }
                 _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -349,18 +351,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 val updatedCurrenciesWithExpenseCount = _unfilteredExpenses.value?.let {
                     calculateUpdatedCategoriesWithExpenses(
                         it,
-                        updatedCategoryFilterInfo!!.selectedCategoryIds,
-                        Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue)
+                        updatedCategoryFilterInfo.selectedCategoryIds,
+                        Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue)
                     )
                 }
                 val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                     CurrencyFilterInfo(
-                        it.selectedCurrencyIds,
+                        it.peekContent().selectedCurrencyIds,
                         updatedCurrenciesWithExpenseCount!!,
                         UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                     )
                 }
-                _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+                _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
             }
         }
     }
@@ -396,20 +398,23 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                 CurrencyFilterInfo(
-                    it.currenciesWithExpenseCount.keys.map(Currency::id).toMutableSet(),
-                    it.currenciesWithExpenseCount,
+                    it.peekContent().currenciesWithExpenseCount.keys.map(Currency::id).toMutableSet(),
+                    it.peekContent().currenciesWithExpenseCount,
                     UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                 )
             }
-            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
 
+
+            val allCategoryFilterInfo = _allCategoryFilterInfo.value!!.peekContent()
+            val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
 
             val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                 filterUpdatedFilteredExpenses(
                     it,
-                    _allCategoryFilterInfo.value!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                    allCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    updatedCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -418,18 +423,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
                 calculateUpdatedCurrenciesWithExpenses(
                     it,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    updatedCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                 CategoryFilterInfo(
-                    it.selectedCategoryIds,
+                    it.peekContent().selectedCategoryIds,
                     updatedCategoriesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
         }
     }
 
@@ -439,19 +444,22 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                     CurrencyFilterInfo(
                         mutableSetOf(),
-                        it.currenciesWithExpenseCount,
+                        it.peekContent().currenciesWithExpenseCount,
                         UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                     )
                 }
-                _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+                _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
 
+
+                val allCategoryFilterInfo = _allCategoryFilterInfo.value!!.peekContent()
+                val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
 
                 val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                     filterUpdatedFilteredExpenses(
                         it,
-                        _allCategoryFilterInfo.value!!.selectedCategoryIds,
-                        Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                        updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                        allCategoryFilterInfo.selectedCategoryIds,
+                        Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                        updatedCurrencyFilterInfo.selectedCurrencyIds
                     )
                 }
                 _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -460,18 +468,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
                     calculateUpdatedCurrenciesWithExpenses(
                         it,
-                        Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                        updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                        Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                        updatedCurrencyFilterInfo.selectedCurrencyIds
                     )
                 }
                 val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                     CategoryFilterInfo(
-                        it.selectedCategoryIds,
+                        it.peekContent().selectedCategoryIds,
                         updatedCategoriesWithExpenseCount!!,
                         UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                     )
                 }
-                _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+                _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
             }
         }
     }
@@ -578,31 +586,36 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun getCurrentlySelectedCategoryIds() =
-        _allCategoryFilterInfo.value!!.selectedCategoryIds
+        _allCategoryFilterInfo.value!!.peekContent().selectedCategoryIds
 
     fun toggleCategoryFilter(categoryId: Long) {
         viewModelScope.launch {
             val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
-                if (it.selectedCategoryIds.contains(categoryId))
-                    it.selectedCategoryIds.remove(categoryId)
+                val categoryFilterInfo = it.peekContent()
+
+                if (categoryFilterInfo.selectedCategoryIds.contains(categoryId))
+                    categoryFilterInfo.selectedCategoryIds.remove(categoryId)
                 else
-                    it.selectedCategoryIds.add(categoryId)
+                    categoryFilterInfo.selectedCategoryIds.add(categoryId)
 
                 CategoryFilterInfo(
-                    it.selectedCategoryIds,
-                    it.categoriesWithExpenseCount,
+                    categoryFilterInfo.selectedCategoryIds,
+                    categoryFilterInfo.categoriesWithExpenseCount,
                     UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                 )
             }
-            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
 
+
+            val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
+            val allCurrencyFilterInfo = _allCurrencyFilterInfo.value!!.peekContent()
 
             val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                 filterUpdatedFilteredExpenses(
                     it,
-                    updatedCategoryFilterInfo!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+                    updatedCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    allCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -611,47 +624,52 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val updatedCurrenciesWithExpenseCount = _unfilteredExpenses.value?.let {
                 calculateUpdatedCategoriesWithExpenses(
                     it,
-                    updatedCategoryFilterInfo!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue)
+                    updatedCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue)
                 )
             }
             val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                 CurrencyFilterInfo(
-                    it.selectedCurrencyIds,
+                    it.peekContent().selectedCurrencyIds,
                     updatedCurrenciesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
         }
     }
 
     fun getCurrentlySelectedCurrencyIds() =
-        _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+        _allCurrencyFilterInfo.value!!.peekContent().selectedCurrencyIds
 
     fun toggleCurrencyFilter(currencyId: Long) {
         viewModelScope.launch {
             val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
-                if (it.selectedCurrencyIds.contains(currencyId))
-                    it.selectedCurrencyIds.remove(currencyId)
+                val currencyFilterInfo = it.peekContent()
+
+                if (currencyFilterInfo.selectedCurrencyIds.contains(currencyId))
+                    currencyFilterInfo.selectedCurrencyIds.remove(currencyId)
                 else
-                    it.selectedCurrencyIds.add(currencyId)
+                    currencyFilterInfo.selectedCurrencyIds.add(currencyId)
 
                 CurrencyFilterInfo(
-                    it.selectedCurrencyIds,
-                    it.currenciesWithExpenseCount,
+                    currencyFilterInfo.selectedCurrencyIds,
+                    currencyFilterInfo.currenciesWithExpenseCount,
                     UpdateFilterOption.ONLY_UPDATE_CHECKBOXES
                 )
             }
-            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
 
+
+            val allCategoryFilterInfo = _allCategoryFilterInfo.value!!.peekContent()
+            val allAmountFilterInfo = _allAmountFilterInfo.value!!.peekContent()
 
             val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                 filterUpdatedFilteredExpenses(
                     it,
-                    _allCategoryFilterInfo.value!!.selectedCategoryIds,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                    allCategoryFilterInfo.selectedCategoryIds,
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    updatedCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -660,18 +678,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             val updatedCategoriesWithExpenseCount = _unfilteredExpenses.value?.let {
                 calculateUpdatedCurrenciesWithExpenses(
                     it,
-                    Pair(_allAmountFilterInfo.value!!.selectedAmountMinValue, _allAmountFilterInfo.value!!.selectedAmountMaxValue),
-                    updatedCurrencyFilterInfo!!.selectedCurrencyIds
+                    Pair(allAmountFilterInfo.selectedAmountMinValue, allAmountFilterInfo.selectedAmountMaxValue),
+                    updatedCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                 CategoryFilterInfo(
-                    it.selectedCategoryIds,
+                    it.peekContent().selectedCategoryIds,
                     updatedCategoriesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
         }
     }
 
@@ -689,15 +707,18 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 maxSelectedAmount,
                 false
             )
-            _allAmountFilterInfo.postValue(updatedAmountFilterInfo)
+            _allAmountFilterInfo.postValue(Event(updatedAmountFilterInfo))
 
+
+            val allCategoryFilterInfo = _allCategoryFilterInfo.value!!.peekContent()
+            val allCurrencyFilterInfo = _allCurrencyFilterInfo.value!!.peekContent()
 
             val updatedFilteredExpenses = _unfilteredExpenses.value?.let {
                 filterUpdatedFilteredExpenses(
                     it,
-                    _allCategoryFilterInfo.value!!.selectedCategoryIds,
+                    allCategoryFilterInfo.selectedCategoryIds,
                     Pair(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue),
-                    _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+                    allCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             _filteredExpenses.postValue(updatedFilteredExpenses)
@@ -707,34 +728,34 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 calculateUpdatedCurrenciesWithExpenses(
                     it,
                     Pair(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue),
-                    _allCurrencyFilterInfo.value!!.selectedCurrencyIds
+                    allCurrencyFilterInfo.selectedCurrencyIds
                 )
             }
             val updatedCategoryFilterInfo = _allCategoryFilterInfo.value?.let {
                 CategoryFilterInfo(
-                    it.selectedCategoryIds,
+                    it.peekContent().selectedCategoryIds,
                     updatedCategoriesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCategoryFilterInfo.postValue(updatedCategoryFilterInfo)
+            _allCategoryFilterInfo.postValue(Event(updatedCategoryFilterInfo!!))
 
 
             val updatedCurrenciesWithExpenseCount = _unfilteredExpenses.value?.let {
                 calculateUpdatedCategoriesWithExpenses(
                     it,
-                    updatedCategoryFilterInfo!!.selectedCategoryIds,
+                    updatedCategoryFilterInfo.selectedCategoryIds,
                     Pair(updatedAmountFilterInfo.selectedAmountMinValue, updatedAmountFilterInfo.selectedAmountMaxValue)
                 )
             }
             val updatedCurrencyFilterInfo = _allCurrencyFilterInfo.value?.let {
                 CurrencyFilterInfo(
-                    it.selectedCurrencyIds,
+                    it.peekContent().selectedCurrencyIds,
                     updatedCurrenciesWithExpenseCount!!,
                     UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS
                 )
             }
-            _allCurrencyFilterInfo.postValue(updatedCurrencyFilterInfo)
+            _allCurrencyFilterInfo.postValue(Event(updatedCurrencyFilterInfo!!))
         }
     }
 
@@ -754,35 +775,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
 
 
-    private var categoryDropdownIsOpen = false
-
     fun getAllCategoriesWithExpenses_OLD(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
 
     fun getAllCategories_OLD(): LiveData<List<Category>> = this.categories
-
-    suspend fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
-        this.expenseRepository.addNewExpense(Expense(
-            expenseAmount.toDouble(),
-            expenseDescription,
-            LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
-            Currency.valueOf(currency),
-            categoryId))
-    }
 
     suspend fun addNewCategory(categoryName: String, categoryColor: Int) {
         this.categoryRepository.addNewCategory(Category(
             categoryName,
             categoryColor))
-    }
-
-    suspend fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
-        this.expenseRepository.updateExpense(Expense(
-            expenseId,
-            expenseAmount.toDouble(),
-            expenseDescription,
-            LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
-            Currency.valueOf(currency),
-            categoryId))
     }
 
     suspend fun updateCategory(categoryId: Long, categoryName: String, categoryColor: Int) {
@@ -792,40 +792,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             categoryColor))
     }
 
-    suspend fun deleteExpense(expense: Expense) {
-        this.expenseRepository.deleteExpense(expense)
-    }
-
     fun deleteCategoryById(categoryId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             categoryRepository.deleteCategoryById(categoryId)
-        }
-    }
-
-    fun getAllExpensesDescription(categoriesWithExpenses: List<CategoryWithExpenses>): List<String> = categoriesWithExpenses
-        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
-        .map(Expense::description)
-        .distinct()
-
-    fun addOrEditExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (expenseId == NEW_EXPENSE_PLACEHOLDER_ID)
-                addNewExpense(
-                    expenseAmount,
-                    expenseDescription,
-                    expenseDate,
-                    currency,
-                    categoryId
-                )
-            else
-                updateExpense(
-                    expenseId,
-                    expenseAmount,
-                    expenseDescription,
-                    expenseDate,
-                    currency,
-                    categoryId
-                )
         }
     }
 
@@ -858,12 +827,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
 
 
-    fun getExpenseByDescription(description: String): Expense {
-        return this.getAllCategoriesWithExpenses_OLD().value!!
-            .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
-            .distinctBy { expense -> expense.description }
-            .single { expense -> expense.description == description }
-    }
 
     fun setSelectedFixedInterval(selectedFixedInterval: FixedInterval) {
         _selectedFixedInterval.value = selectedFixedInterval
@@ -904,16 +867,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     private fun calculateAverage(totalAmount: Double, numOfInterval: Int): Double {
         return if (numOfInterval == 0) 0.0 else totalAmount.div(numOfInterval)
-    }
-
-    fun isCategoryDropdownOpen(): Boolean = categoryDropdownIsOpen
-
-    fun openCategoryDropdown() {
-        categoryDropdownIsOpen = true
-    }
-
-    fun closeCategoryDropdown() {
-        categoryDropdownIsOpen = false
     }
 
 }

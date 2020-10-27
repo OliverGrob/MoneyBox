@@ -119,32 +119,50 @@ abstract class ExpenseBaseFragment : BaseFragment() {
       configureBackdropContainer(filterImageView)
     }
 
-    expenseViewModel.allCategoryFilterInfo.observe(viewLifecycleOwner) {
-      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY, it.selectedCategoryIds.toMutableList())
+    setupCategoryFilterInfoObserver()
+    setupAmountFilterInfoObserver()
+    setupCurrencyFilterInfoObserver()
+  }
 
-      when (it.updateFilterOption) {
-        UpdateFilterOption.CREATE_CHIPS -> setupCategoryFilter(it)
-        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCategoryFilterCheckboxes(it)
-        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCategoryFilterChipTexts(it)
+  private fun setupCategoryFilterInfoObserver() {
+    expenseViewModel.allCategoryFilterInfo.observe(viewLifecycleOwner) { event ->
+      val categoryFilterInfo = event.peekContent()
+
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY, categoryFilterInfo.selectedCategoryIds.toMutableList())
+
+      when (categoryFilterInfo.updateFilterOption) {
+        UpdateFilterOption.CREATE_CHIPS -> event.getContentIfNotHandled()?.let { setupCategoryFilter(it) }
+        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCategoryFilterCheckboxes(categoryFilterInfo)
+        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCategoryFilterChipTexts(categoryFilterInfo)
       }
     }
-    expenseViewModel.allAmountFilterInfo.observe(viewLifecycleOwner) {
+  }
+
+  private fun setupAmountFilterInfoObserver() {
+    expenseViewModel.allAmountFilterInfo.observe(viewLifecycleOwner) { event ->
+      val amountFilterInfo = event.peekContent()
+
       SharedPreferenceManager.putStringSetSharedPreference(
         binding.root.context,
         SHARED_PREFERENCES_SELECTED_EXPENSE_AMOUNT_RANGE_KEY,
-        setOf(it.selectedAmountMinValue.toString(), it.selectedAmountMaxValue.toString())
+        setOf(amountFilterInfo.selectedAmountMinValue.toString(), amountFilterInfo.selectedAmountMaxValue.toString())
       )
 
-      if (it.createRangeBar)
-        setupAmountFilter(it)
+      if (amountFilterInfo.createRangeBar)
+        event.getContentIfNotHandled()?.let { setupAmountFilter(it) }
     }
-    expenseViewModel.allCurrencyFilterInfo.observe(viewLifecycleOwner) {
-      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, it.selectedCurrencyIds.toMutableList())
+  }
 
-      when (it.updateFilterOption) {
-        UpdateFilterOption.CREATE_CHIPS -> setupCurrencyFilter(it)
-        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCurrencyFilterCheckboxes(it)
-        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCurrencyFilterChipTexts(it)
+  private fun setupCurrencyFilterInfoObserver() {
+    expenseViewModel.allCurrencyFilterInfo.observe(viewLifecycleOwner) { event ->
+      val currencyFilterInfo = event.peekContent()
+
+      updateFilterSharedPreferences(SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY, currencyFilterInfo.selectedCurrencyIds.toMutableList())
+
+      when (currencyFilterInfo.updateFilterOption) {
+        UpdateFilterOption.CREATE_CHIPS -> event.getContentIfNotHandled()?.let { setupCurrencyFilter(it) }
+        UpdateFilterOption.ONLY_UPDATE_CHECKBOXES -> updateCurrencyFilterCheckboxes(currencyFilterInfo)
+        UpdateFilterOption.ONLY_UPDATE_CHIP_TEXTS -> updateCurrencyFilterChipTexts(currencyFilterInfo)
       }
     }
   }
@@ -207,7 +225,12 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
   private fun setupCategoryFilter(allCategoryFilterInfo: CategoryFilterInfo) {
     allCategoryFilterInfo.categoriesWithExpenseCount
-      .map { categoryWithExpenseCount -> createCategoryChip(categoryWithExpenseCount, allCategoryFilterInfo.selectedCategoryIds) }
+      .map { categoryWithExpenseCount ->
+        createCategoryChip(
+          categoryWithExpenseCount,
+          allCategoryFilterInfo.selectedCategoryIds
+        )
+      }
 
     updateFilterIcon(
       binding.expenseBackdropBackView.categoryCheckboxIcon,
@@ -219,8 +242,8 @@ abstract class ExpenseBaseFragment : BaseFragment() {
       val currentlySelectedCategoryIds = expenseViewModel.getCurrentlySelectedCategoryIds()
 
       when (currentlySelectedCategoryIds.size) {
-          0 -> selectAllCategoryFilters()
-          else -> deSelectAllCategoryFilters()
+        0 -> selectAllCategoryFilters()
+        else -> deSelectAllCategoryFilters()
       }
     }
   }
