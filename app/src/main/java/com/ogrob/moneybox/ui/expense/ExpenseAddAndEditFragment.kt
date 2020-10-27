@@ -14,7 +14,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
+import com.ogrob.moneybox.data.viewmodel.ExpenseAddAndEditViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseAddAndEditBinding
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.ui.BaseFragment
@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 
 class ExpenseAddAndEditFragment : BaseFragment() {
 
-    private val expenseViewModel: ExpenseViewModel by viewModels()
+    private val expenseAddAndEditViewModel: ExpenseAddAndEditViewModel by viewModels()
 
     private lateinit var binding: FragmentExpenseAddAndEditBinding
 
@@ -40,18 +40,6 @@ class ExpenseAddAndEditFragment : BaseFragment() {
         binding = FragmentExpenseAddAndEditBinding.inflate(inflater)
 
         args = ExpenseAddAndEditFragmentArgs.fromBundle(requireArguments())
-
-        binding.root.setOnClickListener { it.hideKeyboard() }
-        binding.expenseAddEditPositiveButton.setOnClickListener {
-            it.hideKeyboard()
-            addNewOrEditedExpense(it)
-        }
-        binding.expenseAddEditCancelButton.setOnClickListener {
-            val additionDate = LocalDate.parse(args.expenseAdditionDate, DateTimeFormatter.ISO_LOCAL_DATE)
-            it.hideKeyboard()
-            it.findNavController().navigate(
-                ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(additionDate.year, additionDate.monthValue))
-        }
 
         initTextViewsAndButtons()
         configureDescriptionAutoComplete()
@@ -77,19 +65,19 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun configureDescriptionAutoComplete() {
-        expenseViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner) {
+        expenseAddAndEditViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner) {
             binding.expenseCopyEditText.setAdapter(
                 ArrayAdapter(
                     binding.root.context,
                     android.R.layout.simple_dropdown_item_1line,
-                    expenseViewModel.getAllExpensesDescription(it))
+                    expenseAddAndEditViewModel.getAllExpensesDescription(it))
             )
             binding.expenseCopyEditText.threshold = 1
         }
     }
 
     private fun populateCategoryRadioGroup() {
-        expenseViewModel.allCategories.observe(viewLifecycleOwner) { categories ->
+        expenseAddAndEditViewModel.allCategories.observe(viewLifecycleOwner) { categories ->
             categories
                 .forEach { category ->
                     val radioButton = RadioButton(context)
@@ -101,7 +89,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
                 }
         }
 
-        expenseViewModel.getAllCategories()
+        expenseAddAndEditViewModel.getAllCategories()
     }
 
     private fun applyTextWatchers() {
@@ -124,8 +112,20 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun applyOnClickListeners() {
+        binding.root.setOnClickListener { it.hideKeyboard() }
+        binding.expenseAddEditPositiveButton.setOnClickListener {
+            it.hideKeyboard()
+            addNewOrEditedExpense(it)
+        }
+        binding.expenseAddEditCancelButton.setOnClickListener {
+            val additionDate = LocalDate.parse(args.expenseAdditionDate, DateTimeFormatter.ISO_LOCAL_DATE)
+            it.hideKeyboard()
+            it.findNavController().navigate(
+                ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(additionDate.year, additionDate.monthValue))
+        }
+
         binding.expenseCopyEditText.setOnItemClickListener { parent, _, position, _ ->
-            val selectedExpenseToCopyFrom = expenseViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
+            val selectedExpenseToCopyFrom = expenseAddAndEditViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
 
             binding.expenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
             binding.expenseDescriptionEditText.setText(selectedExpenseToCopyFrom.description)
@@ -135,12 +135,12 @@ class ExpenseAddAndEditFragment : BaseFragment() {
         binding.expenseDatePickerTextView.setOnClickListener { onPickDate() }
         binding.expenseCurrencyTextView.setOnClickListener { onCreateCurrencyAlertDialog() }
         binding.expenseCategoryLinearLayout.setOnClickListener {
-            if (expenseViewModel.isCategoryDropdownOpen()) {
-                expenseViewModel.closeCategoryDropdown()
+            if (expenseAddAndEditViewModel.isCategoryDropdownOpen()) {
+                expenseAddAndEditViewModel.closeCategoryDropdown()
                 binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_more_white_24dp, null)
                 binding.categoryScrollView.visibility = View.GONE
             } else {
-                expenseViewModel.openCategoryDropdown()
+                expenseAddAndEditViewModel.openCategoryDropdown()
                 binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_less_white_24dp, null)
                 binding.categoryScrollView.visibility = View.VISIBLE
             }
@@ -192,7 +192,7 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun addNewOrEditedExpense(view: View) {
-        expenseViewModel.addOrEditExpense(
+        expenseAddAndEditViewModel.addOrEditExpense(
             args.expenseId,
             binding.expenseAmountEditText.text.toString(),
             binding.expenseDescriptionEditText.text.toString(),
