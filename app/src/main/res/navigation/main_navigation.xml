@@ -1,118 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_navigation"
-    app:startDestination="@id/expenseAllFragment">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main_navigation"
+        app:startDestination="@id/expenseAllFragment">
 
     <fragment
-        android:id="@+id/expenseAllFragment"
-        android:name="com.ogrob.moneybox.ui.expense.ExpenseAllFragment"
-        android:label="Expenses"
-        tools:layout="@layout/fragment_expense">
+            android:id="@+id/expenseAllFragment"
+            android:name="com.ogrob.moneybox.ui.expense.ExpenseAllFragment"
+            android:label="Expenses"
+            tools:layout="@layout/fragment_expense">
         <action
-            android:id="@+id/action_expenseAllFragment_to_expenseAddAndEditFragment"
-            app:destination="@id/expenseAddAndEditFragment"
-            app:enterAnim="@anim/enter_from_right" />
+                android:id="@+id/action_expenseAllFragment_to_expenseAddAndEditFragment"
+                app:destination="@id/expenseAddAndEditFragment"
+                app:enterAnim="@anim/enter_from_right" />
         <action
-            android:id="@+id/action_expenseAllFragment_to_expenseSelectedFragment"
-            app:destination="@id/expenseSelectedFragment" />
+                android:id="@+id/action_expenseAllFragment_to_expenseSelectedFragment"
+                app:destination="@id/expenseSelectedFragment" />
     </fragment>
     <fragment
-        android:id="@+id/expenseSelectedFragment"
-        android:name="com.ogrob.moneybox.ui.expense.ExpenseSelectedFragment"
-        android:label="Expenses"
-        tools:layout="@layout/fragment_expense">
+            android:id="@+id/expenseSelectedFragment"
+            android:name="com.ogrob.moneybox.ui.expense.ExpenseSelectedFragment"
+            android:label="Expenses"
+            tools:layout="@layout/fragment_expense">
         <action
-            android:id="@+id/action_expenseSelectedFragment_to_expenseAddAndEditFragment"
-            app:destination="@id/expenseAddAndEditFragment"
-            app:enterAnim="@anim/enter_from_right" />
+                android:id="@+id/action_expenseSelectedFragment_to_expenseAddAndEditFragment"
+                app:destination="@id/expenseAddAndEditFragment"
+                app:enterAnim="@anim/enter_from_right" />
         <action
-            android:id="@+id/action_expenseSelectedFragment_to_expenseAllFragment"
-            app:destination="@id/expenseAllFragment" />
+                android:id="@+id/action_expenseSelectedFragment_to_expenseAllFragment"
+                app:destination="@id/expenseAllFragment" />
         <argument
-            android:name="year"
-            app:argType="integer" />
+                android:name="year"
+                app:argType="integer" />
         <argument
-            android:name="monthIndex"
-            app:argType="integer" />
+                android:name="monthIndex"
+                app:argType="integer" />
     </fragment>
     <fragment
-        android:id="@+id/expenseAddAndEditFragment"
-        android:name="com.ogrob.moneybox.ui.expense.ExpenseAddAndEditFragment"
-        android:label="Expenses"
-        tools:layout="@layout/fragment_expense_add_and_edit">
+            android:id="@+id/expenseAddAndEditFragment"
+            android:name="com.ogrob.moneybox.ui.expense.ExpenseAddAndEditFragment"
+            android:label="Expenses"
+            tools:layout="@layout/fragment_expense_add_and_edit">
         <action
-            android:id="@+id/action_expenseAddAndEditFragment_to_expenseSelectedFragment"
-            app:destination="@id/expenseSelectedFragment"
-            app:exitAnim="@anim/exit_to_right" />
+                android:id="@+id/action_expenseAddAndEditFragment_to_expenseSelectedFragment"
+                app:destination="@id/expenseSelectedFragment"
+                app:exitAnim="@anim/exit_to_right"
+                app:popUpTo="@id/expenseAddAndEditFragment"
+                app:popUpToInclusive="true" />
         <argument
-            android:name="expenseAmount"
-            app:argType="string" />
+                android:name="expenseAmount"
+                app:argType="string" />
         <argument
-            android:name="expenseDescription"
-            app:argType="string" />
+                android:name="expenseDescription"
+                app:argType="string" />
         <argument
-            android:name="expenseAdditionDate"
-            app:argType="string" />
+                android:name="expenseAdditionDate"
+                app:argType="string" />
         <argument
-            android:name="expenseId"
-            app:argType="long" />
+                android:name="expenseId"
+                app:argType="long" />
         <argument
-            android:name="currency"
-            app:argType="string" />
+                android:name="currency"
+                app:argType="string" />
         <argument
-            android:name="categoryId"
-            app:argType="long" />
+                android:name="categoryId"
+                app:argType="long" />
         <argument
-            android:name="positiveButtonText"
-            app:argType="string" />
+                android:name="positiveButtonText"
+                app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/categoryFragment"
-        android:name="com.ogrob.moneybox.ui.category.CategoryFragment"
-        android:label="Categories"
-        tools:layout="@layout/fragment_category">
+            android:id="@+id/categoryFragment"
+            android:name="com.ogrob.moneybox.ui.category.CategoryFragment"
+            android:label="Categories"
+            tools:layout="@layout/fragment_category">
         <action
-            android:id="@+id/action_categoryFragment_to_categoryAddAndEditFragment"
-            app:destination="@id/categoryAddAndEditFragment"
-            app:enterAnim="@anim/enter_from_right"
-            app:exitAnim="@anim/exit_to_left"
-            app:popEnterAnim="@anim/enter_from_left"
-            app:popExitAnim="@anim/exit_to_right" />
+                android:id="@+id/action_categoryFragment_to_categoryAddAndEditFragment"
+                app:destination="@id/categoryAddAndEditFragment"
+                app:enterAnim="@anim/enter_from_right"
+                app:exitAnim="@anim/exit_to_left"
+                app:popEnterAnim="@anim/enter_from_left"
+                app:popExitAnim="@anim/exit_to_right" />
     </fragment>
     <fragment
-        android:id="@+id/categoryAddAndEditFragment"
-        android:name="com.ogrob.moneybox.ui.category.CategoryAddAndEditFragment"
-        android:label="Categories"
-        tools:layout="@layout/fragment_category_add_and_edit">
+            android:id="@+id/categoryAddAndEditFragment"
+            android:name="com.ogrob.moneybox.ui.category.CategoryAddAndEditFragment"
+            android:label="Categories"
+            tools:layout="@layout/fragment_category_add_and_edit">
         <action
-            android:id="@+id/action_categoryAddAndEditFragment_to_categoryFragment"
-            app:destination="@id/categoryFragment"
-            app:popEnterAnim="@anim/enter_from_right"
-            app:popExitAnim="@anim/exit_to_left" />
+                android:id="@+id/action_categoryAddAndEditFragment_to_categoryFragment"
+                app:destination="@id/categoryFragment"
+                app:popEnterAnim="@anim/enter_from_right"
+                app:popExitAnim="@anim/exit_to_left" />
         <argument
-            android:name="categoryId"
-            app:argType="long" />
+                android:name="categoryId"
+                app:argType="long" />
         <argument
-            android:name="categoryName"
-            app:argType="string" />
+                android:name="categoryName"
+                app:argType="string" />
         <argument
-            android:name="categoryColor"
-            app:argType="integer" />
+                android:name="categoryColor"
+                app:argType="integer" />
         <argument
-            android:name="positiveButtonText"
-            app:argType="string" />
+                android:name="positiveButtonText"
+                app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/aboutFragment"
-        android:name="com.ogrob.moneybox.ui.about.AboutFragment"
-        android:label="About"
-        tools:layout="@layout/fragment_about" />
+            android:id="@+id/aboutFragment"
+            android:name="com.ogrob.moneybox.ui.about.AboutFragment"
+            android:label="About"
+            tools:layout="@layout/fragment_about" />
     <fragment
-        android:id="@+id/optionsFragment"
-        android:name="com.ogrob.moneybox.ui.options.OptionsFragment"
-        android:label="Options"
-        tools:layout="@layout/fragment_options" />
+            android:id="@+id/optionsFragment"
+            android:name="com.ogrob.moneybox.ui.options.OptionsFragment"
+            android:label="Options"
+            tools:layout="@layout/fragment_options" />
 
 </navigation>
