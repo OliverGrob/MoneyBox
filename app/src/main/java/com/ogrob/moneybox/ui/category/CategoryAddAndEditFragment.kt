@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import com.azeesoft.lib.colorpicker.ColorPickerDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.CategoryAddAndEditViewModel
 import com.ogrob.moneybox.databinding.FragmentCategoryAddAndEditBinding
 import com.ogrob.moneybox.persistence.model.Category
@@ -80,7 +81,7 @@ class CategoryAddAndEditFragment : BaseFragment() {
     }
 
     private fun showDeleteAlertDialog(view: View) {
-        MaterialAlertDialogBuilder(binding.root.context)
+        MaterialAlertDialogBuilder(binding.root.context, R.style.AlertDialogTheme)
             .setTitle("Delete category")
             .setMessage("Are you sure you want to delete \'${args.categoryName}\'")
             .setNeutralButton("Cancel") { dialog, which ->
@@ -128,7 +129,7 @@ class CategoryAddAndEditFragment : BaseFragment() {
                 val categoryAlreadyAdded = allCategoryNames.contains(s.toString().toLowerCase(resources.configuration.locales[0]))
 
                 binding.categoryAddEditPositiveButton.isEnabled =
-                    binding.categoryNameEditText.text.isNotBlank() && !categoryAlreadyAdded
+                    !binding.categoryNameEditText.text.isNullOrEmpty() && !categoryAlreadyAdded
 
                 if (categoryAlreadyAdded)
                     Toast.makeText(binding.root.context, "There is already a category named \"$s\"", Toast.LENGTH_LONG).show()

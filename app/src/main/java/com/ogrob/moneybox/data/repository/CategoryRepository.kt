@@ -24,6 +24,8 @@ class CategoryRepository(
 
     suspend fun getAllCategories() = categoryDao.getAllCategories()
 
+    suspend fun getCategory(categoryId: Long) = categoryDao.getCategoryById(categoryId)
+
     suspend fun addNewCategory(category: Category) {
         categoryDao.insert(category)
     }

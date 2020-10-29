@@ -19,4 +19,7 @@ interface CategoryDao: BaseDao<Category> {
     @Query("DELETE FROM category WHERE id = :categoryId")
     suspend fun deleteCategoryById(categoryId: Long)
 
+    @Query("SELECT * FROM category WHERE id = :categoryId")
+    suspend fun getCategoryById(categoryId: Long): Category
+
 }

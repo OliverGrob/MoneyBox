@@ -4,38 +4,43 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorBlack"
         tools:context=".ui.MainActivity">
 
-    <EditText
-            android:id="@+id/category_name_edit_text"
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/category_name_text_input_layout"
+            style="@style/TextInputLabelStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="10dp"
-            android:hint="Category Name"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:scrollbars="vertical"
-            android:textColor="@color/colorPrimaryText"
-            android:textSize="15sp"
+            android:layout_margin="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/category_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryGreen"
+                android:hint="@string/expense_add_description_hint"
+                android:singleLine="true"
+                android:textCursorDrawable="@null"
+                android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
             android:id="@+id/category_color_label_text_view"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:hint="Category Color"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:scrollbars="vertical"
-            android:textColor="@color/colorPrimaryText"
+            android:text="@string/category_color"
+            android:textColor="@color/colorPrimaryTextDarker"
             android:textSize="15sp"
-            app:layout_constraintStart_toStartOf="@+id/category_name_edit_text"
-            app:layout_constraintTop_toBottomOf="@+id/category_name_edit_text"
-            app:layout_constraintWidth_percent="0.3" />
+            app:layout_constraintStart_toStartOf="@+id/category_name_text_input_layout"
+            app:layout_constraintTop_toBottomOf="@+id/category_name_text_input_layout" />
 
     <TextView
             android:id="@+id/category_color_text_view"
@@ -44,7 +49,6 @@
             android:layout_marginStart="10dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:scrollbars="vertical"
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="@+id/category_color_label_text_view"
             app:layout_constraintStart_toEndOf="@+id/category_color_label_text_view"
@@ -57,17 +61,17 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="16dp"
-            android:text="Positive"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Positive" />
 
     <com.google.android.material.button.MaterialButton
             android:id="@+id/category_add_edit_cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:text="Cancel"
+            android:text="@string/cancel_button_text"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="@+id/category_add_edit_positive_button"
             app:layout_constraintEnd_toStartOf="@+id/category_add_edit_positive_button"
@@ -79,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:backgroundTint="@color/colorNegative"
-            android:text="Delete"
+            android:text="@string/delete_button_text"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="@+id/category_add_edit_cancel_button"
             app:layout_constraintStart_toStartOf="parent"
