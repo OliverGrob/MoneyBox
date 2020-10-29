@@ -10,6 +10,7 @@
     <string name="add_category_button">Add Category</string>
     <string name="save_button">Save</string>
     <string name="cancel_button_text">Cancel</string>
+    <string name="delete_button_text">Delete</string>
 
     <string name="expenses_counter_text_singular">%d Item</string>
     <string name="expenses_counter_text_plural">%d Items</string>
@@ -27,6 +28,13 @@
     <string name="expense_add_description_hint">Expense Description</string>
     <string name="expense_add_date_of_expense_hint">Date of Expense</string>
     <string name="expense_add_currency_hint">Currency</string>
+
+    <string name="expense_category">Expense Category</string>
+    <string name="expense_date">Expense Date</string>
+    <string name="expense_currency">Expense Currency</string>
+
+
+    <string name="category_color">Category Color</string>
 
 
     <!-- Formatting using spaces -->

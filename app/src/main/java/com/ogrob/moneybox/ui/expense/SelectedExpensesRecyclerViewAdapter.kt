@@ -75,9 +75,10 @@ class SelectedExpensesRecyclerViewAdapter(private val categories: List<Category>
                     ExpenseSelectedFragmentDirections.actionExpenseSelectedFragmentToExpenseAddAndEditFragment(
                         expense.amount.toString(),
                         expense.description,
-                        expense.additionDate.toString(),
+                        expense.additionDate.toLocalDate().toString(),
                         expense.id,
                         expense.currency.name,
+                        category.name,
                         expense.categoryId,
                         binding.root.resources.getString(R.string.save_button)
                     )
@@ -128,9 +129,10 @@ class SelectedExpensesRecyclerViewAdapter(private val categories: List<Category>
                     ExpenseSelectedFragmentDirections.actionExpenseSelectedFragmentToExpenseAddAndEditFragment(
                         expense.amount.toString(),
                         expense.description,
-                        expense.additionDate.toString(),
+                        expense.additionDate.toLocalDate().toString(),
                         expense.id,
                         expense.currency.name,
+                        category.name,
                         expense.categoryId,
                         binding.root.resources.getString(R.string.save_button)
                     )

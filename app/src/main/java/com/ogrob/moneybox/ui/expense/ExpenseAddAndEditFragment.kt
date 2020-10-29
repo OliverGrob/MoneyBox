@@ -8,14 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.RadioButton
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.viewmodel.ExpenseAddAndEditViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseAddAndEditBinding
+import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.ui.BaseFragment
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
@@ -43,29 +43,34 @@ class ExpenseAddAndEditFragment : BaseFragment() {
 
         initTextViewsAndButtons()
         configureDescriptionAutoComplete()
-        populateCategoryRadioGroup()
         applyTextWatchers()
         applyOnClickListeners()
+        initObservers()
 
         return binding.root
     }
 
     private fun initTextViewsAndButtons() {
-        if (args.positiveButtonText == resources.getString(R.string.save_button))
+        if (args.positiveButtonText == resources.getString(R.string.save_button)) {
             binding.expenseCopyTextInputLayout.visibility = View.GONE
-        else
+            binding.expenseAddEditDeleteButton.visibility = View.VISIBLE
+        } else {
             binding.expenseCopyTextInputLayout.visibility = View.VISIBLE
+            binding.expenseAddEditDeleteButton.visibility = View.GONE
+        }
 
         binding.expenseAmountEditText.setText(args.expenseAmount)
         binding.expenseDescriptionEditText.setText(args.expenseDescription)
-        binding.expenseDatePickerTextView.text = args.expenseAdditionDate
-        binding.expenseCurrencyTextView.text = args.currency
+        binding.expenseDatePickerButton.text = args.expenseAdditionDate
+        binding.expenseCurrencyButton.text = args.currency
+        binding.expenseCategoryButton.text = args.categoryName
+        binding.expenseCategoryButton.tag = args.categoryId.toString()
         binding.expenseAddEditPositiveButton.isEnabled = args.expenseId != NEW_EXPENSE_PLACEHOLDER_ID
         binding.expenseAddEditPositiveButton.text = args.positiveButtonText
     }
 
     private fun configureDescriptionAutoComplete() {
-        expenseAddAndEditViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner) {
+        expenseAddAndEditViewModel.unfilteredExpenses.observe(viewLifecycleOwner) {
             binding.expenseCopyEditText.setAdapter(
                 ArrayAdapter(
                     binding.root.context,
@@ -74,22 +79,8 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             )
             binding.expenseCopyEditText.threshold = 1
         }
-    }
 
-    private fun populateCategoryRadioGroup() {
-        expenseAddAndEditViewModel.allCategories.observe(viewLifecycleOwner) { categories ->
-            categories
-                .forEach { category ->
-                    val radioButton = RadioButton(context)
-                    radioButton.id = category.id.toInt()
-                    radioButton.text = category.name
-                    radioButton.isChecked = category.id == this.args.categoryId
-                    radioButton.textSize = 15f
-                    binding.categoryRadioGroup.addView(radioButton)
-                }
-        }
-
-        expenseAddAndEditViewModel.getAllCategories()
+        expenseAddAndEditViewModel.getAllCategoriesWithExpenses()
     }
 
     private fun applyTextWatchers() {
@@ -123,28 +114,74 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             it.findNavController().navigate(
                 ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(additionDate.year, additionDate.monthValue))
         }
+        binding.expenseAddEditDeleteButton.setOnClickListener {
+            it.hideKeyboard()
+            showDeleteAlertDialog(it)
+        }
 
         binding.expenseCopyEditText.setOnItemClickListener { parent, _, position, _ ->
             val selectedExpenseToCopyFrom = expenseAddAndEditViewModel.getExpenseByDescription(parent.getItemAtPosition(position).toString())
 
             binding.expenseAmountEditText.setText(selectedExpenseToCopyFrom.amount.toString())
             binding.expenseDescriptionEditText.setText(selectedExpenseToCopyFrom.description)
-            binding.categoryRadioGroup.check(selectedExpenseToCopyFrom.categoryId.toInt())
+            binding.expenseCurrencyButton.text = selectedExpenseToCopyFrom.currency.toString()
+            expenseAddAndEditViewModel.getExpensesCategory(selectedExpenseToCopyFrom.categoryId)
+            binding.expenseCategoryButton.tag = selectedExpenseToCopyFrom.categoryId
         }
 
-        binding.expenseDatePickerTextView.setOnClickListener { onPickDate() }
-        binding.expenseCurrencyTextView.setOnClickListener { onCreateCurrencyAlertDialog() }
-        binding.expenseCategoryLinearLayout.setOnClickListener {
-            if (expenseAddAndEditViewModel.isCategoryDropdownOpen()) {
-                expenseAddAndEditViewModel.closeCategoryDropdown()
-                binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_more_white_24dp, null)
-                binding.categoryScrollView.visibility = View.GONE
-            } else {
-                expenseAddAndEditViewModel.openCategoryDropdown()
-                binding.expenseCategoryCheckboxToggleTextView.background = ResourcesCompat.getDrawable(resources, R.drawable.ic_expand_less_white_24dp, null)
-                binding.categoryScrollView.visibility = View.VISIBLE
+        binding.expenseDatePickerButton.setOnClickListener { onPickDate() }
+        binding.expenseCurrencyButton.setOnClickListener { onCreateCurrencySelectionAlertDialog() }
+        binding.expenseCategoryButton.setOnClickListener { onCreateCategorySelectionAlertDialog() }
+    }
+
+    private fun addNewOrEditedExpense(view: View) {
+        expenseAddAndEditViewModel.addOrEditExpense(
+            args.expenseId,
+            binding.expenseAmountEditText.text.toString(),
+            binding.expenseDescriptionEditText.text.toString(),
+            binding.expenseDatePickerButton.text.toString(),
+            binding.expenseCurrencyButton.text.toString(),
+            binding.expenseCategoryButton.tag.toString().toLong()
+        )
+
+        val additionDate = LocalDate.parse(
+            binding.expenseDatePickerButton.text,
+            DateTimeFormatter.ISO_LOCAL_DATE
+        )
+        view.findNavController().navigate(
+            ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(
+                additionDate.year,
+                additionDate.monthValue
+            )
+        )
+    }
+
+    private fun showDeleteAlertDialog(view: View) {
+        MaterialAlertDialogBuilder(binding.root.context, R.style.AlertDialogTheme)
+            .setTitle("Delete expense")
+            .setMessage("Are you sure you want to delete \'${args.expenseDescription}\'")
+            .setNeutralButton("Cancel") { dialog, which ->
+                dialog.cancel()
             }
-        }
+            .setPositiveButton("Delete") { dialog, which ->
+                deleteExpense(view)
+            }
+            .show()
+    }
+
+    private fun deleteExpense(view: View) {
+        expenseAddAndEditViewModel.deleteExpenseById(args.expenseId)
+
+        val additionDate = LocalDate.parse(
+            binding.expenseDatePickerButton.text,
+            DateTimeFormatter.ISO_LOCAL_DATE
+        )
+        view.findNavController().navigate(
+            ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(
+                additionDate.year,
+                additionDate.monthValue
+            )
+        )
     }
 
     private fun onPickDate() {
@@ -152,12 +189,12 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                 // because of compatibility with Calendar, months are from 0-11
                 val datePicked: LocalDate = LocalDate.of(year, month + 1, dayOfMonth)
-                binding.expenseDatePickerTextView.text = LocalDateTime.of(datePicked, LocalTime.now()).format(
+                binding.expenseDatePickerButton.text = LocalDateTime.of(datePicked, LocalTime.now()).format(
                     DateTimeFormatter.ISO_LOCAL_DATE).toString()
             }
 
 
-        val previousDatePicked = LocalDate.parse(binding.expenseDatePickerTextView.text, DateTimeFormatter.ISO_LOCAL_DATE)
+        val previousDatePicked = LocalDate.parse(binding.expenseDatePickerButton.text, DateTimeFormatter.ISO_LOCAL_DATE)
 
         DatePickerDialog(
             binding.root.context,
@@ -168,9 +205,9 @@ class ExpenseAddAndEditFragment : BaseFragment() {
         ).show()
     }
 
-    private fun onCreateCurrencyAlertDialog() {
+    private fun onCreateCurrencySelectionAlertDialog() {
         val currencies = Currency.values().toList()
-        val selectedCurrencyIndex = currencies.indexOf(Currency.valueOf(binding.expenseCurrencyTextView.text.toString()))
+        val selectedCurrencyIndex = currencies.indexOf(Currency.valueOf(binding.expenseCurrencyButton.text.toString()))
 
         AlertDialog.Builder(binding.root.context)
             .setTitle("Select Currency")
@@ -188,29 +225,41 @@ class ExpenseAddAndEditFragment : BaseFragment() {
     }
 
     private fun onSelectCurrency(currency: Currency) {
-        binding.expenseCurrencyTextView.text = currency.name
+        binding.expenseCurrencyButton.text = currency.name
     }
 
-    private fun addNewOrEditedExpense(view: View) {
-        expenseAddAndEditViewModel.addOrEditExpense(
-            args.expenseId,
-            binding.expenseAmountEditText.text.toString(),
-            binding.expenseDescriptionEditText.text.toString(),
-            binding.expenseDatePickerTextView.text.toString(),
-            binding.expenseCurrencyTextView.text.toString(),
-            binding.categoryRadioGroup.checkedRadioButtonId.toLong()
-        )
+    private fun onCreateCategorySelectionAlertDialog() {
+        expenseAddAndEditViewModel.getAllCategories()
+    }
 
-        val additionDate = LocalDate.parse(
-            binding.expenseDatePickerTextView.text,
-            DateTimeFormatter.ISO_LOCAL_DATE
-        )
-        view.findNavController().navigate(
-            ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(
-                additionDate.year,
-                additionDate.monthValue
-            )
-        )
+    private fun onSelectCategory(category: Category) {
+        binding.expenseCategoryButton.text = category.name
+        binding.expenseCategoryButton.tag = category.id
+    }
+
+    private fun initObservers() {
+        expenseAddAndEditViewModel.allCategories.observe(viewLifecycleOwner) {
+            val selectedCurrency = it.first { category -> category.id == binding.expenseCategoryButton.tag.toString().toLong() }
+            val selectedCurrencyIndex = it.indexOf(selectedCurrency)
+
+            AlertDialog.Builder(binding.root.context)
+                .setTitle("Select Currency")
+                .setSingleChoiceItems(
+                    it
+                        .map(Category::name)
+                        .toTypedArray(),
+                    selectedCurrencyIndex
+                ) { dialog, which ->
+                    onSelectCategory(it[which])
+                    dialog.cancel()
+                }
+                .create()
+                .show()
+        }
+
+        expenseAddAndEditViewModel.expensesCategory.observe(viewLifecycleOwner) {
+            binding.expenseCategoryButton.text = it.name
+        }
     }
 
 }

@@ -29,17 +29,12 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
     private val _allCategories: MutableLiveData<List<Category>> = MutableLiveData()
     val allCategories: LiveData<List<Category>> = _allCategories
 
-    private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = expenseRepository.getAllCategoriesWithExpenses()
+    private val _unfilteredExpenses: MutableLiveData<List<CategoryWithExpenses>> = MutableLiveData()
+    val unfilteredExpenses: LiveData<List<CategoryWithExpenses>> = _unfilteredExpenses
 
-    private var categoryDropdownIsOpen = false
+    private val _expensesCategory: MutableLiveData<Category> = MutableLiveData()
+    val expensesCategory: LiveData<Category> = _expensesCategory
 
-
-    fun getAllCategoriesWithExpenses_OLD(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
-
-    fun getAllExpensesDescription(categoriesWithExpenses: List<CategoryWithExpenses>): List<String> = categoriesWithExpenses
-        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
-        .map(Expense::description)
-        .distinct()
 
     fun getAllCategories() {
         viewModelScope.launch {
@@ -47,21 +42,22 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
+    fun getAllCategoriesWithExpenses() {
+        viewModelScope.launch {
+            _unfilteredExpenses.value = categoryRepository.getAllCategoriesWithExpenses()
+        }
+    }
+
+    fun getAllExpensesDescription(categoriesWithExpenses: List<CategoryWithExpenses>): List<String> = categoriesWithExpenses
+        .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
+        .map(Expense::description)
+        .distinct()
+
     fun getExpenseByDescription(description: String): Expense {
-        return this.getAllCategoriesWithExpenses_OLD().value!!
+        return _unfilteredExpenses.value!!
             .flatMap { categoryWithExpenses -> categoryWithExpenses.expenses }
             .distinctBy { expense -> expense.description }
             .single { expense -> expense.description == description }
-    }
-
-    fun isCategoryDropdownOpen(): Boolean = categoryDropdownIsOpen
-
-    fun openCategoryDropdown() {
-        categoryDropdownIsOpen = true
-    }
-
-    fun closeCategoryDropdown() {
-        categoryDropdownIsOpen = false
     }
 
     fun addOrEditExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
@@ -86,8 +82,8 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
-    suspend fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
-        this.expenseRepository.addNewExpense(Expense(
+    private suspend fun addNewExpense(expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
+        expenseRepository.addNewExpense(Expense(
             expenseAmount.toDouble(),
             expenseDescription,
             LocalDateTime.of(LocalDate.parse(expenseDate, DateTimeFormatter.ISO_LOCAL_DATE), LocalTime.now()),
@@ -95,8 +91,8 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
             categoryId))
     }
 
-    suspend fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
-        this.expenseRepository.updateExpense(Expense(
+    private suspend fun updateExpense(expenseId: Long, expenseAmount: String, expenseDescription: String, expenseDate: String, currency: String, categoryId: Long) {
+        expenseRepository.updateExpense(Expense(
             expenseId,
             expenseAmount.toDouble(),
             expenseDescription,
@@ -105,8 +101,16 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
             categoryId))
     }
 
-    suspend fun deleteExpense(expense: Expense) {
-        this.expenseRepository.deleteExpense(expense)
+    fun deleteExpenseById(expenseId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            expenseRepository.deleteExpenseById(expenseId)
+        }
+    }
+
+    fun getExpensesCategory(categoryId: Long) {
+        viewModelScope.launch {
+            _expensesCategory.value = categoryRepository.getCategory(categoryId)
+        }
     }
 
 }

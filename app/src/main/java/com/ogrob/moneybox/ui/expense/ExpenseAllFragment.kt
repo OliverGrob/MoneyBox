@@ -26,6 +26,7 @@ class ExpenseAllFragment : ExpenseBaseFragment() {
             LocalDate.now().toString(),
             NEW_EXPENSE_PLACEHOLDER_ID,
             SYSTEM_BASE_CURRENCY_STRING,
+            NO_CATEGORY_NAME,
             NO_CATEGORY_ID,
             resources.getString(R.string.add_expense_button)
         ))

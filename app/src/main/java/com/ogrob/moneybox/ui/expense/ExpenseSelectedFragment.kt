@@ -11,10 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ogrob.moneybox.R
 import com.ogrob.moneybox.data.helper.SavedValuesFromSharedPreferences
 import com.ogrob.moneybox.persistence.model.Expense
-import com.ogrob.moneybox.utils.EMPTY_STRING
-import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
-import com.ogrob.moneybox.utils.NO_CATEGORY_ID
-import com.ogrob.moneybox.utils.SYSTEM_BASE_CURRENCY_STRING
+import com.ogrob.moneybox.utils.*
 import java.time.LocalDate
 import java.time.Month
 
@@ -48,6 +45,7 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
             LocalDate.now().toString(),
             NEW_EXPENSE_PLACEHOLDER_ID,
             SYSTEM_BASE_CURRENCY_STRING,
+            NO_CATEGORY_NAME,
             NO_CATEGORY_ID,
             resources.getString(R.string.add_expense_button)
         ))

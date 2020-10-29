@@ -64,6 +64,9 @@
                 android:name="currency"
                 app:argType="string" />
         <argument
+                android:name="categoryName"
+                app:argType="string" />
+        <argument
                 android:name="categoryId"
                 app:argType="long" />
         <argument

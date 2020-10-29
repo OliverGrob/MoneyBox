@@ -56,19 +56,19 @@
     </style>
 
     <style name="TextInputLabelStyle">
-        <item name="boxStrokeColor">@color/colorAccent_OLD</item>
-        <item name="hintTextColor">@color/colorAccent_OLD</item>
+        <item name="boxStrokeColor">@color/colorPrimaryText</item>
+        <item name="hintTextColor">@color/colorPrimaryText</item>
         <item name="android:textColorHint">@color/colorPrimaryText</item>
     </style>
 
     <style name="CustomDatePickerDialogStyle" parent="android:Theme.Material.Light.Dialog">
-        <item name="android:colorAccent">@color/colorPrimary_OLD</item>
+        <item name="android:colorAccent">@color/colorPrimaryGreen</item>
         <item name="android:buttonBarPositiveButtonStyle">@style/DatePickerButtonStyle</item>
         <item name="android:buttonBarNegativeButtonStyle">@style/DatePickerButtonStyle</item>
     </style>
 
     <style name="DatePickerButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">@color/colorPrimary_OLD</item>
+        <item name="android:textColor">@color/colorPrimaryGreen</item>
         <item name="android:backgroundTint">@color/colorPrimaryText</item>
     </style>
 
@@ -77,6 +77,31 @@
         <item name="android:textColor">@color/material_button_text_color</item>
         <item name="strokeColor">@color/material_button_stroke_color</item>
         <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">#212121</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/TitleTextStyle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/BodyTextStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/NeutralButtonStyle</item>
+    </style>
+    <style name="TitleTextStyle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">#fafafa</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="BodyTextStyle" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="backgroundTint">@color/colorPrimaryGreen</item>
+    </style>
+    <style name="NeutralButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="backgroundTint">@color/colorNegative</item>
     </style>
 
 </resources>

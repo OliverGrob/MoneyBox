@@ -16,6 +16,9 @@ interface ExpenseDao : BaseDao<Expense> {
     @Query("SELECT * FROM category")
     fun getAllCategoriesWithExpenses(): LiveData<List<CategoryWithExpenses>>
 
+    @Query("DELETE FROM expense WHERE id = :expenseId")
+    suspend fun deleteExpenseById(expenseId: Long)
+
 
 
 

@@ -20,7 +20,7 @@ import com.ogrob.moneybox.utils.withSuffix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.Month
 
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
@@ -577,7 +577,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun createNormalAndHeaderExpenses(filteredExpenses: List<Expense>): List<ExpenseDTOForAdapter> {
-        val daysWithHeader = mutableListOf<LocalDateTime>()
+        val daysWithHeader = mutableListOf<LocalDate>()
 
         return filteredExpenses
             .sortedBy(Expense::additionDate)
@@ -586,12 +586,12 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
     private fun chooseNormalOrHeaderCategoryForExpense(
         expense: Expense,
-        daysWithHeader: MutableList<LocalDateTime>
+        daysWithHeader: MutableList<LocalDate>
     ): ExpenseDTOForAdapter {
-        if (daysWithHeader.contains(expense.additionDate))
+        if (daysWithHeader.contains(expense.additionDate.toLocalDate()))
             return ExpenseDTOForAdapter(expense)
 
-        daysWithHeader.add(expense.additionDate)
+        daysWithHeader.add(expense.additionDate.toLocalDate())
         return ExpenseDTOForAdapter(expense, true)
     }
 
