@@ -61,7 +61,7 @@
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <TextView
-        android:id="@+id/category_color_text_view"
+        android:id="@+id/expense_category_color_text_view"
         android:layout_width="8dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"

@@ -62,7 +62,7 @@ class SelectedExpensesRecyclerViewAdapter(private val categories: List<Category>
             binding.expenseNameTextView.text = expense.description
             binding.expenseCategoryNameTextView.text = category.name
             binding.expenseCategoryNameTextView.setTextColor(category.color)
-            binding.categoryColorTextView.setBackgroundColor(category.color)
+            binding.expenseCategoryColorTextView.setBackgroundColor(category.color)
             binding.totalAmountInDefaultCurrencyTextView.text = formatTotalMoneySpentInMonth(expense.amount)
 
             binding.defaultCurrencyTextView.text =
@@ -116,7 +116,7 @@ class SelectedExpensesRecyclerViewAdapter(private val categories: List<Category>
             binding.expenseNameTextView.text = expense.description
             binding.expenseCategoryNameTextView.text = category.name
             binding.expenseCategoryNameTextView.setTextColor(category.color)
-            binding.categoryColorTextView.setBackgroundColor(category.color)
+            binding.expenseCategoryColorTextView.setBackgroundColor(category.color)
             binding.totalAmountInDefaultCurrencyTextView.text = formatTotalMoneySpentInMonth(expense.amount)
 
             binding.defaultCurrencyTextView.text =

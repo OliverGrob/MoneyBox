@@ -34,6 +34,7 @@
     <string name="expense_currency">Expense Currency</string>
 
 
+    <string name="category_name_with_expense_count">%s (%d)</string>
     <string name="category_color">Category Color</string>
 
 

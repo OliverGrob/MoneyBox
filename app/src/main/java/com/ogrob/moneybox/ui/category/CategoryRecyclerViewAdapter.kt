@@ -30,7 +30,12 @@ class CategoryRecyclerViewAdapter
     class CategoryViewHolder private constructor(val binding: CategoryListItemBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(categoryWithExpenses: CategoryWithExpenses) {
-            binding.categoryWithExpenses = categoryWithExpenses
+            binding.categoryColorTextView.setBackgroundColor(categoryWithExpenses.category.color)
+            binding.categoryNameTextView.text = binding.root.resources.getString(
+                R.string.category_name_with_expense_count,
+                categoryWithExpenses.category.name,
+                categoryWithExpenses.expenses.size
+            )
 
             if (categoryWithExpenses.category.id != NO_CATEGORY_ID) {
                 itemView.setOnClickListener { navigateToCategoryEditFragment(it, categoryWithExpenses.category) }
