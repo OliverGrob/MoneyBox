@@ -36,16 +36,6 @@ class CategoryRecyclerViewAdapter
                 itemView.setOnClickListener { navigateToCategoryEditFragment(it, categoryWithExpenses.category) }
                 return
             }
-
-                // Deleting single category is not working currently, foreign key set default is not setting the id properly
-//            holder.categoryDeleteTextView.setOnClickListener {
-//                AlertDialog.Builder(this.context)
-//                    .setTitle("Are you sure you want to delete this category?")
-//                    .setPositiveButton("Delete") { _, _ -> expenseViewModel.deleteCategory(category) }
-//                    .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-//                    .create()
-//                    .show()
-//            }
         }
 
         private fun navigateToCategoryEditFragment(view: View, category: Category) {
