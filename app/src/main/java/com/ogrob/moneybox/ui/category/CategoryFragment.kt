@@ -6,10 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
+import com.ogrob.moneybox.R
+import com.ogrob.moneybox.data.viewmodel.CategoryViewModel
 import com.ogrob.moneybox.databinding.FragmentCategoryBinding
 import com.ogrob.moneybox.ui.BaseFragment
 import com.ogrob.moneybox.utils.EMPTY_STRING
@@ -19,7 +19,7 @@ import com.ogrob.moneybox.utils.showLoadingAnimation
 
 class CategoryFragment : BaseFragment() {
 
-    private val expenseViewModel: ExpenseViewModel by viewModels()
+    private val categoryViewModel: CategoryViewModel by viewModels()
 
     private lateinit var binding: FragmentCategoryBinding
 
@@ -35,17 +35,21 @@ class CategoryFragment : BaseFragment() {
 
         populateCategoryRecyclerView()
 
+
+        categoryViewModel.getAllFilteredExpenses()
+
+
         return binding.root
     }
 
     private fun populateCategoryRecyclerView() {
-        expenseViewModel.getAllCategoriesWithExpenses_OLD().observe(viewLifecycleOwner, Observer {
+        categoryViewModel.unfilteredExpenses.observe(viewLifecycleOwner) {
             hideLoadingAnimation()
             val categoryRecyclerViewAdapter = CategoryRecyclerViewAdapter()
             binding.categoryRecyclerView.adapter = categoryRecyclerViewAdapter
             binding.categoryRecyclerView.layoutManager = LinearLayoutManager(context)
             categoryRecyclerViewAdapter.submitList(it)
-        })
+        }
     }
 
     private fun onAddNewCategory(view: View) {
@@ -53,7 +57,7 @@ class CategoryFragment : BaseFragment() {
             NEW_CATEGORY_PLACEHOLDER_ID,
             EMPTY_STRING,
             Color.GREEN,
-            "Add Category"
+            resources.getString(R.string.add_category_button)
         ))
     }
 

@@ -7,6 +7,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.ogrob.moneybox.R
 import com.ogrob.moneybox.databinding.CategoryListItemBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
@@ -52,7 +53,7 @@ class CategoryRecyclerViewAdapter
                 category.id,
                 category.name,
                 category.color,
-                "Save"
+                binding.root.resources.getString(R.string.save_button)
             ))
         }
 

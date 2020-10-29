@@ -1,6 +1,5 @@
 package com.ogrob.moneybox.ui.category
 
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
@@ -10,11 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import com.azeesoft.lib.colorpicker.ColorPickerDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
+import com.ogrob.moneybox.data.viewmodel.CategoryAddAndEditViewModel
 import com.ogrob.moneybox.databinding.FragmentCategoryAddAndEditBinding
 import com.ogrob.moneybox.persistence.model.Category
 import com.ogrob.moneybox.ui.BaseFragment
@@ -23,7 +21,7 @@ import com.ogrob.moneybox.utils.hideKeyboard
 
 class CategoryAddAndEditFragment : BaseFragment() {
 
-    private val expenseViewModel: ExpenseViewModel by viewModels()
+    private val categoryAddAndEditViewModel: CategoryAddAndEditViewModel by viewModels()
 
     private lateinit var binding: FragmentCategoryAddAndEditBinding
 
@@ -39,10 +37,14 @@ class CategoryAddAndEditFragment : BaseFragment() {
 
         initOnClickListeners()
 
-        expenseViewModel.getAllCategories_OLD().observe(viewLifecycleOwner, Observer {
+        categoryAddAndEditViewModel.allCategories.observe(viewLifecycleOwner) {
             initViewsAndButtons()
             applyTextWatcher(it)
-        })
+        }
+
+
+        categoryAddAndEditViewModel.getAllCategories()
+
 
         return binding.root
     }
@@ -63,6 +65,47 @@ class CategoryAddAndEditFragment : BaseFragment() {
             it.hideKeyboard()
             it.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
         }
+    }
+
+    private fun onChooseCategoryColor(view: View) {
+        val colorPickerDialog = ColorPickerDialog.createColorPickerDialog(binding.root.context, ColorPickerDialog.DARK_THEME)
+
+        colorPickerDialog.setInitialColor((view.background as ColorDrawable).color)
+        colorPickerDialog.hideOpacityBar()
+        colorPickerDialog.show()
+
+        colorPickerDialog.setOnColorPickedListener { color, _ ->
+            view.setBackgroundColor(color)
+        }
+    }
+
+    private fun showDeleteAlertDialog(view: View) {
+        MaterialAlertDialogBuilder(binding.root.context)
+            .setTitle("Delete category")
+            .setMessage("Are you sure you want to delete \'${args.categoryName}\'")
+            .setNeutralButton("Cancel") { dialog, which ->
+                dialog.cancel()
+            }
+            .setPositiveButton("Delete") { dialog, which ->
+                deleteCategory(view)
+            }
+            .show()
+    }
+
+    private fun deleteCategory(view: View) {
+        categoryAddAndEditViewModel.deleteCategoryById(args.categoryId)
+        Toast.makeText(binding.root.context, "Category ${args.categoryName} deleted!", Toast.LENGTH_LONG).show()
+        view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
+    }
+
+    private fun addNewOrEditedCategory(view: View) {
+        categoryAddAndEditViewModel.addOrEditCategory(
+            args.categoryId,
+            binding.categoryNameEditText.text.toString(),
+            (binding.categoryColorTextView.background as ColorDrawable).color
+        )
+
+        view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
     }
 
     private fun initViewsAndButtons() {
@@ -100,48 +143,6 @@ class CategoryAddAndEditFragment : BaseFragment() {
         }
 
         binding.categoryNameEditText.addTextChangedListener(newExpenseEditTextTextWatcher)
-    }
-
-    private fun onChooseCategoryColor(view: View) {
-        val colorPickerDialog = ColorPickerDialog.createColorPickerDialog(binding.root.context, ColorPickerDialog.DARK_THEME)
-
-        colorPickerDialog.setInitialColor((view.background as ColorDrawable).color)
-        colorPickerDialog.hideOpacityBar()
-        colorPickerDialog.show()
-
-        colorPickerDialog.setOnColorPickedListener { color, _ ->
-            view.setBackgroundColor(color)
-        }
-    }
-
-    private fun showDeleteAlertDialog(view: View) {
-        MaterialAlertDialogBuilder(binding.root.context)
-            .setTitle("Delete category")
-            .setMessage("Are you sure you want to delete \'${args.categoryName}\'")
-            .setNeutralButton("Cancel") { dialog, which ->
-                dialog.cancel()
-            }
-            .setPositiveButton("Delete") { dialog, which ->
-                deleteCategory(view)
-            }
-            .show()
-    }
-
-    private fun deleteCategory(view: View) {
-        expenseViewModel.deleteCategoryById(args.categoryId)
-        Toast.makeText(binding.root.context, "Category ${args.categoryName} deleted!", Toast.LENGTH_LONG).show()
-        view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
-    }
-
-    private fun addNewOrEditedCategory(view: View) {
-        expenseViewModel.addOrEditCategory(
-            args.categoryId,
-            binding.categoryNameEditText.text.toString(),
-            Color.RED
-//            (binding.categoryColorTextView.background as ColorDrawable).color
-            )
-
-        view.findNavController().navigate(CategoryAddAndEditFragmentDirections.actionCategoryAddAndEditFragmentToCategoryFragment())
     }
 
 }
