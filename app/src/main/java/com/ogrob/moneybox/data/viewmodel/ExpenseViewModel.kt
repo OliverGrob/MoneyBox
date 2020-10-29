@@ -1,7 +1,10 @@
 package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.ogrob.moneybox.data.helper.*
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
@@ -13,7 +16,6 @@ import com.ogrob.moneybox.ui.helper.ExpenseDTOForAdapter
 import com.ogrob.moneybox.ui.helper.ExpensesByMonth
 import com.ogrob.moneybox.ui.helper.ExpensesByYear
 import com.ogrob.moneybox.utils.EXPENSE_AMOUNT_RANGE_FILTER_DEFAULT_VALUE
-import com.ogrob.moneybox.utils.NEW_CATEGORY_PLACEHOLDER_ID
 import com.ogrob.moneybox.utils.withSuffix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,6 +50,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _allCurrencyFilterInfo: MutableLiveData<Event<CurrencyFilterInfo>> = MutableLiveData()
     val allCurrencyFilterInfo: LiveData<Event<CurrencyFilterInfo>> = _allCurrencyFilterInfo
 
+    private val _selectedFixedIntervalWithAverage: MutableLiveData<FixedIntervalWithAverage> = MutableLiveData()
+    val selectedFixedIntervalWithAverage: LiveData<FixedIntervalWithAverage> = _selectedFixedIntervalWithAverage
+
 
     fun getAllCategories() {
         viewModelScope.launch {
@@ -55,13 +60,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun getAllFilteredExpenses(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>) {
+    fun getAllFilteredExpenses(savedValuesFromSharedPreferences: SavedValuesFromSharedPreferences) {
         viewModelScope.launch {
             val allCategoriesWithExpenses = categoryRepository.getAllCategoriesWithExpenses()
 
-            val selectedCategoryIds = getSelectedCategoryIds(filterValuesFromSharedPreferences.first)
-            val selectedAmountRange = getSelectedAmountRange(filterValuesFromSharedPreferences.second)
-            val selectedCurrencyIds = getSelectedCurrencyIds(filterValuesFromSharedPreferences.third)
+            val selectedCategoryIds = getSelectedCategoryIds(savedValuesFromSharedPreferences.selectedCategoryIds)
+            val selectedAmountRange = getSelectedAmountRange(savedValuesFromSharedPreferences.selectedAmountRange)
+            val selectedCurrencyIds = getSelectedCurrencyIds(savedValuesFromSharedPreferences.selectedCurrencyIds)
+            val selectedFixedInterval = savedValuesFromSharedPreferences.selectedFixedInterval
 
             _unfilteredExpenses.value = allCategoriesWithExpenses
 
@@ -92,12 +98,23 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             _allAmountFilterInfo.value = Event(updatedAmountFilterInfo)
             _allCurrencyFilterInfo.value = Event(updatedCurrencyFilterInfo)
 
+            val fixedInterval = FixedInterval.valueOf(selectedFixedInterval)
+            val average = when (fixedInterval) {
+                FixedInterval.YEAR -> calculateYearlyTotalAverage(filteredExpenses)
+                FixedInterval.MONTH -> calculateMonthlyTotalAverage(filteredExpenses)
+                FixedInterval.DAY -> calculateDailyTotalAverage(filteredExpenses)
+            }
+            _selectedFixedIntervalWithAverage.value = FixedIntervalWithAverage(
+                FixedInterval.valueOf(selectedFixedInterval),
+                average
+            )
+
             _filteredExpenses.value = filteredExpenses
         }
     }
 
     fun getAllCategoriesWithExpensesForSelectedYearAndMonth(
-        filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>,
+        savedValuesFromSharedPreferences: SavedValuesFromSharedPreferences,
         year: Int,
         month: Month
     ) {
@@ -108,9 +125,9 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
                 month
             )
 
-            val selectedCategoryIds = getSelectedCategoryIds(filterValuesFromSharedPreferences.first)
-            val selectedAmountRange = getSelectedAmountRange(filterValuesFromSharedPreferences.second)
-            val selectedCurrencyIds = getSelectedCurrencyIds(filterValuesFromSharedPreferences.third)
+            val selectedCategoryIds = getSelectedCategoryIds(savedValuesFromSharedPreferences.selectedCategoryIds)
+            val selectedAmountRange = getSelectedAmountRange(savedValuesFromSharedPreferences.selectedAmountRange)
+            val selectedCurrencyIds = getSelectedCurrencyIds(savedValuesFromSharedPreferences.selectedCurrencyIds)
 
             _unfilteredExpenses.value = filteredCategoryWithExpenses
 
@@ -140,6 +157,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
             _allCategoryFilterInfo.value = Event(updatedCategoryFilterInfo)
             _allAmountFilterInfo.value = Event(updatedAmountFilterInfo)
             _allCurrencyFilterInfo.value = Event(updatedCurrencyFilterInfo)
+            _selectedFixedIntervalWithAverage.value = FixedIntervalWithAverage(FixedInterval.DAY, calculateDailyTotalAverage(filteredExpenses))
 
             _filteredExpenses.value = filteredExpenses
         }
@@ -759,80 +777,22 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun updateSelectedFixedIntervalWithAverage(selectedFixedInterval: FixedInterval) {
+        val average = _filteredExpenses.value?.let {
+            when (selectedFixedInterval) {
+                FixedInterval.YEAR -> calculateYearlyTotalAverage(it)
+                FixedInterval.MONTH -> calculateMonthlyTotalAverage(it)
+                FixedInterval.DAY -> calculateDailyTotalAverage(it)
+            }
+        } ?: 0.0
 
-
-
-
-
-
-
-    /** OLD STUFF */
-    private val categoriesWithExpenses: LiveData<List<CategoryWithExpenses>> = expenseRepository.getAllCategoriesWithExpenses()
-    private val categories: LiveData<List<Category>> = liveData { categoryRepository.getAllCategories() }
-
-    private val _selectedFixedInterval: MutableLiveData<FixedInterval> = MutableLiveData()
-    val selectedFixedInterval: LiveData<FixedInterval> = _selectedFixedInterval
-
-
-
-    fun getAllCategoriesWithExpenses_OLD(): LiveData<List<CategoryWithExpenses>> = this.categoriesWithExpenses
-
-    fun getAllCategories_OLD(): LiveData<List<Category>> = this.categories
-
-    suspend fun addNewCategory(categoryName: String, categoryColor: Int) {
-        this.categoryRepository.addNewCategory(Category(
-            categoryName,
-            categoryColor))
+        _selectedFixedIntervalWithAverage.value = FixedIntervalWithAverage(
+            selectedFixedInterval,
+            average
+        )
     }
 
-    suspend fun updateCategory(categoryId: Long, categoryName: String, categoryColor: Int) {
-        this.categoryRepository.updateCategory(Category(
-            categoryId,
-            categoryName,
-            categoryColor))
-    }
-
-    fun deleteCategoryById(categoryId: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            categoryRepository.deleteCategoryById(categoryId)
-        }
-    }
-
-    fun addOrEditCategory(categoryId: Long, categoryName: String, currentTextColor: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (categoryId == NEW_CATEGORY_PLACEHOLDER_ID)
-                addNewCategory(
-                    categoryName,
-                    currentTextColor
-                )
-            else
-                updateCategory(
-                    categoryId,
-                    categoryName,
-                    currentTextColor
-                )
-        }
-    }
-
-    fun getTotalMoneySpentUnformatted(expensesSelected: List<Expense>): Double =
-        expensesSelected
-            .map(Expense::amount)
-            .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
-
-
-
-
-
-
-
-
-
-
-    fun setSelectedFixedInterval(selectedFixedInterval: FixedInterval) {
-        _selectedFixedInterval.value = selectedFixedInterval
-    }
-
-    fun calculateYearlyTotalAverage(expenses: List<Expense>): Double {
+    private fun calculateYearlyTotalAverage(expenses: List<Expense>): Double {
         val totalAmount = getTotalMoneySpentUnformatted(expenses)
 
         val numOfYears = expenses
@@ -843,7 +803,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         return calculateAverage(totalAmount, numOfYears)
     }
 
-    fun calculateMonthlyTotalAverage(expenses: List<Expense>): Double {
+    private fun calculateMonthlyTotalAverage(expenses: List<Expense>): Double {
         val totalAmount = getTotalMoneySpentUnformatted(expenses)
 
         val numOfMonths = expenses
@@ -854,7 +814,7 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         return calculateAverage(totalAmount, numOfMonths)
     }
 
-    fun calculateDailyTotalAverage(expenses: List<Expense>): Double {
+    private fun calculateDailyTotalAverage(expenses: List<Expense>): Double {
         val totalAmount = getTotalMoneySpentUnformatted(expenses)
 
         val numOfDays = expenses
@@ -864,6 +824,12 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
 
         return calculateAverage(totalAmount, numOfDays)
     }
+
+    private fun getTotalMoneySpentUnformatted(expensesSelected: List<Expense>): Double =
+        expensesSelected
+            .map(Expense::amount)
+            .fold(0.0) { xAmount: Double, yAmount: Double -> xAmount.plus(yAmount) }
+
 
     private fun calculateAverage(totalAmount: Double, numOfInterval: Int): Double {
         return if (numOfInterval == 0) 0.0 else totalAmount.div(numOfInterval)

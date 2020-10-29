@@ -5,14 +5,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.liveData
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ogrob.moneybox.R
-import com.ogrob.moneybox.data.helper.FixedInterval
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
+import com.ogrob.moneybox.data.helper.SavedValuesFromSharedPreferences
 import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.utils.EMPTY_STRING
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
@@ -36,9 +33,9 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun getExpensesBasedOnFragmentAndFilters(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>) {
+    override fun getExpensesBasedOnFragmentAndFilters(savedValuesFromSharedPreferences: SavedValuesFromSharedPreferences) {
         expenseViewModel.getAllCategoriesWithExpensesForSelectedYearAndMonth(
-            filterValuesFromSharedPreferences,
+            savedValuesFromSharedPreferences,
             args.year,
             Month.values()[args.monthIndex - 1]
         )
@@ -75,18 +72,6 @@ class ExpenseSelectedFragment : ExpenseBaseFragment() {
         }
 
         expenseViewModel.getAllCategories()
-    }
-
-    override fun createAvailableFixedIntervals(): Array<FixedInterval> {
-        return arrayOf()
-    }
-
-    override fun getFilteredExpenses_OLD(): LiveData<List<CategoryWithExpenses>> {
-        return liveData {  }
-    }
-
-    override fun getFixedInterval(): FixedInterval {
-        return FixedInterval.DAY
     }
 
 }

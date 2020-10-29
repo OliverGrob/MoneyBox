@@ -1,7 +1,6 @@
 package com.ogrob.moneybox.ui.expense
 
 import android.app.ActionBar
-import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +9,10 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.ogrob.moneybox.R
@@ -24,12 +20,12 @@ import com.ogrob.moneybox.data.helper.*
 import com.ogrob.moneybox.data.viewmodel.ExpenseViewModel
 import com.ogrob.moneybox.databinding.FragmentExpenseBinding
 import com.ogrob.moneybox.persistence.model.Category
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
 import com.ogrob.moneybox.persistence.model.Currency
 import com.ogrob.moneybox.persistence.model.Expense
 import com.ogrob.moneybox.ui.BaseFragment
 import com.ogrob.moneybox.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 abstract class ExpenseBaseFragment : BaseFragment() {
 
@@ -50,13 +46,6 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     showLoadingAnimation()
 
     addOnClickListeners()
-
-
-    /** still need to do bottom bar */
-    initTotalAverageInFixedIntervalObserver()
-    binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.setOnClickListener { onChangeTotalAverageInterval(it) }
-    binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.paintFlags = Paint.UNDERLINE_TEXT_FLAG
-
 
     setupObservers(filterImageView)
 
@@ -117,6 +106,16 @@ abstract class ExpenseBaseFragment : BaseFragment() {
 
     expenseViewModel.unfilteredExpenses.observe(viewLifecycleOwner) {
       configureBackdropContainer(filterImageView)
+    }
+
+    expenseViewModel.selectedFixedIntervalWithAverage.observe(viewLifecycleOwner) {
+      SharedPreferenceManager.putStringSharedPreference(
+        binding.root.context,
+        SHARED_PREFERENCES_SELECTED_FIXED_INTERVAL_KEY,
+        it.fixedInterval.name
+      )
+
+      formatAverageForFixedInterval(it)
     }
 
     setupCategoryFilterInfoObserver()
@@ -183,6 +182,32 @@ abstract class ExpenseBaseFragment : BaseFragment() {
     })
   }
 
+  private fun formatAverageForFixedInterval(selectedFixedIntervalWithAverage: FixedIntervalWithAverage) {
+    val average = selectedFixedIntervalWithAverage.average
+
+    binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.text =
+      when (selectedFixedIntervalWithAverage.fixedInterval) {
+        FixedInterval.YEAR ->
+          resources.getString(
+            R.string.money_amount_average_in_parenthesis,
+            withSuffix(average),
+            FixedInterval.YEAR.toString().toLowerCase(Locale.getDefault())
+          )
+        FixedInterval.MONTH ->
+          resources.getString(
+            R.string.money_amount_average_in_parenthesis,
+            withSuffix(average),
+            FixedInterval.MONTH.toString().toLowerCase(Locale.getDefault())
+          )
+        FixedInterval.DAY ->
+          resources.getString(
+            R.string.money_amount_average_in_parenthesis,
+            withSuffix(average),
+            FixedInterval.DAY.toString().toLowerCase(Locale.getDefault())
+          )
+      }
+  }
+
   private fun setupExpenses(filteredExpenses: List<Expense>) {
     setupFragmentSpecificViews()
 
@@ -201,9 +226,9 @@ abstract class ExpenseBaseFragment : BaseFragment() {
       resources.getString(R.string.total_money_spent, expenseViewModel.getTotalMoneySpentFormatted(filteredExpenses))
   }
 
-  abstract fun getExpensesBasedOnFragmentAndFilters(filterValuesFromSharedPreferences: Triple<Set<String>, Set<String>, Set<String>>)
+  abstract fun getExpensesBasedOnFragmentAndFilters(savedValuesFromSharedPreferences: SavedValuesFromSharedPreferences)
 
-  private fun getFilterValuesFromSharedPreferences(): Triple<Set<String>, Set<String>, Set<String>> {
+  private fun getFilterValuesFromSharedPreferences(): SavedValuesFromSharedPreferences {
     val selectedCategoryIdStrings = SharedPreferenceManager.getStringSetSharedPreference(
       binding.root.context,
       SHARED_PREFERENCES_SELECTED_CATEGORY_IDS_KEY,
@@ -219,8 +244,18 @@ abstract class ExpenseBaseFragment : BaseFragment() {
       SHARED_PREFERENCES_SELECTED_CURRENCY_IDS_KEY,
       setOf()
     )
+    val selectedFixedInterval = SharedPreferenceManager.getStringSharedPreference(
+      binding.root.context,
+      SHARED_PREFERENCES_SELECTED_FIXED_INTERVAL_KEY,
+      FixedInterval.YEAR.name
+    )
 
-    return Triple(selectedCategoryIdStrings, selectedExpenseAmountRangeStrings, selectedCurrencyIdStrings)
+    return SavedValuesFromSharedPreferences(
+      selectedCategoryIdStrings,
+      selectedExpenseAmountRangeStrings,
+      selectedCurrencyIdStrings,
+      selectedFixedInterval
+    )
   }
 
   private fun setupCategoryFilter(allCategoryFilterInfo: CategoryFilterInfo) {
@@ -591,103 +626,4 @@ abstract class ExpenseBaseFragment : BaseFragment() {
   private fun noFilterInDropdownSelected(selectedExpenseCount: Int) =
     selectedExpenseCount == 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-  private fun initTotalAverageInFixedIntervalObserver() {
-    expenseViewModel.selectedFixedInterval.observe(viewLifecycleOwner, Observer { fixedInterval ->
-//            expenseViewModel.getFilteredExpensesForFixedIntervalUsingAllFilters()
-      getFilteredExpenses_OLD()
-        .observe(viewLifecycleOwner, Observer {
-          val expenses = it.flatMap(CategoryWithExpenses::expenses)
-
-          binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.text =
-            totalAverageForFixedInterval(fixedInterval, expenses)
-        })
-    })
-  }
-
-  private fun onChangeTotalAverageInterval(view: View) {
-    val fixedIntervals = createAvailableFixedIntervals()
-    val checkedItem =
-      if (fixedIntervals.indexOf(expenseViewModel.selectedFixedInterval.value) != -1)
-        fixedIntervals.indexOf(expenseViewModel.selectedFixedInterval.value)
-      else
-        0
-
-    AlertDialog.Builder(binding.root.context)
-      .setTitle("Show average in")
-      .setSingleChoiceItems(
-        fixedIntervals
-          .map(FixedInterval::toString)
-          .toTypedArray(),
-        checkedItem
-      ) { dialog, which ->
-        onSelectTotalAverageInterval(fixedIntervals[which])
-        dialog.cancel()
-      }
-      .create()
-      .show()
-  }
-
-  abstract fun createAvailableFixedIntervals(): Array<FixedInterval>
-
-  private fun onSelectTotalAverageInterval(selectedFixedInterval: FixedInterval) {
-    if (selectedFixedInterval == expenseViewModel.selectedFixedInterval.value)
-      return
-
-//    expenseViewModel.getFilteredExpensesForFixedIntervalUsingAllFilters()
-//      .observe(viewLifecycleOwner, Observer {
-//        val expenses = it.flatMap(CategoryWithExpenses::expenses)
-//        expenseViewModel.setSelectedFixedInterval(selectedFixedInterval)
-//
-//        binding.expenseBackdropFrontView.totalMoneySpentAverageTextView.text =
-//          totalAverageForFixedInterval(selectedFixedInterval, expenses)
-//      })
-  }
-
-  abstract fun getFilteredExpenses_OLD() : LiveData<List<CategoryWithExpenses>>
-
-  private fun setupBackdropExpenses(categoriesWithExpenses: List<CategoryWithExpenses>) {
-    calculateTotalAverageInFixedInterval()
-  }
-
-  private fun calculateTotalAverageInFixedInterval() {
-    val fixedInterval = getFixedInterval()
-
-    expenseViewModel.setSelectedFixedInterval(fixedInterval)
-  }
-
-  abstract fun getFixedInterval(): FixedInterval
-
-  private fun totalAverageForFixedInterval(selectedFixedInterval: FixedInterval, expenses: List<Expense>): String =
-    when (selectedFixedInterval) {
-      FixedInterval.YEAR ->
-        resources.getString(
-          R.string.money_amount_average_in_parenthesis,
-          withSuffix(expenseViewModel.calculateYearlyTotalAverage(expenses)),
-          FixedInterval.YEAR.toString().toLowerCase()
-        )
-      FixedInterval.MONTH ->
-        resources.getString(
-          R.string.money_amount_average_in_parenthesis,
-          withSuffix(expenseViewModel.calculateMonthlyTotalAverage(expenses)),
-          FixedInterval.MONTH.toString().toLowerCase()
-        )
-      FixedInterval.DAY ->
-        resources.getString(
-          R.string.money_amount_average_in_parenthesis,
-          withSuffix(expenseViewModel.calculateDailyTotalAverage(expenses)),
-          FixedInterval.DAY.toString().toLowerCase()
-        )
-    }
 }
