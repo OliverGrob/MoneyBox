@@ -23,8 +23,6 @@ class ExpenseRepository(
     }
 
 
-    fun getAllCategoriesWithExpenses() = this.expenseDao.getAllCategoriesWithExpenses()
-
     suspend fun addNewExpense(expense: Expense) {
         expenseDao.insert(expense)
     }
