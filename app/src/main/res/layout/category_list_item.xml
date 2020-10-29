@@ -5,7 +5,8 @@
         android:id="@+id/category_list_item_constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryGrey">
+        android:layout_marginVertical="4dp"
+        android:background="@color/colorPrimaryGreenDark">
 
     <TextView
             android:id="@+id/category_color_text_view"
@@ -14,7 +15,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.01" />
+            app:layout_constraintWidth_percent="0.02" />
 
     <TextView
             android:id="@+id/category_name_text_view"
@@ -25,7 +26,7 @@
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.99"
+            app:layout_constraintWidth_percent="0.98"
             tools:ignore="RtlSymmetry"
             tools:text="Electronic" />
 
