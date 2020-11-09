@@ -148,6 +148,9 @@ class ExpenseAddAndEditFragment : BaseFragment() {
             binding.expenseDatePickerButton.text,
             DateTimeFormatter.ISO_LOCAL_DATE
         )
+
+        expenseAddAndEditViewModel.checkIfExchangeRateForDateIsAlreadyAdded(additionDate)
+
         view.findNavController().navigate(
             ExpenseAddAndEditFragmentDirections.actionExpenseAddAndEditFragmentToExpenseSelectedFragment(
                 additionDate.year,
@@ -259,6 +262,14 @@ class ExpenseAddAndEditFragment : BaseFragment() {
 
         expenseAddAndEditViewModel.expensesCategory.observe(viewLifecycleOwner) {
             binding.expenseCategoryButton.text = it.name
+        }
+
+        expenseAddAndEditViewModel.isExchangeRateNotAdded.observe(viewLifecycleOwner) {
+            if (it) {
+                // TODO - check internet access, if there is send request, if not save date to shared pref
+                val additionDate = LocalDate.parse(binding.expenseDatePickerButton.text, DateTimeFormatter.ISO_LOCAL_DATE)
+                expenseAddAndEditViewModel.getExchangeRatesForDateFromApi(additionDate)
+            }
         }
     }
 

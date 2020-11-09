@@ -15,139 +15,145 @@ data class HistoricalExchangeRate(
     @ColumnInfo(name = "date")
     val date: LocalDate,
 
+    @ColumnInfo(name = "base_currency")
+    val baseCurrency: String,
+
     @ColumnInfo(name = "exchange_rate_cad")
-    val exchangeRateCad: String,
+    val exchangeRateCad: Double,
 
     @ColumnInfo(name = "exchange_rate_hkd")
-    val exchangeRateHkd: String,
+    val exchangeRateHkd: Double,
 
     @ColumnInfo(name = "exchange_rate_isk")
-    val exchangeRateIsk: String,
+    val exchangeRateIsk: Double,
 
     @ColumnInfo(name = "exchange_rate_php")
-    val exchangeRatePhp: String,
+    val exchangeRatePhp: Double,
 
     @ColumnInfo(name = "exchange_rate_dkk")
-    val exchangeRateDkk: String,
+    val exchangeRateDkk: Double,
 
     @ColumnInfo(name = "exchange_rate_huf")
-    val exchangeRateHuf: String,
+    val exchangeRateHuf: Double,
 
     @ColumnInfo(name = "exchange_rate_czk")
-    val exchangeRateCzk: String,
+    val exchangeRateCzk: Double,
 
     @ColumnInfo(name = "exchange_rate_aud")
-    val exchangeRateAud: String,
+    val exchangeRateAud: Double,
 
     @ColumnInfo(name = "exchange_rate_ron")
-    val exchangeRateRon: String,
+    val exchangeRateRon: Double,
 
     @ColumnInfo(name = "exchange_rate_sek")
-    val exchangeRateSek: String,
+    val exchangeRateSek: Double,
 
     @ColumnInfo(name = "exchange_rate_idr")
-    val exchangeRateIdr: String,
+    val exchangeRateIdr: Double,
 
     @ColumnInfo(name = "exchange_rate_inr")
-    val exchangeRateInr: String,
+    val exchangeRateInr: Double,
 
     @ColumnInfo(name = "exchange_rate_brl")
-    val exchangeRateBrl: String,
+    val exchangeRateBrl: Double,
 
     @ColumnInfo(name = "exchange_rate_rub")
-    val exchangeRateRub: String,
+    val exchangeRateRub: Double,
 
     @ColumnInfo(name = "exchange_rate_hrk")
-    val exchangeRateHrk: String,
+    val exchangeRateHrk: Double,
 
     @ColumnInfo(name = "exchange_rate_jpy")
-    val exchangeRateJpy: String,
+    val exchangeRateJpy: Double,
 
     @ColumnInfo(name = "exchange_rate_thb")
-    val exchangeRateThb: String,
+    val exchangeRateThb: Double,
 
     @ColumnInfo(name = "exchange_rate_chf")
-    val exchangeRateChf: String,
+    val exchangeRateChf: Double,
 
     @ColumnInfo(name = "exchange_rate_sgd")
-    val exchangeRateSgd: String,
+    val exchangeRateSgd: Double,
 
     @ColumnInfo(name = "exchange_rate_pln")
-    val exchangeRatePln: String,
+    val exchangeRatePln: Double,
 
     @ColumnInfo(name = "exchange_rate_bgn")
-    val exchangeRateBgn: String,
+    val exchangeRateBgn: Double,
 
     @ColumnInfo(name = "exchange_rate_try")
-    val exchangeRateTry: String,
+    val exchangeRateTry: Double,
 
     @ColumnInfo(name = "exchange_rate_cny")
-    val exchangeRateCny: String,
+    val exchangeRateCny: Double,
 
     @ColumnInfo(name = "exchange_rate_nok")
-    val exchangeRateNok: String,
+    val exchangeRateNok: Double,
 
     @ColumnInfo(name = "exchange_rate_nzd")
-    val exchangeRateNzd: String,
+    val exchangeRateNzd: Double,
 
     @ColumnInfo(name = "exchange_rate_zar")
-    val exchangeRateZar: String,
+    val exchangeRateZar: Double,
 
     @ColumnInfo(name = "exchange_rate_usd")
-    val exchangeRateUsd: String,
+    val exchangeRateUsd: Double,
 
     @ColumnInfo(name = "exchange_rate_mxn")
-    val exchangeRateMxn: String,
+    val exchangeRateMxn: Double,
 
     @ColumnInfo(name = "exchange_rate_ils")
-    val exchangeRateIls: String,
+    val exchangeRateIls: Double,
 
     @ColumnInfo(name = "exchange_rate_gbp")
-    val exchangeRateGbp: String,
+    val exchangeRateGbp: Double,
 
     @ColumnInfo(name = "exchange_rate_krw")
-    val exchangeRateKrw: String,
+    val exchangeRateKrw: Double,
 
     @ColumnInfo(name = "exchange_rate_myr")
-    val exchangeRateMyr: String
+    val exchangeRateMyr: Double
 ) {
 
     @Ignore
-    constructor(date: LocalDate,
-                exchangeRateCad: String,
-                exchangeRateHkd: String,
-                exchangeRateIsk: String,
-                exchangeRatePhp: String,
-                exchangeRateDkk: String,
-                exchangeRateHuf: String,
-                exchangeRateCzk: String,
-                exchangeRateAud: String,
-                exchangeRateRon: String,
-                exchangeRateSek: String,
-                exchangeRateIdr: String,
-                exchangeRateInr: String,
-                exchangeRateBrl: String,
-                exchangeRateRub: String,
-                exchangeRateHrk: String,
-                exchangeRateJpy: String,
-                exchangeRateThb: String,
-                exchangeRateChf: String,
-                exchangeRateSgd: String,
-                exchangeRatePln: String,
-                exchangeRateBgn: String,
-                exchangeRateTry: String,
-                exchangeRateCny: String,
-                exchangeRateNok: String,
-                exchangeRateNzd: String,
-                exchangeRateZar: String,
-                exchangeRateUsd: String,
-                exchangeRateMxn: String,
-                exchangeRateIls: String,
-                exchangeRateGbp: String,
-                exchangeRateKrw: String,
-                exchangeRateMyr: String):
+    constructor(
+        date: LocalDate,
+        baseCurrency: String,
+        exchangeRateCad: Double,
+        exchangeRateHkd: Double,
+        exchangeRateIsk: Double,
+        exchangeRatePhp: Double,
+        exchangeRateDkk: Double,
+        exchangeRateHuf: Double,
+        exchangeRateCzk: Double,
+        exchangeRateAud: Double,
+        exchangeRateRon: Double,
+        exchangeRateSek: Double,
+        exchangeRateIdr: Double,
+        exchangeRateInr: Double,
+        exchangeRateBrl: Double,
+        exchangeRateRub: Double,
+        exchangeRateHrk: Double,
+        exchangeRateJpy: Double,
+        exchangeRateThb: Double,
+        exchangeRateChf: Double,
+        exchangeRateSgd: Double,
+        exchangeRatePln: Double,
+        exchangeRateBgn: Double,
+        exchangeRateTry: Double,
+        exchangeRateCny: Double,
+        exchangeRateNok: Double,
+        exchangeRateNzd: Double,
+        exchangeRateZar: Double,
+        exchangeRateUsd: Double,
+        exchangeRateMxn: Double,
+        exchangeRateIls: Double,
+        exchangeRateGbp: Double,
+        exchangeRateKrw: Double,
+        exchangeRateMyr: Double):
             this(0,
                 date,
+                baseCurrency,
                 exchangeRateCad,
                 exchangeRateHkd,
                 exchangeRateIsk,

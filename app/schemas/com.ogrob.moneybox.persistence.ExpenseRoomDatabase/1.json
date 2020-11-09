@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f4daea8a225ecfdc5a239e0f9fbd2335",
+    "identityHash": "e9e39f92e57ce105e04b4fead4622935",
     "entities": [
       {
         "tableName": "expense",
@@ -110,7 +110,7 @@
       },
       {
         "tableName": "historical_exchange_rate",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `exchange_rate_cad` TEXT NOT NULL, `exchange_rate_hkd` TEXT NOT NULL, `exchange_rate_isk` TEXT NOT NULL, `exchange_rate_php` TEXT NOT NULL, `exchange_rate_dkk` TEXT NOT NULL, `exchange_rate_huf` TEXT NOT NULL, `exchange_rate_czk` TEXT NOT NULL, `exchange_rate_aud` TEXT NOT NULL, `exchange_rate_ron` TEXT NOT NULL, `exchange_rate_sek` TEXT NOT NULL, `exchange_rate_idr` TEXT NOT NULL, `exchange_rate_inr` TEXT NOT NULL, `exchange_rate_brl` TEXT NOT NULL, `exchange_rate_rub` TEXT NOT NULL, `exchange_rate_hrk` TEXT NOT NULL, `exchange_rate_jpy` TEXT NOT NULL, `exchange_rate_thb` TEXT NOT NULL, `exchange_rate_chf` TEXT NOT NULL, `exchange_rate_sgd` TEXT NOT NULL, `exchange_rate_pln` TEXT NOT NULL, `exchange_rate_bgn` TEXT NOT NULL, `exchange_rate_try` TEXT NOT NULL, `exchange_rate_cny` TEXT NOT NULL, `exchange_rate_nok` TEXT NOT NULL, `exchange_rate_nzd` TEXT NOT NULL, `exchange_rate_zar` TEXT NOT NULL, `exchange_rate_usd` TEXT NOT NULL, `exchange_rate_mxn` TEXT NOT NULL, `exchange_rate_ils` TEXT NOT NULL, `exchange_rate_gbp` TEXT NOT NULL, `exchange_rate_krw` TEXT NOT NULL, `exchange_rate_myr` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` INTEGER NOT NULL, `base_currency` TEXT NOT NULL, `exchange_rate_cad` REAL NOT NULL, `exchange_rate_hkd` REAL NOT NULL, `exchange_rate_isk` REAL NOT NULL, `exchange_rate_php` REAL NOT NULL, `exchange_rate_dkk` REAL NOT NULL, `exchange_rate_huf` REAL NOT NULL, `exchange_rate_czk` REAL NOT NULL, `exchange_rate_aud` REAL NOT NULL, `exchange_rate_ron` REAL NOT NULL, `exchange_rate_sek` REAL NOT NULL, `exchange_rate_idr` REAL NOT NULL, `exchange_rate_inr` REAL NOT NULL, `exchange_rate_brl` REAL NOT NULL, `exchange_rate_rub` REAL NOT NULL, `exchange_rate_hrk` REAL NOT NULL, `exchange_rate_jpy` REAL NOT NULL, `exchange_rate_thb` REAL NOT NULL, `exchange_rate_chf` REAL NOT NULL, `exchange_rate_sgd` REAL NOT NULL, `exchange_rate_pln` REAL NOT NULL, `exchange_rate_bgn` REAL NOT NULL, `exchange_rate_try` REAL NOT NULL, `exchange_rate_cny` REAL NOT NULL, `exchange_rate_nok` REAL NOT NULL, `exchange_rate_nzd` REAL NOT NULL, `exchange_rate_zar` REAL NOT NULL, `exchange_rate_usd` REAL NOT NULL, `exchange_rate_mxn` REAL NOT NULL, `exchange_rate_ils` REAL NOT NULL, `exchange_rate_gbp` REAL NOT NULL, `exchange_rate_krw` REAL NOT NULL, `exchange_rate_myr` REAL NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -125,195 +125,201 @@
             "notNull": true
           },
           {
+            "fieldPath": "baseCurrency",
+            "columnName": "base_currency",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "exchangeRateCad",
             "columnName": "exchange_rate_cad",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateHkd",
             "columnName": "exchange_rate_hkd",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateIsk",
             "columnName": "exchange_rate_isk",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRatePhp",
             "columnName": "exchange_rate_php",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateDkk",
             "columnName": "exchange_rate_dkk",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateHuf",
             "columnName": "exchange_rate_huf",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateCzk",
             "columnName": "exchange_rate_czk",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateAud",
             "columnName": "exchange_rate_aud",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateRon",
             "columnName": "exchange_rate_ron",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateSek",
             "columnName": "exchange_rate_sek",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateIdr",
             "columnName": "exchange_rate_idr",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateInr",
             "columnName": "exchange_rate_inr",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateBrl",
             "columnName": "exchange_rate_brl",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateRub",
             "columnName": "exchange_rate_rub",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateHrk",
             "columnName": "exchange_rate_hrk",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateJpy",
             "columnName": "exchange_rate_jpy",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateThb",
             "columnName": "exchange_rate_thb",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateChf",
             "columnName": "exchange_rate_chf",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateSgd",
             "columnName": "exchange_rate_sgd",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRatePln",
             "columnName": "exchange_rate_pln",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateBgn",
             "columnName": "exchange_rate_bgn",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateTry",
             "columnName": "exchange_rate_try",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateCny",
             "columnName": "exchange_rate_cny",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateNok",
             "columnName": "exchange_rate_nok",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateNzd",
             "columnName": "exchange_rate_nzd",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateZar",
             "columnName": "exchange_rate_zar",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateUsd",
             "columnName": "exchange_rate_usd",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateMxn",
             "columnName": "exchange_rate_mxn",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateIls",
             "columnName": "exchange_rate_ils",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateGbp",
             "columnName": "exchange_rate_gbp",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateKrw",
             "columnName": "exchange_rate_krw",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           },
           {
             "fieldPath": "exchangeRateMyr",
             "columnName": "exchange_rate_myr",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": true
           }
         ],
@@ -330,7 +336,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f4daea8a225ecfdc5a239e0f9fbd2335')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e9e39f92e57ce105e04b4fead4622935')"
     ]
   }
 }

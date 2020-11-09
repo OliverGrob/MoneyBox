@@ -80,7 +80,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
             INSTANCE?.let { database ->
-                coroutineScope.launch{
+                coroutineScope.launch {
                     val categoryDao = database.categoryDao()
                     prePopulateDatabase(categoryDao)
                 }
@@ -114,7 +114,7 @@ abstract class ExpenseRoomDatabase: RoomDatabase() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
             INSTANCE?.let { database ->
-                coroutineScope.launch{
+                coroutineScope.launch {
                     val expenseDao = database.expenseDao()
                     val categoryDao = database.categoryDao()
                     val historicalExchangeRateDao = database.historicalExchangeRateDao()

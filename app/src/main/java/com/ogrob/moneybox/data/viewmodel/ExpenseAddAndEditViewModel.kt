@@ -1,19 +1,26 @@
 package com.ogrob.moneybox.data.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.ogrob.moneybox.data.repository.CategoryRepository
 import com.ogrob.moneybox.data.repository.ExpenseRepository
-import com.ogrob.moneybox.persistence.model.Category
-import com.ogrob.moneybox.persistence.model.CategoryWithExpenses
-import com.ogrob.moneybox.persistence.model.Currency
-import com.ogrob.moneybox.persistence.model.Expense
+import com.ogrob.moneybox.data.repository.HistoricalExchangeRateRepository
+import com.ogrob.moneybox.data.retrofit.ExchangeRates
+import com.ogrob.moneybox.data.retrofit.ExchangeRatesEndpoints
+import com.ogrob.moneybox.data.retrofit.HistoricalExchangeRateConverter
+import com.ogrob.moneybox.data.retrofit.ServiceBuilder
+import com.ogrob.moneybox.persistence.model.*
 import com.ogrob.moneybox.utils.NEW_EXPENSE_PLACEHOLDER_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -25,6 +32,9 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
         ExpenseRepository(application, viewModelScope)
     private val categoryRepository: CategoryRepository =
         CategoryRepository(application, viewModelScope)
+    private val exchangeRateRepository: HistoricalExchangeRateRepository =
+        HistoricalExchangeRateRepository(application, viewModelScope)
+
 
     private val _allCategories: MutableLiveData<List<Category>> = MutableLiveData()
     val allCategories: LiveData<List<Category>> = _allCategories
@@ -34,6 +44,9 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
 
     private val _expensesCategory: MutableLiveData<Category> = MutableLiveData()
     val expensesCategory: LiveData<Category> = _expensesCategory
+
+    private val _isExchangeRateNotAdded: MutableLiveData<Boolean> = MutableLiveData()
+    val isExchangeRateNotAdded: LiveData<Boolean> = _isExchangeRateNotAdded
 
 
     fun getAllCategories() {
@@ -110,6 +123,64 @@ class ExpenseAddAndEditViewModel(application: Application) : AndroidViewModel(ap
     fun getExpensesCategory(categoryId: Long) {
         viewModelScope.launch {
             _expensesCategory.value = categoryRepository.getCategory(categoryId)
+        }
+    }
+
+    fun checkIfExchangeRateForDateIsAlreadyAdded(date: LocalDate) {
+        viewModelScope.launch {
+            val exchangeRates = checkIfExchangeRateForDateIsAlreadyAddedOnUIThread(date)
+            _isExchangeRateNotAdded.value = exchangeRates.isEmpty()
+        }
+    }
+
+    private suspend fun checkIfExchangeRateForDateIsAlreadyAddedOnUIThread(date: LocalDate): List<HistoricalExchangeRate> {
+        return withContext(Dispatchers.IO) {
+            exchangeRateRepository.getExchangeRateForDate(date)
+        }
+    }
+
+    fun getExchangeRatesForDateFromApi(date: LocalDate) {
+        viewModelScope.launch {
+            getExchangeRatesForDateFromApiOnUIThread(date)
+//            _isExchangeRateNotAdded.value = false
+        }
+    }
+
+
+    private val service = ServiceBuilder.buildService(ExchangeRatesEndpoints::class.java)
+
+    private suspend fun getExchangeRatesForDateFromApiOnUIThread(date: LocalDate) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val call = service.getExchangeRatesForDate(date.toString())
+
+            call.enqueue(
+                object : Callback<ExchangeRates> {
+                    override fun onResponse(
+                        call: Call<ExchangeRates>,
+                        response: Response<ExchangeRates>
+                    ) {
+                        response.body()?.let {
+                            val dateFromApi = LocalDate.parse(it.date, DateTimeFormatter.ISO_LOCAL_DATE)
+
+                            if (dateFromApi == date)
+                                HistoricalExchangeRateConverter.convertToHistoricalExchangeRate(it).also {
+                                    viewModelScope.launch { exchangeRateRepository.addExchangeRate(it) }
+                                }
+                            else
+                                HistoricalExchangeRateConverter.convertToHistoricalExchangeRateWithCustomDate(it, date).also {
+                                    viewModelScope.launch { exchangeRateRepository.addExchangeRate(it) }
+                                }
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ExchangeRates>, t: Throwable) {
+                        t.printStackTrace()
+                        Log.i("asd", "onFailure", t)
+                    }
+
+                }
+            )
+//            exchangeRateRepository.getExchangeRatesForDateFromApi(date)
         }
     }
 
